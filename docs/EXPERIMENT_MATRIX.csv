@@ -1,0 +1,12 @@
+experiment_id,run_category,cluster_id,dataset,model,fl_method,aggregation,hierarchy,clustering_method,n_subclusters,descriptor,run_repeats,notes
+A_C1,baseline_flat,1,HAI_2103,cnn1d,FedAvg,weighted_arithmetic_mean,flat,none,0,none,3,Flat per-cluster FL baseline for Cluster 1
+A_C2,baseline_flat,2,TON_IoT_combined_telemetry,cnn1d,FedAvg,weighted_arithmetic_mean,flat,none,0,none,3,Flat per-cluster FL baseline for Cluster 2
+A_C3,baseline_flat,3,WUSTL_IIOT_2021,cnn1d,FedAvg,weighted_arithmetic_mean,flat,none,0,none,3,Flat per-cluster FL baseline for Cluster 3
+B_C1,baseline_uniform_hierarchical,1,HAI_2103,cnn1d,FedAvg,weighted_arithmetic_mean,hierarchical_fixed,agglomerative,2,feature_mean_std,3,Uniform hierarchical FCFL baseline for Cluster 1 using frozen agglomerative memberships
+B_C2,baseline_uniform_hierarchical,2,TON_IoT_combined_telemetry,cnn1d,FedAvg,weighted_arithmetic_mean,hierarchical_fixed,agglomerative,3,feature_mean_std,3,Uniform hierarchical FCFL baseline for Cluster 2 using frozen agglomerative memberships
+B_C3,baseline_uniform_hierarchical,3,WUSTL_IIOT_2021,cnn1d,FedAvg,weighted_arithmetic_mean,hierarchical_fixed,agglomerative,3,feature_mean_std,3,Uniform hierarchical FCFL baseline for Cluster 3 using frozen agglomerative memberships; comparator for SCAFFOLD ablation
+P_C1,proposed_specialized_hierarchical,1,HAI_2103,tcn,FedBN,weighted_non_bn_mean,hierarchical_fixed,agglomerative,2,feature_mean_std,3,Proposed specialized hierarchical FCFL for Cluster 1
+P_C2,proposed_specialized_hierarchical,2,TON_IoT_combined_telemetry,compact_mlp,FedProx,weighted_arithmetic_mean,hierarchical_fixed,agglomerative,3,feature_mean_std,3,Proposed specialized hierarchical FCFL for Cluster 2
+P_C3,proposed_specialized_hierarchical,3,WUSTL_IIOT_2021,cnn1d,SCAFFOLD,weighted_arithmetic_mean,hierarchical_fixed,agglomerative,3,feature_mean_std,3,Proposed specialized hierarchical FCFL for Cluster 3
+AB_C1_FEDAVG_TCN,ablation_fl_method,1,HAI_2103,tcn,FedAvg,weighted_arithmetic_mean,hierarchical_fixed,agglomerative,2,feature_mean_std,3,Recommended implementation choice to isolate FedBN effect in Cluster 1
+AB_C2_FEDAVG_MLP,ablation_fl_method,2,TON_IoT_combined_telemetry,compact_mlp,FedAvg,weighted_arithmetic_mean,hierarchical_fixed,agglomerative,3,feature_mean_std,3,Recommended implementation choice to isolate FedProx effect in Cluster 2
