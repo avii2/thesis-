@@ -2,19 +2,27 @@
 
 ## 0. Document purpose and status
 
-This document is the **implementation source of truth** for the simulation-only implementation of the proposed FCFL intrusion-detection system.
+This document is the **implementation-focused report** for the simulation-only implementation of the proposed Fixed Clustered Federated Learning (FCFL) intrusion-detection system.
 
-This document is intended for later use with Codex or any coding assistant. It translates the research report into concrete implementation rules, dataset handling rules, module expectations, experiment definitions, output files, and validation checks.
+This file is intended to be given directly to Codex as the main coding specification. It translates the research report into concrete implementation rules, dataset contracts, module boundaries, experiment definitions, outputs, and validation checks.
 
-Primary research source: attached report. The report defines the final system as a fixed clustered federated learning architecture with \(N=3\) independent main clusters, one fixed sub-cluster layer inside each main cluster, one-time offline Agglomerative Clustering for fixed sub-cluster formation, no cross-cluster averaging, raw-data locality, and Hyperledger Fabric used only for metadata-level governance.
+This document must be used together with:
 
-This document, together with `ARCHITECTURE_CONTRACT.md`, `DATA_CONTRACT.md`, `ALGORITHMS.md`, `EXPERIMENT_MATRIX.csv`, and `VALIDATION_CHECKS.md`, is the coding source of truth. If any implementation task conflicts with these files or with the research report, stop and ask the user before coding. If the PDF report contains older figure labels or drafting artifacts, follow the implementation documents and flag the mismatch.
+```text
+ARCHITECTURE_CONTRACT.md
+DATA_CONTRACT.md
+ALGORITHMS.md
+EXPERIMENT_MATRIX.csv
+VALIDATION_CHECKS.md
+```
+
+The research report remains the academic source. This implementation specification and the contract files are the **coding source of truth**. If the research report contains older figure labels, formatting artifacts, or outdated captions, Codex must follow this implementation specification and flag the mismatch instead of changing the architecture.
 
 ---
 
-# 1. Project objective
+# 1. Purpose
 
-## 1.1 Main objective
+## 1.1 Project objective
 
 Implement a simulation-only **Fixed Clustered Federated Learning (FCFL)** system for **binary intrusion detection** across three heterogeneous CPS/IIoT domains.
 
@@ -27,249 +35,252 @@ The system must implement:
    - leaf clients \(\rightarrow\) sub-cluster heads
    - sub-cluster heads \(\rightarrow\) main-cluster heads
 5. No cross-cluster parameter averaging.
-6. Raw data remain inside simulated leaf-client partitions during FCFL training.
-7. Main-cluster heads log only metadata to a ledger/Fabric-compatible logging layer.
+6. Raw records remain inside simulated leaf-client partitions.
+7. Only main-cluster heads write metadata to the ledger / Fabric-compatible logging layer.
 8. No raw data and no full model weights are written on-chain or into the ledger.
 
-Important scope note: this implementation is **data-locality-preserving**, not a formal privacy mechanism. It does not implement differential privacy, secure aggregation, or Byzantine robustness.
-
-## 1.2 Implementation objective
+## 1.2 Scope of implementation
 
 The implementation must support:
 
-- data loading and preprocessing for three datasets,
+- dataset loading and strict data validation,
+- dataset-specific preprocessing,
 - binary label preparation,
 - candidate leaf-client partitioning,
-- offline Agglomerative Clustering,
+- client-level descriptor computation,
+- one-time offline Agglomerative Clustering,
 - fixed sub-cluster membership storage,
-- hierarchical FCFL training,
+- flat per-cluster FL baseline,
+- uniform hierarchical FCFL baseline,
+- proposed specialized hierarchical FCFL method,
 - FedBN for Cluster 1,
 - FedProx for Cluster 2,
 - SCAFFOLD for Cluster 3,
-- uniform hierarchical FCFL baseline,
-- flat per-cluster FL baseline,
-- proposed specialized hierarchical FCFL method,
+- weighted hierarchical aggregation,
+- metadata-only ledger logging,
 - metrics export,
-- metadata ledger logging,
 - validation tests.
 
+## 1.3 Privacy and security scope
+
+This implementation is **data-locality-preserving**, not a formal privacy mechanism.
+
+It does **not** implement:
+
+- differential privacy,
+- secure aggregation,
+- encrypted model-update aggregation,
+- Byzantine-robust aggregation,
+- poisoning defense,
+- real deployment security.
+
+The claim is limited to:
+
+```text
+raw records remain local to leaf-client partitions during simulated FL training.
+```
+
 ---
 
-# 2. Source-of-truth constraints from the report
+# 2. Non-negotiable architecture rules
 
-The following constraints are non-negotiable.
+## 2.1 Main cluster rules
 
-## 2.1 Architecture constraints
+The implementation must obey the following rules:
 
-- There are exactly **three main clusters**.
-- Each main cluster is an independent FCFL problem.
+```text
+N = 3 main clusters
+```
+
+The three main clusters are:
+
+| Main cluster | Domain | Dataset | Model | FL method | Aggregation |
+|---|---|---|---|---|---|
+| Cluster 1 | Process-control telemetry IDS | HAI 21.03 | TCN | FedBN | weighted non-BN mean |
+| Cluster 2 | Heterogeneous IIoT telemetry IDS | TON IoT combined telemetry | compact MLP | FedProx | weighted arithmetic mean |
+| Cluster 3 | IIoT network-flow IDS | WUSTL-IIOT-2021 | 1D-CNN | SCAFFOLD | weighted arithmetic mean |
+
+## 2.2 Fixed-cluster rules
+
 - Each main cluster contains exactly one fixed sub-cluster layer.
-- All leaf clients must be placed under fixed sub-clusters in the proof-of-concept.
-- No cross-cluster averaging is allowed.
-- No global central server across the three main clusters is allowed.
-- Each main cluster may use a different dataset, model family, FL method, and feature space.
-- Inside a single main cluster, all sub-clusters must use aggregation-compatible models.
+- Agglomerative Clustering is used once before training to form the fixed sub-cluster memberships.
+- No reclustering is allowed during training.
+- No dynamic clustering is allowed.
+- No client reassignment is allowed after membership files are frozen.
+- All leaf clients must belong to exactly one sub-cluster.
 
-## 2.2 Clustering constraints
+## 2.3 Cross-cluster rules
 
-- Agglomerative Clustering is used only as a **one-time offline / pre-training** step.
-- Agglomerative Clustering is applied separately inside each main cluster.
-- No clustering is performed across main clusters.
-- No reclustering is allowed during FCFL training rounds.
-- Sub-cluster memberships are frozen before the first training round.
-- The same fixed sub-cluster memberships must be reused for:
-  - uniform hierarchical FCFL baseline,
-  - proposed specialized hierarchical FCFL.
+The following are forbidden:
 
-## 2.3 Learning constraints
+```text
+Cluster 1 model averaged with Cluster 2 or Cluster 3
+Cluster 2 model averaged with Cluster 1 or Cluster 3
+Cluster 3 model averaged with Cluster 1 or Cluster 2
+any global central server above all clusters
+any global cross-cluster model aggregation
+```
 
-All clusters solve supervised binary classification:
+The three main clusters may run sequentially or in parallel, but their model parameters must remain independent.
 
-- label `0` = normal / benign
-- label `1` = attack / malicious
+## 2.4 Within-cluster compatibility rule
 
-Cluster mapping:
+Inside a main cluster:
 
-| Main cluster | Dataset | Model | FL method | Aggregation |
-|---|---|---|---|---|
-| Cluster 1 | HAI 21.03 | TCN | FedBN | weighted non-BN mean |
-| Cluster 2 | TON IoT combined telemetry | compact MLP | FedProx | weighted arithmetic mean |
-| Cluster 3 | WUSTL-IIOT-2021 | 1D-CNN | SCAFFOLD | weighted arithmetic mean |
+- all leaf clients use the same feature representation,
+- all sub-clusters use the same model family,
+- all sub-cluster and main-cluster models must be parameter-compatible,
+- aggregation happens only among compatible models inside the same main cluster.
 
-## 2.4 Blockchain / ledger constraints
+Across main clusters:
 
-- Only main-cluster heads interact with the ledger/Fabric layer.
-- Sub-cluster heads do not write on-chain.
-- Leaf clients do not write on-chain.
+- feature spaces may differ,
+- model families may differ,
+- FL methods may differ,
+- aggregation rules may differ,
+- no cross-cluster averaging is performed.
+
+## 2.5 Blockchain / ledger rules
+
+- Only main-cluster heads write metadata to the ledger.
+- Sub-cluster heads do not write to the ledger.
+- Leaf clients do not write to the ledger.
 - Ledger stores metadata only.
-- Raw data must never be logged.
-- Full model weights must never be logged.
-- Model hashes may be logged.
-- Sub-cluster configuration hashes and membership hashes may be logged as metadata evidence.
+- Ledger must not store raw records.
+- Ledger must not store full model weights.
+- Ledger may store model hashes, clustering configuration hashes, and sub-cluster membership hashes.
 
 ---
 
-# 3. Dataset inventory and expected file locations
+# 3. Cluster configuration
 
-## 3.1 User-provided folder structure
+## 3.1 Final cluster configuration
 
-The current expected dataset root is:
+| Cluster | Dataset | Candidate leaf clients | Fixed sub-clusters | Model | FL method | Aggregation |
+|---|---:|---:|---:|---|---|---|
+| Cluster 1 | HAI 21.03 | 12 | \(K_1=2\) | TCN | FedBN | weighted non-BN mean |
+| Cluster 2 | TON IoT combined telemetry | 15 | \(K_2=3\) | compact MLP | FedProx | weighted arithmetic mean |
+| Cluster 3 | WUSTL-IIOT-2021 | 15 | \(K_3=3\) | 1D-CNN | SCAFFOLD | weighted arithmetic mean |
+
+## 3.2 Fixed sub-cluster identifiers
+
+Cluster 1:
 
 ```text
-desktop/thesis/data/
+H1
+H2
 ```
 
-The expected raw dataset folders are:
+Cluster 2:
 
 ```text
-desktop/thesis/data/raw/hai_2103/
-desktop/thesis/data/raw/ton_iot/original_archive/
-desktop/thesis/data/raw/ton_iot/combined_telemetry/
-desktop/thesis/data/raw/wustl_iiot_2021/
+T1
+T2
+T3
 ```
 
-## 3.2 Implementation path rule
+Cluster 3:
+
+```text
+W1
+W2
+W3
+```
+
+These are **Agglomerative Clustering group identifiers**, not manually assigned semantic labels.
+
+Do not interpret:
+
+```text
+H1/H2 as boiler/turbine labels
+T1/T2/T3 as device labels
+W1/W2/W3 as attack/time labels
+```
+
+unless this is only for post-hoc interpretation.
+
+## 3.3 Default training budget
 
 Recommended implementation choice:
 
-Use a configurable data root instead of hardcoding absolute paths.
-
-Default:
-
 ```text
-DATA_ROOT = desktop/thesis/data
-RAW_DATA_ROOT = desktop/thesis/data/raw
+rounds = 50
+local_epochs = 1
+batch_size = 128
 ```
 
-Codex must implement support for an environment variable:
+Default seeds:
+
+```text
+[42, 123, 2025]
+```
+
+For initial smoke testing:
+
+```text
+rounds = 2
+local_epochs = 1
+batch_size = 64
+seed = 42
+```
+
+---
+
+# 4. Dataset contracts
+
+## 4.1 Base dataset path
+
+Current expected folder structure:
+
+```text
+desktop/thesis/data/
+  raw/
+    hai_2103/
+    ton_iot/
+      original_archive/
+      combined_telemetry/
+    wustl_iiot_2021/
+```
+
+Recommended implementation choice:
+
+Use an environment variable for portability:
 
 ```text
 FCFL_DATA_ROOT
 ```
 
-If `FCFL_DATA_ROOT` is set, use it instead of the default path.
-
-Example:
+If `FCFL_DATA_ROOT` is not set, use:
 
 ```text
-FCFL_DATA_ROOT=desktop/thesis/data
+desktop/thesis/data
 ```
 
 TODO / USER MUST CONFIRM:
 
-- Confirm whether the actual path is `desktop/thesis/data/` or `~/Desktop/thesis/data/`.
-- Confirm operating system path style before final run.
-
-## 3.3 Dataset folder usage
-
-### Cluster 1: HAI 21.03
-
-Use:
-
 ```text
-desktop/thesis/data/raw/hai_2103/
+Confirm whether the actual path is desktop/thesis/data or ~/Desktop/thesis/data.
 ```
 
-Expected file type:
-
-```text
-.csv
-```
-
-If multiple CSV files exist, concatenate them only after schema validation.
-
-### Cluster 2: TON IoT combined telemetry
-
-Use only:
-
-```text
-desktop/thesis/data/raw/ton_iot/combined_telemetry/
-```
-
-Do not use this folder for training unless explicitly required:
-
-```text
-desktop/thesis/data/raw/ton_iot/original_archive/
-```
-
-The `original_archive/` folder may be used only for reference or reconstruction if the combined telemetry files are missing.
-
-If `combined_telemetry/` is empty, stop and ask the user.
-
-### Cluster 3: WUSTL-IIOT-2021
-
-Use:
-
-```text
-desktop/thesis/data/raw/wustl_iiot_2021/
-```
-
-Expected file type:
-
-```text
-.csv
-```
-
-If multiple CSV files exist, concatenate them only after schema validation.
-
----
-
-# 4. Dataset-specific preprocessing rules
-
-## 4.1 Universal preprocessing rules
-
-These rules apply to all clusters.
-
-1. Load CSV files.
-2. Validate that all required columns exist.
-3. Do not silently infer unknown label columns.
-4. Do not silently drop columns unless they are explicitly listed in this specification or are constant/all-missing columns.
-5. Convert labels to binary:
-   - normal/benign = 0
-   - attack/malicious/anomaly = 1
-6. Remove label columns from model features.
-7. Keep timestamp or ordering columns only temporarily for ordering/partitioning if needed.
-8. Remove timestamp, identifier, and leakage-prone fields from model features before model-input creation and descriptor computation.
-9. Convert numerical features to `float32`.
-10. Handle missing values using training-set median imputation.
-11. Fit preprocessing transformations using training data only.
-12. Apply the fitted transformations to validation and test data.
-13. Save preprocessing artifacts under:
-
-```text
-outputs/preprocessing/
-```
-
-14. If a required label column is missing, stop and raise a clear error showing available columns.
-15. If a dataset contains unknown categorical columns, follow the categorical handling rule in Section 4.5.
-
-## 4.2 Cluster 1 preprocessing: HAI 21.03
+## 4.2 Cluster 1 dataset contract: HAI 21.03
 
 Dataset path:
 
 ```text
-desktop/thesis/data/raw/hai_2103/
+${FCFL_DATA_ROOT}/raw/hai_2103/
 ```
 
-Task:
+Expected file type:
+
+```text
+.csv
+```
+
+Expected task:
 
 ```text
 binary process-control telemetry intrusion detection
 ```
-
-Model family:
-
-```text
-TCN
-```
-
-Input type:
-
-```text
-time-windowed multivariate telemetry
-```
-
-### 4.2.1 Label column
 
 Expected label column:
 
@@ -279,84 +290,26 @@ attack
 
 TODO / USER MUST CONFIRM:
 
-- Confirm that the HAI files contain a column exactly named `attack`.
-- If the label column has a different name, update the config before implementation.
-
-Allowed label-column candidates for profiling only:
-
 ```text
-attack
-Attack
-label
-Label
-target
-Target
+Confirm that HAI 21.03 files contain a label column exactly named attack.
 ```
 
-Codex must not choose among candidates silently. It may print candidates during data profiling, but final training must use the configured label column.
-
-### 4.2.2 Feature columns
-
-Include:
+Label handling:
 
 ```text
-all numerical process-control telemetry columns except excluded columns
+normal = 0
+attack = 1
 ```
 
-Exclude:
+Expected input type:
 
 ```text
-attack
-Attack
-label
-Label
-target
-Target
-timestamp
-Timestamp
-time
-Time
-date
-Date
+multivariate time-series telemetry windows
 ```
-
-Also exclude any process-specific attack label columns if present, such as:
-
-```text
-attack_P1
-attack_P2
-attack_P3
-attack_P4
-```
-
-These may be used only for auxiliary analysis and must not be model input features.
-
-### 4.2.3 Missing values
 
 Recommended implementation choice:
 
-- Numerical missing values: fill using median computed from training data only.
-- If a column is all missing in training data, drop the column and log it.
-- If a column is constant in training data, drop the column and log it.
-
-### 4.2.4 Scaling
-
-Recommended implementation choice:
-
-- Use `StandardScaler`.
-- Fit on Cluster 1 training features only.
-- Apply to validation and test.
-- Save scaler to:
-
-```text
-outputs/preprocessing/cluster1_hai_scaler.pkl
-```
-
-### 4.2.5 Windowing for TCN
-
-Recommended implementation choice:
-
-Use sliding windows.
+Use sliding windows:
 
 ```text
 window_length = 32
@@ -370,51 +323,72 @@ window_label = 1 if any row inside the window has attack label 1
 window_label = 0 otherwise
 ```
 
-Input shape for TCN:
+Columns to exclude from model features:
 
 ```text
-batch_size x num_features x window_length
+attack
+Attack
+label
+Label
+target
+Target
+attack_P1
+attack_P2
+attack_P3
+attack_P4
+timestamp
+Timestamp
+time
+Time
+date
+Date
 ```
 
-If a client partition has fewer than `window_length` rows, skip that partition for window generation and log a warning.
+Notes:
 
----
+- Process-specific attack labels may be used only for auxiliary analysis.
+- They must not be model input features.
+- They must not be used for dynamic clustering.
 
-## 4.3 Cluster 2 preprocessing: TON IoT combined telemetry
+## 4.3 Cluster 2 dataset contract: TON IoT combined telemetry
 
 Dataset path:
 
 ```text
-desktop/thesis/data/raw/ton_iot/combined_telemetry/
+${FCFL_DATA_ROOT}/raw/ton_iot/combined_telemetry/
 ```
 
-Task:
+Do not use this folder for training unless explicitly required:
+
+```text
+${FCFL_DATA_ROOT}/raw/ton_iot/original_archive/
+```
+
+Expected file type:
+
+```text
+.csv
+```
+
+Expected task:
 
 ```text
 binary heterogeneous IIoT telemetry intrusion detection
 ```
 
-Model family:
-
-```text
-compact MLP
-```
-
-Input type:
+Expected input type:
 
 ```text
 fixed-length tabular telemetry vector
 ```
 
-### 4.3.1 Label column
+Expected label column:
 
-TODO / USER MUST CONFIRM:
+```text
+TODO / USER MUST CONFIRM
+```
 
-The report states that TON IoT combined telemetry is used for binary classification, but the exact label-column name is not safely inferable from the report alone.
-
-Before training, user must confirm the exact label column.
-
-Expected possible candidates for profiling only:
+Possible label candidates for profiling only:
 
 ```text
 label
@@ -427,17 +401,9 @@ type
 Type
 ```
 
-Codex must not silently choose the label column.
+Codex must not silently choose a label column. It may print candidate columns during profiling, but training must use the configured label column.
 
-### 4.3.2 Feature columns
-
-Include:
-
-```text
-all numerical columns from the TON IoT combined telemetry file except excluded columns
-```
-
-Exclude:
+Columns to exclude from model features:
 
 ```text
 configured label column
@@ -459,78 +425,49 @@ id
 ID
 ```
 
-Device-origin information may be used for interpretation only if present. It must not manually define the fixed sub-cluster membership, because sub-clusters are formed by Agglomerative Clustering.
+Device-origin information:
 
-### 4.3.3 Missing values
+- May be used for interpretation only.
+- Must not manually define fixed sub-cluster membership.
+- Fixed sub-clusters are formed by offline Agglomerative Clustering.
 
-Recommended implementation choice:
-
-- Numerical missing values: fill using median computed from training data only.
-- If a column is all missing in training data, drop the column and log it.
-- If a column is constant in training data, drop the column and log it.
-
-### 4.3.4 Scaling
-
-Recommended implementation choice:
-
-- Use `StandardScaler`.
-- Fit on Cluster 2 training features only.
-- Apply to validation and test.
-- Save scaler to:
-
-```text
-outputs/preprocessing/cluster2_ton_iot_scaler.pkl
-```
-
-### 4.3.5 Windowing
-
-No sliding windows.
+No sliding windowing is used.
 
 Each row is one sample.
 
-Input shape for compact MLP:
-
-```text
-batch_size x num_features
-```
-
----
-
-## 4.4 Cluster 3 preprocessing: WUSTL-IIOT-2021
+## 4.4 Cluster 3 dataset contract: WUSTL-IIOT-2021
 
 Dataset path:
 
 ```text
-desktop/thesis/data/raw/wustl_iiot_2021/
+${FCFL_DATA_ROOT}/raw/wustl_iiot_2021/
 ```
 
-Task:
+Expected file type:
+
+```text
+.csv
+```
+
+Expected task:
 
 ```text
 binary IIoT network-flow intrusion detection
 ```
 
-Model family:
+Expected input type:
 
 ```text
-1D-CNN
+fixed-length network-flow feature vector
 ```
 
-Input type:
+Expected label column:
 
 ```text
-fixed-length flow-feature vector
+TODO / USER MUST CONFIRM
 ```
 
-### 4.4.1 Label column
-
-TODO / USER MUST CONFIRM:
-
-The report states that WUSTL-IIOT-2021 can be converted to binary classification by labeling all attacks as 1 and normal traffic as 0, but the exact label-column name is not safely inferable from the report alone.
-
-Before training, user must confirm the exact label column.
-
-Expected possible candidates for profiling only:
+Possible label candidates for profiling only:
 
 ```text
 label
@@ -545,17 +482,7 @@ attack
 Attack
 ```
 
-Codex must not silently choose the label column.
-
-### 4.4.2 Feature columns
-
-Include:
-
-```text
-all numerical network-flow feature columns except excluded columns
-```
-
-Mandatory excluded leakage / identifier columns:
+Mandatory leakage / identifier columns to exclude:
 
 ```text
 StartTime
@@ -580,95 +507,128 @@ date
 Date
 ```
 
-### 4.4.3 Missing values
-
-Recommended implementation choice:
-
-- Numerical missing values: fill using median computed from training data only.
-- If a column is all missing in training data, drop the column and log it.
-- If a column is constant in training data, drop the column and log it.
-
-### 4.4.4 Scaling
-
-Recommended implementation choice:
-
-- Use `StandardScaler`.
-- Fit on Cluster 3 training features only.
-- Apply to validation and test.
-- Save scaler to:
-
-```text
-outputs/preprocessing/cluster3_wustl_scaler.pkl
-```
-
-### 4.4.5 Windowing
-
-No time-series windowing for Cluster 3.
+No sliding windowing is used.
 
 Each row is one flow sample.
 
-Input shape for 1D-CNN:
+## 4.5 Data profiling requirement
+
+Before implementation proceeds to training, Codex must produce dataset profiles:
 
 ```text
-batch_size x 1 x num_features
+outputs/reports/data_profile_cluster1.json
+outputs/reports/data_profile_cluster2.json
+outputs/reports/data_profile_cluster3.json
 ```
+
+Each profile must include:
+
+```text
+file names
+row counts
+column names
+candidate label columns
+missing-value counts
+numeric/categorical column summary
+class counts after label mapping if label is confirmed
+columns excluded
+columns retained
+```
+
+If label columns are not confirmed, profile only and stop before training.
 
 ---
 
-## 4.5 Categorical feature handling
+# 5. Preprocessing rules
 
-If categorical columns remain after explicit exclusions:
+## 5.1 Universal preprocessing sequence
+
+For each main cluster:
+
+1. Load raw CSV files.
+2. Validate required columns.
+3. Map labels to binary.
+4. Sort by timestamp/order column if available.
+5. Create candidate leaf-client partitions.
+6. Split each candidate leaf client into train/validation/test.
+7. Fit imputer/scaler/encoder using training data only.
+8. Transform train/validation/test partitions.
+9. Compute clustering descriptors using transformed training features only.
+10. Run Agglomerative Clustering.
+11. Freeze membership files.
+
+## 5.2 Important timestamp/leakage handling rule
+
+Timestamp or order columns may be used temporarily for ordering or partitioning.
+
+After ordering/partitioning, timestamp, identifier, and leakage-prone columns must be excluded from:
+
+```text
+model input features
+descriptor features
+scaler inputs
+imputer inputs
+encoder inputs
+```
+
+## 5.3 Missing-value handling
 
 Recommended implementation choice:
 
-1. If the categorical column has at most 20 unique values in training data:
-   - apply one-hot encoding,
-   - fit categories on training data only,
-   - unknown validation/test categories map to all-zero for that feature group.
-2. If the categorical column has more than 20 unique values:
-   - drop the column,
-   - log the column name and reason.
-3. Never one-hot encode label columns.
-4. Never one-hot encode leakage columns.
+- Numerical missing values: fill using training-set median.
+- Categorical missing values: fill using training-set mode or `UNKNOWN`.
+- Columns that are all missing in training data: drop and log.
+- Columns that are constant in training data: drop and log.
 
-Save encoder artifacts to:
+## 5.4 Scaling
+
+Recommended implementation choice:
+
+Use `StandardScaler` for numerical model features.
+
+Fit scaler on training data only.
+
+Save scalers:
 
 ```text
-outputs/preprocessing/
+outputs/preprocessing/cluster1_hai_scaler.pkl
+outputs/preprocessing/cluster2_ton_iot_scaler.pkl
+outputs/preprocessing/cluster3_wustl_scaler.pkl
 ```
 
----
+## 5.5 Categorical handling
 
-# 5. Label definitions
+Recommended implementation choice:
 
-All clusters are supervised binary classification tasks.
+If categorical columns remain after explicit exclusions:
 
-## 5.1 Universal label mapping
+1. If the column has at most 20 unique values in training data:
+   - one-hot encode,
+   - fit categories on training data only,
+   - unknown validation/test categories map to all-zero for that group.
+2. If the column has more than 20 unique values:
+   - drop it,
+   - log the column and reason.
 
-Final internal labels must be:
+Never one-hot encode label columns, identifier columns, or leakage columns.
+
+## 5.6 Label mapping
+
+Internal labels:
 
 ```text
 normal / benign = 0
 attack / malicious / anomaly = 1
 ```
 
-## 5.2 Numeric labels
+For numeric labels:
 
-If the configured label column is numeric:
+- If labels are already `{0, 1}`, keep them.
+- If labels are not binary, stop and ask for mapping.
 
-- If values are already `{0, 1}`, keep them.
-- If values are `{1, 0}`, keep them.
-- If values are not binary, user must provide mapping.
+For string labels:
 
-TODO / USER MUST CONFIRM:
-
-- For each dataset, confirm whether labels are already binary.
-
-## 5.3 String labels
-
-If the configured label column is string/object:
-
-Map normal aliases to `0`:
+Map to `0`:
 
 ```text
 normal
@@ -680,7 +640,7 @@ BENIGN
 0
 ```
 
-Map attack aliases to `1`:
+Map to `1`:
 
 ```text
 attack
@@ -695,89 +655,11 @@ ANOMALY
 1
 ```
 
-If any unknown label values are found, stop and print all unique label values.
+If unknown label values appear, stop and print all unique values.
 
-Do not guess.
-
-## 5.4 Binary-label validation
-
-For every dataset, after mapping:
-
-- assert labels are only `{0, 1}`,
-- assert at least one normal sample exists,
-- assert at least one attack sample exists,
-- log class counts.
-
-Output:
-
-```text
-outputs/reports/label_summary_cluster1.json
-outputs/reports/label_summary_cluster2.json
-outputs/reports/label_summary_cluster3.json
-```
-
----
-
-# 6. Feature inclusion / exclusion rules
-
-## 6.1 Universal model-input exclusion
-
-Never include these as model input:
-
-```text
-label column
-attack type column
-timestamp columns
-date/time columns
-source/destination address columns
-unique identifiers
-client id
-subcluster id
-cluster id
-raw file path
-```
-
-## 6.2 Universal clustering descriptor exclusion
-
-The clustering descriptor must use the same cleaned feature space used for training.
-
-Do not use:
-
-```text
-label
-attack type
-timestamp
-client id
-subcluster id
-cluster id
-source/destination address fields
-leakage-prone fields
-```
-
-## 6.3 Feature consistency requirement
-
-Inside each main cluster:
-
-- all leaf clients must have the same feature dimension,
-- all sub-clusters must use the same model architecture,
-- all sub-cluster and main-cluster models must have compatible parameters.
-
-Across different main clusters:
-
-- feature spaces may differ,
-- model families may differ,
-- FL methods may differ,
-- no model parameters are averaged across clusters.
-
----
-
-# 7. Train / validation / test splitting rules
-
-## 7.1 Split ratios
+## 5.7 Train / validation / test split
 
 Recommended implementation choice:
-
-Use:
 
 ```text
 train = 70%
@@ -785,118 +667,78 @@ validation = 15%
 test = 15%
 ```
 
-## 7.2 Split seed
-
-Use fixed seed:
+Use seed:
 
 ```text
-seed = 42
+42
 ```
 
-For final experiments, run seeds:
+For final experiments, repeat with:
 
 ```text
-[42, 123, 2025]
+42, 123, 2025
 ```
 
-## 7.3 Dataset split procedure
+Partitioning rule:
 
-Recommended implementation choice:
+- Sort by timestamp if available.
+- If no timestamp exists, preserve file order.
+- Create contiguous candidate leaf-client partitions.
+- Split each candidate leaf client locally into train/validation/test.
 
-1. Load each dataset and validate schema.
-2. Map labels to binary.
-3. Identify timestamp or ordering columns if available; keep them temporarily only for ordering/partitioning.
-4. Sort samples using timestamp if a timestamp exists; otherwise preserve file order.
-5. Create candidate leaf-client partitions according to Section 8.
-6. Inside each candidate leaf client, split local samples into train/validation/test using the 70/15/15 ratio.
-7. Construct feature matrices for model input and clustering descriptors by removing labels, timestamps, identifiers, and leakage-prone fields while keeping timestamp/order metadata only outside the feature matrices if needed for auditing.
-8. Fit imputers, encoders, and scalers using the union of training feature matrices within the same main cluster only.
-9. Apply the fitted preprocessing objects to train/validation/test feature matrices.
-10. Compute Agglomerative Clustering descriptors from the transformed local training features only.
+Validation rule:
 
-Important:
-
-- Agglomerative Clustering descriptors must be computed using only each leaf client's **training** partition after training-only preprocessing has been fitted.
-- Validation and test data must never be used to compute clustering descriptors.
-- Validation and test data must never be used to fit scalers, imputers, or encoders.
-- Timestamp/order columns may be used only to order samples or create contiguous partitions; they must not be used as model features, scaler inputs, imputer inputs, encoder inputs, or descriptor features.
-- If a candidate leaf client has too few samples for 70/15/15 splitting, merge it with the nearest adjacent candidate partition before clustering or stop and ask the user.
-
-## 7.4 Class-presence validation
-
-After splitting, for each main cluster:
-
-- the union of all training partitions must contain both labels 0 and 1,
-- the union of all validation partitions must contain both labels 0 and 1,
-- the union of all test partitions must contain both labels 0 and 1.
-
-If any split is single-class at main-cluster level, stop and ask the user.
-
-At individual leaf-client level, single-class local partitions are allowed but must be logged.
+- Main-cluster-level train, validation, and test unions must contain both labels.
+- Leaf-client-level single-class partitions are allowed but must be logged.
 
 ---
 
-# 8. Candidate leaf-client formation rules
+# 6. Leaf-client creation
 
-## 8.1 Leaf-client counts
-
-Recommended implementation choice:
-
-| Cluster | Dataset | Candidate leaf clients | Fixed sub-clusters |
-|---|---:|---:|---:|
-| Cluster 1 | HAI 21.03 | 12 | \(K_1=2\) |
-| Cluster 2 | TON IoT combined telemetry | 15 | \(K_2=3\) |
-| Cluster 3 | WUSTL-IIOT-2021 | 15 | \(K_3=3\) |
-
-These values are implementation defaults. They provide enough candidate leaf clients for Agglomerative Clustering while keeping training manageable.
-
-## 8.2 Leaf-client partition method
+## 6.1 Candidate leaf-client counts
 
 Recommended implementation choice:
+
+| Cluster | Candidate leaf clients | Fixed sub-clusters |
+|---|---:|---:|
+| Cluster 1 | 12 | 2 |
+| Cluster 2 | 15 | 3 |
+| Cluster 3 | 15 | 3 |
+
+## 6.2 Candidate leaf-client creation method
 
 For each main cluster:
 
 1. Use the cleaned, label-mapped dataset.
-2. Sort by timestamp if available.
-3. If timestamp is unavailable, preserve file order.
-4. Split the ordered samples into `num_leaf_clients` contiguous shards.
+2. Sort by timestamp/order column if available.
+3. If no timestamp exists, preserve file order.
+4. Split the ordered samples into the configured number of contiguous shards.
 5. Each shard becomes one candidate leaf client.
-6. Each candidate leaf client is then split locally into train/validation/test.
+6. Each candidate leaf client is split into train/validation/test.
 
-## 8.3 Leaf-client IDs
-
-Use deterministic IDs:
+## 6.3 Leaf-client IDs
 
 Cluster 1:
 
 ```text
-C1_L001
-C1_L002
-...
-C1_L012
+C1_L001 ... C1_L012
 ```
 
 Cluster 2:
 
 ```text
-C2_L001
-C2_L002
-...
-C2_L015
+C2_L001 ... C2_L015
 ```
 
 Cluster 3:
 
 ```text
-C3_L001
-C3_L002
-...
-C3_L015
+C3_L001 ... C3_L015
 ```
 
-## 8.4 Leaf-client metadata file
+## 6.4 Leaf-client metadata output
 
-Save candidate client metadata to:
+Save:
 
 ```text
 outputs/clients/cluster1_leaf_clients.json
@@ -904,7 +746,7 @@ outputs/clients/cluster2_leaf_clients.json
 outputs/clients/cluster3_leaf_clients.json
 ```
 
-Each file must contain:
+Each file must include:
 
 ```json
 {
@@ -927,84 +769,56 @@ Each file must contain:
 
 ---
 
-# 9. Agglomerative Clustering specification
+# 7. Offline Agglomerative Clustering
 
-## 9.1 Purpose
+## 7.1 Purpose
 
-Agglomerative Clustering is used only to form fixed sub-cluster memberships before FCFL training begins.
+Agglomerative Clustering is used only for fixed sub-cluster initialization.
 
-It must not be used during training rounds.
+It is not part of the training loop.
 
-## 9.2 Clustering scope
+## 7.2 Descriptor definition
 
-Run Agglomerative Clustering separately for each main cluster:
+For each candidate leaf client \(i\), use only transformed local training features \(X_i\).
 
-```text
-Cluster 1 only uses Cluster 1 leaf-client descriptors.
-Cluster 2 only uses Cluster 2 leaf-client descriptors.
-Cluster 3 only uses Cluster 3 leaf-client descriptors.
-```
-
-No clustering across main clusters is allowed.
-
-## 9.3 Number of fixed sub-clusters
-
-Use:
-
-```text
-K1 = 2
-K2 = 3
-K3 = 3
-```
-
-## 9.4 Descriptor definition
-
-For each candidate leaf client \(i\), compute a descriptor using only its local training partition \(X_i\).
-
-Let each \(x \in X_i\) be a cleaned, transformed feature vector after training-only imputation/scaling/encoding in the input space of the corresponding main cluster. For Cluster 1, compute descriptors from row-level transformed telemetry features before TCN window generation.
+Each \(x \in X_i\) is a feature vector.
 
 Compute:
 
 \[
-z_i = [\mu_i ; \sigma_i]
+z_i=[\mu_i;\sigma_i]
 \]
 
 where:
 
 \[
-\mu_i = \frac{1}{n_i}\sum_{x\in X_i}x
+\mu_i=\frac{1}{n_i}\sum_{x\in X_i}x
 \]
 
 and:
 
 \[
-\sigma_i =
-\sqrt{
-\frac{1}{n_i}\sum_{x\in X_i}(x-\mu_i)^2
-}
+\sigma_i=\sqrt{\frac{1}{n_i}\sum_{x\in X_i}(x-\mu_i)^2}
 \]
 
-Here:
+Do not include:
 
-- \(\mu_i\) is the feature-wise mean vector.
-- \(\sigma_i\) is the feature-wise standard-deviation vector.
-- \(z_i\) is the concatenation of the two vectors.
+```text
+labels
+attack types
+timestamps
+identifiers
+source/destination addresses
+raw records
+```
 
-Do not include labels in \(z_i\).
-
-Do not include timestamps or leakage fields in \(z_i\).
-
-Do not include raw rows in the clustering input.
-
-## 9.5 Descriptor standardization
+## 7.3 Descriptor standardization
 
 Recommended implementation choice:
 
-Before clustering, standardize descriptors inside each main cluster using `StandardScaler`.
+Use `StandardScaler` on descriptor vectors within each main cluster.
 
-Fit the descriptor scaler only on the descriptors from that main cluster.
-
-Save descriptor scalers to:
+Save:
 
 ```text
 outputs/clustering/cluster1_descriptor_scaler.pkl
@@ -1012,29 +826,33 @@ outputs/clustering/cluster2_descriptor_scaler.pkl
 outputs/clustering/cluster3_descriptor_scaler.pkl
 ```
 
-## 9.6 Agglomerative Clustering parameters
+## 7.4 Clustering parameters
 
 Recommended implementation choice:
 
-Use scikit-learn Agglomerative Clustering with:
-
 ```text
-n_clusters = K_m
+method = AgglomerativeClustering
 linkage = ward
 metric = euclidean
 ```
 
-If using an older scikit-learn version where the parameter name is `affinity` instead of `metric`, use:
+If scikit-learn version uses `affinity` instead of `metric`, use:
 
 ```text
 affinity = euclidean
 ```
 
-Do not change linkage or metric without user confirmation.
+Fixed sub-cluster counts:
 
-## 9.7 Clustering outputs
+```text
+K1 = 2
+K2 = 3
+K3 = 3
+```
 
-Save membership files:
+## 7.5 Membership output files
+
+Save:
 
 ```text
 outputs/clustering/cluster1_memberships.json
@@ -1060,39 +878,7 @@ Required JSON structure:
 }
 ```
 
-## 9.8 Sub-cluster naming
-
-Cluster 1:
-
-```text
-H1
-H2
-```
-
-Cluster 2:
-
-```text
-T1
-T2
-T3
-```
-
-Cluster 3:
-
-```text
-W1
-W2
-W3
-```
-
-## 9.9 Frozen membership rule
-
-After membership files are created:
-
-- do not modify them during training,
-- do not regenerate them automatically,
-- all training runs must load the saved memberships,
-- if membership files already exist, reuse them unless user explicitly sets `--recluster`.
+## 7.6 Frozen membership rule
 
 Default:
 
@@ -1100,71 +886,40 @@ Default:
 recluster = false
 ```
 
-If `--recluster` is used, require explicit user confirmation.
+If membership files already exist:
 
----
+- reuse them,
+- do not regenerate automatically,
+- do not modify them during training.
 
-# 10. Fixed sub-cluster definitions and mapping rules
+If `--recluster` is passed:
 
-## 10.1 Cluster 1 fixed sub-clusters
+- require explicit user confirmation,
+- overwrite membership files only after confirmation,
+- log old and new membership hashes.
 
-| Sub-cluster | Formation |
-|---|---|
-| H1 | Agglomerative group inside Cluster 1 |
-| H2 | Agglomerative group inside Cluster 1 |
+## 7.7 Empty sub-cluster rule
 
-Do not interpret H1 or H2 as manually assigned process labels.
+After clustering:
 
-## 10.2 Cluster 2 fixed sub-clusters
-
-| Sub-cluster | Formation |
-|---|---|
-| T1 | Agglomerative group inside Cluster 2 |
-| T2 | Agglomerative group inside Cluster 2 |
-| T3 | Agglomerative group inside Cluster 2 |
-
-Do not interpret T1/T2/T3 as manually assigned device-origin labels.
-
-Device-origin information may be used only for interpretation if available.
-
-## 10.3 Cluster 3 fixed sub-clusters
-
-| Sub-cluster | Formation |
-|---|---|
-| W1 | Agglomerative group inside Cluster 3 |
-| W2 | Agglomerative group inside Cluster 3 |
-| W3 | Agglomerative group inside Cluster 3 |
-
-Do not form W1/W2/W3 using attack labels, attack families, source addresses, destination addresses, or leakage-prone identifiers.
-
-## 10.4 Sub-cluster assignment rule
-
-Each leaf client must belong to exactly one sub-cluster.
-
-Validation:
-
-```text
-number of unique assigned clients == number of leaf clients
-no missing client IDs
-no duplicate client IDs
-no empty sub-clusters
-```
+- every leaf client must be assigned exactly once,
+- every sub-cluster must contain at least one leaf client.
 
 If any sub-cluster is empty, stop and raise an error.
 
 ---
 
-# 11. Cluster-wise model definitions
+# 8. Model definitions
 
-All models output a single logit for binary classification.
+All models output one binary logit.
 
-Use:
+Loss:
 
 ```text
-loss = BCEWithLogitsLoss
+BCEWithLogitsLoss
 ```
 
-Prediction rule:
+Prediction:
 
 ```text
 probability = sigmoid(logit)
@@ -1173,15 +928,7 @@ predicted_label = 1 if probability >= 0.5 else 0
 
 Threshold tuning is not part of the first implementation.
 
-## 11.1 Cluster 1 model: TCN classifier
-
-Recommended implementation choice.
-
-Model name:
-
-```text
-TCNClassifier
-```
+## 8.1 Cluster 1: TCNClassifier
 
 Input shape:
 
@@ -1195,13 +942,13 @@ Default:
 window_length = 32
 ```
 
-Architecture:
+Recommended architecture:
 
 ```text
 Input: [B, F, 32]
 
 TCN Block 1:
-- Conv1d(in_channels=F, out_channels=32, kernel_size=3, dilation=1, padding=same)
+- Conv1d(F, 32, kernel_size=3, dilation=1, padding=same)
 - BatchNorm1d(32)
 - ReLU
 - Dropout(0.1)
@@ -1226,20 +973,12 @@ Linear(32, 1)
 Output: binary logit
 ```
 
-Important for FedBN:
+FedBN note:
 
-- BatchNorm statistics must remain local.
-- BatchNorm running statistics must not be averaged globally.
+- BatchNorm-related parameters/statistics are local.
+- They must not be averaged globally.
 
-## 11.2 Cluster 2 model: compact MLP classifier
-
-Recommended implementation choice.
-
-Model name:
-
-```text
-CompactMLPClassifier
-```
+## 8.2 Cluster 2: CompactMLPClassifier
 
 Input shape:
 
@@ -1247,34 +986,23 @@ Input shape:
 batch_size x num_features
 ```
 
-Architecture:
+Recommended architecture:
 
 ```text
 Input: [B, F]
-
 Linear(F, 64)
 ReLU
 Dropout(0.2)
-
 Linear(64, 32)
 ReLU
 Dropout(0.2)
-
 Linear(32, 1)
 Output: binary logit
 ```
 
-No BatchNorm in the default MLP.
+Do not add BatchNorm in the first implementation.
 
-## 11.3 Cluster 3 model: 1D-CNN classifier
-
-Recommended implementation choice.
-
-Model name:
-
-```text
-CNN1DClassifier
-```
+## 8.3 Cluster 3: CNN1DClassifier
 
 Input shape:
 
@@ -1282,19 +1010,16 @@ Input shape:
 batch_size x 1 x num_features
 ```
 
-Architecture:
+Recommended architecture:
 
 ```text
 Input: [B, 1, F]
-
 Conv1d(1, 32, kernel_size=3, padding=1)
 ReLU
 MaxPool1d(kernel_size=2)
-
 Conv1d(32, 64, kernel_size=3, padding=1)
 ReLU
 AdaptiveAvgPool1d(1)
-
 Flatten
 Linear(64, 32)
 ReLU
@@ -1308,16 +1033,16 @@ Do not add BatchNorm to Cluster 3 in the first implementation.
 Reason:
 
 ```text
-Cluster 3 uses SCAFFOLD, not FedBN. Avoiding BatchNorm reduces ambiguity about local normalization state.
+Cluster 3 uses SCAFFOLD, not FedBN. Avoiding BatchNorm reduces optimizer-state ambiguity.
 ```
 
 ---
 
-# 12. FL method and aggregation rules per cluster
+# 9. FL algorithms
 
-## 12.1 Common hierarchical FCFL structure
+## 9.1 Shared hierarchical FCFL round
 
-For every main cluster \(m\):
+For each main cluster \(m\):
 
 1. Main-cluster head holds \(w_m^t\).
 2. Main-cluster head sends \(w_m^t\) to all sub-cluster heads.
@@ -1328,66 +1053,42 @@ w_{m,s}^{t} \leftarrow w_m^t
 \]
 
 4. Leaf clients train locally from \(w_{m,s}^{t}\).
-5. Sub-cluster head aggregates leaf-client updates into \(w_{m,s}^{t+1}\).
+5. Sub-cluster head aggregates leaf-client models into \(w_{m,s}^{t+1}\).
 6. Main-cluster head aggregates sub-cluster models into \(w_m^{t+1}\).
 7. Main-cluster head logs metadata.
 
-## 12.2 Standard weighted aggregation
-
-For sub-cluster \(s\) in main cluster \(m\):
+## 9.2 Weighted sub-cluster aggregation
 
 \[
-w_{m,s}^{t+1}
-=
-\sum_{i\in C_{m,s}}
-\frac{n_i}{N_{m,s}} w_{m,s,i}^{t+1}
+w_{m,s}^{t+1}=\sum_{i\in C_{m,s}}\frac{n_i}{N_{m,s}}w_{m,s,i}^{t+1}
 \]
-
-where:
 
 \[
 N_{m,s}=\sum_{i\in C_{m,s}}n_i
 \]
 
-For main-cluster aggregation:
+## 9.3 Weighted main-cluster aggregation
 
 \[
-w_m^{t+1}
-=
-\sum_{s\in S_m}
-\frac{N_{m,s}}{N_m}w_{m,s}^{t+1}
+w_m^{t+1}=\sum_{s\in S_m}\frac{N_{m,s}}{N_m}w_{m,s}^{t+1}
 \]
-
-where:
 
 \[
 N_m=\sum_{s\in S_m}N_{m,s}
 \]
 
-## 12.3 Cluster 1: FedBN
+## 9.4 Cluster 1: FedBN
 
 Cluster 1 uses:
 
 ```text
-FL method: FedBN
-Aggregation: weighted non-BN mean
+FL method = FedBN
+Aggregation = weighted non-BN mean
 ```
 
-Implementation rule:
+Exclude BatchNorm-related entries from aggregation.
 
-- Aggregate only non-BatchNorm parameters.
-- Keep BatchNorm running statistics local.
-- Do not average:
-  - `running_mean`
-  - `running_var`
-  - `num_batches_tracked`
-  - BatchNorm affine parameters if configured as local.
-
-Recommended implementation choice:
-
-Treat all BatchNorm-related keys as local.
-
-Exclude keys containing:
+Case-insensitive key exclusion patterns:
 
 ```text
 bn
@@ -1397,192 +1098,190 @@ running_var
 num_batches_tracked
 ```
 
-Case-insensitive matching.
+Recommended implementation choice:
 
-## 12.4 Cluster 2: FedProx
+Treat all BatchNorm-related parameters and statistics as local.
+
+## 9.5 Cluster 2: FedProx
 
 Cluster 2 uses:
 
 ```text
-FL method: FedProx
-Aggregation: weighted arithmetic mean
+FL method = FedProx
+Aggregation = weighted arithmetic mean
 ```
 
-Local objective for client \(i\) in sub-cluster \(s\):
+Local objective:
 
 \[
-F_{m,s,i}(w) + \frac{\mu}{2}\|w-w_{m,s}^t\|_2^2
+F_{m,s,i}(w)+\frac{\mu}{2}\|w-w_{m,s}^t\|_2^2
 \]
 
 Recommended implementation choice:
 
 ```text
 mu = 0.01
-```
-
-FedProx local optimizer:
-
-```text
-Adam
+optimizer = Adam
 learning_rate = 1e-3
 local_epochs = 1
 batch_size = 128
 ```
 
-If training is unstable, tune only after the first complete implementation works.
-
-## 12.5 Cluster 3: SCAFFOLD
+## 9.6 Cluster 3: SCAFFOLD
 
 Cluster 3 uses:
 
 ```text
-FL method: SCAFFOLD
-Aggregation: weighted arithmetic mean
+FL method = SCAFFOLD
+Aggregation = weighted arithmetic mean
 ```
 
 Control variates:
 
-- main-cluster server control variate: \(c_m^t\)
-- local client control variate: \(c_{m,s,i}^t\)
+```text
+main-cluster server control variate: c_m^t
+local client control variate: c_{m,s,i}^t
+```
 
 Recommended implementation choice:
-
-Use full participation in the first implementation.
 
 ```text
 client_fraction = 1.0
-```
-
-Local update:
-
-\[
-y_{m,s,i}^{t,k+1}
-=
-y_{m,s,i}^{t,k}
--
-\eta_\ell
-\left(
-g_{m,s,i}(y_{m,s,i}^{t,k})
--
-c_{m,s,i}^t
-+
-c_m^t
-\right)
-\]
-
-Use \(E\) for number of local SCAFFOLD steps.
-
-Recommended implementation choice:
-
-```text
-optimizer style = SGD-style corrected update
+optimizer_style = corrected SGD update
 learning_rate = 0.01
 local_epochs = 1
 batch_size = 128
 ```
 
+Use \(E\) for local SCAFFOLD steps.
+
+Local update:
+
+\[
+y_{m,s,i}^{t,k+1}=y_{m,s,i}^{t,k}-\eta_\ell\left(g_{m,s,i}(y_{m,s,i}^{t,k})-c_{m,s,i}^{t}+c_m^t\right)
+\]
+
+After \(E\) local steps:
+
+\[
+w_{m,s,i}^{t+1}=y_{m,s,i}^{t,E}
+\]
+
 Client control-variate update:
 
 \[
-c_{m,s,i}^{t+1}
-=
-c_{m,s,i}^{t}
--
-c_m^t
-+
-\frac{1}{E\eta_\ell}
-\left(
-w_{m,s}^{t}-w_{m,s,i}^{t+1}
-\right)
+c_{m,s,i}^{t+1}=c_{m,s,i}^{t}-c_m^t+\frac{1}{E\eta_\ell}(w_{m,s}^{t}-w_{m,s,i}^{t+1})
 \]
 
 Control-variate increment:
 
 \[
-\Delta c_{m,s,i}^{t}
-=
-c_{m,s,i}^{t+1}-c_{m,s,i}^{t}
+\Delta c_{m,s,i}^{t}=c_{m,s,i}^{t+1}-c_{m,s,i}^{t}
 \]
 
 Server control-variate update:
 
 \[
-c_m^{t+1}
-=
-c_m^t
-+
-\frac{1}{Q_m}
-\sum_{(s,i)\in P_m^t}
-\Delta c_{m,s,i}^{t}
+c_m^{t+1}=c_m^t+\frac{1}{Q_m}\sum_{(s,i)\in P_m^t}\Delta c_{m,s,i}^{t}
 \]
 
 where:
 
 ```text
-P_m^t = participating leaf clients in Cluster 3
+P_m^t = participating leaf clients in Cluster 3 at round t
 Q_m = total number of leaf clients in Cluster 3
 ```
 
 Sub-cluster heads forward both:
 
-- model updates,
-- SCAFFOLD control-variate increments.
+```text
+model updates
+SCAFFOLD control-variate increments
+```
 
 Sub-cluster heads do not maintain independent SCAFFOLD server control variates in the first implementation.
 
 ---
 
-# 13. FCFL round procedure
+# 10. Ledger / blockchain simulation
 
-## 13.1 Before round 1
+## 10.1 Implementation choice
 
-Before training starts:
+Recommended implementation choice:
 
-1. Load datasets.
-2. Preprocess datasets.
-3. Create candidate leaf clients.
-4. Compute descriptors using training partitions only.
-5. Run Agglomerative Clustering inside each main cluster.
-6. Save fixed membership files.
-7. Initialize main-cluster global models.
-8. Initialize sub-cluster heads.
-9. Initialize ledger.
+Use a JSONL mock ledger first.
 
-## 13.2 One FCFL round
-
-For each main cluster \(m\), independently:
-
-1. Main-cluster head holds current parent model \(w_m^t\).
-2. Main-cluster head sends \(w_m^t\) to each sub-cluster head.
-3. Each sub-cluster head initializes \(w_{m,s}^t \leftarrow w_m^t\).
-4. Each sub-cluster head sends \(w_{m,s}^t\) to its leaf clients.
-5. Each leaf client trains locally.
-6. Each leaf client sends model update to its sub-cluster head.
-7. For Cluster 3, each leaf client also updates its SCAFFOLD local control variate and sends the control-variate increment.
-8. Each sub-cluster head aggregates leaf-client models.
-9. Each sub-cluster head sends sub-cluster model to main-cluster head.
-10. For Cluster 3, sub-cluster heads also forward control-variate increments.
-11. Main-cluster head aggregates sub-cluster models into \(w_m^{t+1}\).
-12. Main-cluster head updates method-specific state if needed.
-13. Main-cluster head computes model hash.
-14. Main-cluster head writes metadata to ledger.
-15. Updated \(w_m^{t+1}\) becomes parent initialization for next round.
-
-## 13.3 Cross-cluster rule
-
-Clusters may run sequentially or in parallel.
-
-But:
+Reason:
 
 ```text
-No model parameters from different main clusters may ever be averaged.
+The research report uses Hyperledger Fabric as metadata-level governance. A mock ledger validates metadata schema, hashing, and audit behavior before real Fabric deployment.
+```
+
+Output:
+
+```text
+outputs/ledgers/{experiment_id}_ledger.jsonl
+```
+
+## 10.2 Metadata record schema
+
+Each ledger record must contain:
+
+```json
+{
+  "round_id": 0,
+  "cluster_id": 1,
+  "cluster_head_id": "MC1_HEAD",
+  "model_version": "C1_R000",
+  "previous_main_model_hash": null,
+  "new_main_model_hash": "sha256:...",
+  "clustering_method": "AgglomerativeClustering",
+  "clustering_configuration_hash": "sha256:...",
+  "subcluster_count": 2,
+  "subcluster_membership_hash": "sha256:...",
+  "subcluster_digest": "sha256:...",
+  "fl_method": "FedBN",
+  "aggregation_rule": "weighted_non_bn_mean",
+  "effective_sample_count": 0,
+  "participant_count": 0,
+  "timestamp_start": "ISO-8601",
+  "timestamp_end": "ISO-8601",
+  "submitter_identity": "MC1_HEAD"
+}
+```
+
+## 10.3 Ledger restrictions
+
+Ledger records must not contain:
+
+```text
+raw samples
+full local datasets
+full model weights
+full gradients
+full model tensors
+client raw records
+```
+
+## 10.4 Fabric integration phase
+
+TODO / USER MUST CONFIRM:
+
+```text
+Should real Hyperledger Fabric be implemented in phase 1?
+```
+
+Default:
+
+```text
+Use mock JSONL ledger in phase 1.
 ```
 
 ---
 
-# 14. Baselines to implement
+# 11. Experiment definitions
 
-## 14.1 Baseline A: flat per-cluster FL
+## 11.1 Baseline A: flat per-cluster FL
 
 Purpose:
 
@@ -1590,13 +1289,11 @@ Purpose:
 Measure performance without sub-cluster hierarchy.
 ```
 
-Configuration:
-
-| Cluster | Dataset | Model | FL method | Hierarchy |
-|---|---|---|---|---|
-| C1 | HAI 21.03 | 1D-CNN | FedAvg | flat |
-| C2 | TON IoT combined telemetry | 1D-CNN | FedAvg | flat |
-| C3 | WUSTL-IIOT-2021 | 1D-CNN | FedAvg | flat |
+| Cluster | Dataset | Model | FL method | Hierarchy | Clustering |
+|---|---|---|---|---|---|
+| C1 | HAI 21.03 | 1D-CNN | FedAvg | flat | none |
+| C2 | TON IoT combined telemetry | 1D-CNN | FedAvg | flat | none |
+| C3 | WUSTL-IIOT-2021 | 1D-CNN | FedAvg | flat | none |
 
 Rules:
 
@@ -1605,85 +1302,58 @@ Rules:
 - No Agglomerative Clustering.
 - No cross-cluster averaging.
 
-## 14.2 Baseline B: uniform hierarchical FCFL
+## 11.2 Baseline B: uniform hierarchical FCFL
 
 Purpose:
 
 ```text
-Measure effect of hierarchy while removing model/FL specialization.
+Measure the effect of hierarchy while removing model/FL specialization.
 ```
 
-Configuration:
-
-| Cluster | Dataset | Model | FL method | Hierarchy |
-|---|---|---|---|---|
-| C1 | HAI 21.03 | 1D-CNN | FedAvg | agglomerative hierarchical |
-| C2 | TON IoT combined telemetry | 1D-CNN | FedAvg | agglomerative hierarchical |
-| C3 | WUSTL-IIOT-2021 | 1D-CNN | FedAvg | agglomerative hierarchical |
+| Cluster | Dataset | Model | FL method | Hierarchy | Clustering |
+|---|---|---|---|---|---|
+| C1 | HAI 21.03 | 1D-CNN | FedAvg | hierarchical | agglomerative |
+| C2 | TON IoT combined telemetry | 1D-CNN | FedAvg | hierarchical | agglomerative |
+| C3 | WUSTL-IIOT-2021 | 1D-CNN | FedAvg | hierarchical | agglomerative |
 
 Rules:
 
-- Use same Agglomerative Clustering membership files as proposed method.
-- Use same leaf-client partitions as proposed method.
+- Use same leaf-client partitions as the proposed method.
+- Use same agglomerative membership files as the proposed method.
 - Use weighted arithmetic mean everywhere.
 - Cluster 1 baseline does not use FedBN.
 
-## 14.3 Proposed specialized hierarchical FCFL
+## 11.3 Proposed specialized hierarchical FCFL
 
 Purpose:
 
 ```text
-Evaluate final proposed method.
+Evaluate the final proposed FCFL mechanism.
 ```
 
-Configuration:
+| Cluster | Dataset | Model | FL method | Hierarchy | Clustering | Aggregation |
+|---|---|---|---|---|---|---|
+| C1 | HAI 21.03 | TCN | FedBN | hierarchical | agglomerative | weighted non-BN mean |
+| C2 | TON IoT combined telemetry | compact MLP | FedProx | hierarchical | agglomerative | weighted mean |
+| C3 | WUSTL-IIOT-2021 | 1D-CNN | SCAFFOLD | hierarchical | agglomerative | weighted mean |
 
-| Cluster | Dataset | Model | FL method | Aggregation |
-|---|---|---|---|---|
-| C1 | HAI 21.03 | TCN | FedBN | weighted non-BN mean |
-| C2 | TON IoT combined telemetry | compact MLP | FedProx | weighted arithmetic mean |
-| C3 | WUSTL-IIOT-2021 | 1D-CNN | SCAFFOLD | weighted arithmetic mean |
+## 11.4 Ablations
 
-Rules:
+Required ablations:
 
-- Use same Agglomerative Clustering membership files as Baseline B.
-- Use same leaf-client partitions as Baseline B.
-- No cross-cluster averaging.
-
----
-
-# 15. Experiment matrix
-
-## 15.1 Main experiments
-
-| Experiment ID | Cluster | Dataset | Model | FL method | Hierarchy | Clustering | Aggregation |
-|---|---:|---|---|---|---|---|---|
-| A_C1 | 1 | HAI 21.03 | 1D-CNN | FedAvg | flat | none | weighted mean |
-| A_C2 | 2 | TON IoT combined telemetry | 1D-CNN | FedAvg | flat | none | weighted mean |
-| A_C3 | 3 | WUSTL-IIOT-2021 | 1D-CNN | FedAvg | flat | none | weighted mean |
-| B_C1 | 1 | HAI 21.03 | 1D-CNN | FedAvg | hierarchical | agglomerative | weighted mean |
-| B_C2 | 2 | TON IoT combined telemetry | 1D-CNN | FedAvg | hierarchical | agglomerative | weighted mean |
-| B_C3 | 3 | WUSTL-IIOT-2021 | 1D-CNN | FedAvg | hierarchical | agglomerative | weighted mean |
-| P_C1 | 1 | HAI 21.03 | TCN | FedBN | hierarchical | agglomerative | weighted non-BN mean |
-| P_C2 | 2 | TON IoT combined telemetry | compact MLP | FedProx | hierarchical | agglomerative | weighted mean |
-| P_C3 | 3 | WUSTL-IIOT-2021 | 1D-CNN | SCAFFOLD | hierarchical | agglomerative | weighted mean |
-| AB_C3_FEDAVG_CNN1D | 3 | WUSTL-IIOT-2021 | 1D-CNN | FedAvg | hierarchical | agglomerative | weighted mean |
-
-## 15.2 Required ablations
-
-| Ablation ID | Purpose |
-|---|---|
-| HIERARCHY_EFFECT | Compare Baseline A vs Baseline B |
-| SPECIALIZATION_EFFECT | Compare Baseline B vs Proposed |
-| C1_FEDAVG_VS_FEDBN | Compare Cluster 1 FedAvg vs FedBN |
-| C2_FEDAVG_VS_FEDPROX | Compare Cluster 2 FedAvg vs FedProx |
-| C3_FEDAVG_VS_SCAFFOLD | Compare Cluster 3 FedAvg vs SCAFFOLD using `AB_C3_FEDAVG_CNN1D` or an equivalent reuse of `B_C3` against `P_C3` |
+```text
+Baseline A vs Baseline B
+Baseline B vs Proposed
+Cluster 1 FedAvg vs FedBN
+Cluster 2 FedAvg vs FedProx
+Cluster 3 FedAvg vs SCAFFOLD
+```
 
 ---
 
-# 16. Metrics and reporting outputs
+# 12. Metrics and outputs
 
-## 16.1 Classification metrics
+## 12.1 Classification metrics
 
 Report per cluster:
 
@@ -1698,21 +1368,21 @@ False Positive Rate
 Confusion matrix
 ```
 
-Definitions:
+False Positive Rate:
 
 ```text
-False Positive Rate = FP / (FP + TN)
+FPR = FP / (FP + TN)
 ```
 
-If AUROC or PR-AUC cannot be computed because only one class appears in a test split, write:
+If AUROC or PR-AUC cannot be computed because only one class appears:
 
 ```text
 metric_unavailable_single_class
 ```
 
-and log a warning.
+Log a warning.
 
-## 16.2 FL behavior metrics
+## 12.2 FL behavior metrics
 
 Report:
 
@@ -1726,25 +1396,15 @@ wall-clock training time
 convergence curve
 ```
 
-Communication cost approximation:
-
-```text
-model_parameter_bytes_transmitted_downward
-+
-model_parameter_bytes_transmitted_upward
-+
-optimizer_state_bytes_if_applicable
-```
-
 For Cluster 3 SCAFFOLD, separately report:
 
 ```text
 control_variate_bytes
 ```
 
-## 16.3 Ledger metrics
+## 12.3 Ledger metrics
 
-If ledger logging is implemented:
+If ledger logging is enabled, report:
 
 ```text
 number of metadata records
@@ -1754,9 +1414,9 @@ maximum logging latency
 percentage overhead relative to training time
 ```
 
-## 16.4 Output metrics files
+## 12.4 Output files
 
-Save:
+Metrics:
 
 ```text
 outputs/metrics/A_C1_metrics.csv
@@ -1768,17 +1428,10 @@ outputs/metrics/B_C3_metrics.csv
 outputs/metrics/P_C1_metrics.csv
 outputs/metrics/P_C2_metrics.csv
 outputs/metrics/P_C3_metrics.csv
-```
-
-Also save summary:
-
-```text
 outputs/metrics/summary_all_experiments.csv
 ```
 
-## 16.5 Plots
-
-Generate:
+Plots:
 
 ```text
 outputs/plots/convergence_A_C1.png
@@ -1793,107 +1446,6 @@ outputs/plots/convergence_P_C3.png
 outputs/plots/f1_comparison.png
 outputs/plots/pr_auc_comparison.png
 outputs/plots/communication_cost_comparison.png
-```
-
----
-
-# 17. Output directory structure and filenames
-
-Codex must create or use this structure:
-
-```text
-desktop/thesis/
-  data/
-    raw/
-      hai_2103/
-      ton_iot/
-        original_archive/
-        combined_telemetry/
-      wustl_iiot_2021/
-  fcfl-cps-ids/
-    configs/
-    docs/
-    outputs/
-      clients/
-      clustering/
-      preprocessing/
-      ledgers/
-      metrics/
-      models/
-      plots/
-      reports/
-      runs/
-    src/
-    tests/
-```
-
-## 17.1 Required config files
-
-Create:
-
-```text
-configs/cluster1_hai.yaml
-configs/cluster2_ton_iot.yaml
-configs/cluster3_wustl.yaml
-configs/baseline_flat.yaml
-configs/baseline_hierarchical.yaml
-configs/proposed.yaml
-```
-
-Each config must include:
-
-```yaml
-cluster_id:
-dataset_name:
-raw_data_path:
-label_column:
-excluded_columns:
-model:
-fl_method:
-aggregation:
-num_leaf_clients:
-num_subclusters:
-clustering:
-  method:
-  linkage:
-  metric:
-  descriptor:
-  run_once:
-training:
-  rounds:
-  local_epochs:
-  batch_size:
-  learning_rate:
-  seed:
-ledger:
-  enabled:
-  metadata_only:
-```
-
-## 17.2 Required saved artifacts
-
-Preprocessing:
-
-```text
-outputs/preprocessing/cluster1_hai_scaler.pkl
-outputs/preprocessing/cluster2_ton_iot_scaler.pkl
-outputs/preprocessing/cluster3_wustl_scaler.pkl
-```
-
-Client partitions:
-
-```text
-outputs/clients/cluster1_leaf_clients.json
-outputs/clients/cluster2_leaf_clients.json
-outputs/clients/cluster3_leaf_clients.json
-```
-
-Clustering:
-
-```text
-outputs/clustering/cluster1_memberships.json
-outputs/clustering/cluster2_memberships.json
-outputs/clustering/cluster3_memberships.json
 ```
 
 Models:
@@ -1922,11 +1474,9 @@ outputs/reports/label_summary_cluster3.json
 
 ---
 
-# 18. Validation and acceptance tests
+# 13. Tests and acceptance criteria
 
-Codex must implement tests before full experiments.
-
-## 18.1 Required tests
+## 13.1 Required test files
 
 Create:
 
@@ -1946,298 +1496,159 @@ tests/test_ledger_metadata_only.py
 tests/test_experiment_matrix.py
 ```
 
-## 18.2 Acceptance criteria
+## 13.2 Data acceptance criteria
 
-The implementation is acceptable only if all criteria below pass.
+The implementation passes data validation only if:
 
-### Data tests
-
-- Each dataset loads successfully.
-- Label column is explicitly configured.
-- Labels map to only `{0, 1}`.
-- Each main cluster has at least one normal and one attack sample.
-- Excluded columns are not present in model features.
+- each dataset loads successfully,
+- label column is explicitly configured,
+- labels map to only `{0, 1}`,
+- each main cluster contains at least one normal and one attack sample,
+- excluded columns are absent from model features,
+- excluded columns are absent from descriptor features,
 - WUSTL leakage columns are removed.
 
-### Client tests
+## 13.3 Clustering acceptance criteria
 
-- Cluster 1 has exactly 12 candidate leaf clients.
-- Cluster 2 has exactly 15 candidate leaf clients.
-- Cluster 3 has exactly 15 candidate leaf clients.
-- Every leaf client has a train split.
-- Every leaf client belongs to exactly one sub-cluster after clustering.
+The implementation passes clustering validation only if:
 
-### Clustering tests
-
-- Cluster 1 has exactly 2 sub-clusters.
-- Cluster 2 has exactly 3 sub-clusters.
-- Cluster 3 has exactly 3 sub-clusters.
-- No sub-cluster is empty.
-- Membership files are created before training.
-- Membership files do not change during training.
+- Cluster 1 has exactly 12 candidate leaf clients,
+- Cluster 2 has exactly 15 candidate leaf clients,
+- Cluster 3 has exactly 15 candidate leaf clients,
+- Cluster 1 has exactly 2 sub-clusters,
+- Cluster 2 has exactly 3 sub-clusters,
+- Cluster 3 has exactly 3 sub-clusters,
+- no sub-cluster is empty,
+- every leaf client belongs to exactly one sub-cluster,
+- membership files are created before training,
+- membership files do not change during training,
 - Agglomerative Clustering is not called inside any FL training round.
 
-### Architecture tests
+## 13.4 Architecture acceptance criteria
 
-- No cross-cluster model aggregation occurs.
-- No model from Cluster 1 is averaged with Cluster 2 or Cluster 3.
-- No model from Cluster 2 is averaged with Cluster 1 or Cluster 3.
-- No model from Cluster 3 is averaged with Cluster 1 or Cluster 2.
+The implementation passes architecture validation only if:
 
-### Aggregation tests
+- no cross-cluster aggregation occurs,
+- no global central server is created,
+- all leaf clients are under sub-clusters in hierarchical experiments,
+- only main-cluster heads write ledger metadata,
+- raw records are not logged,
+- full model weights are not logged.
 
-- Weighted aggregation equals manually computed weighted average.
-- Cluster 1 FedBN aggregation excludes BatchNorm statistics.
-- Cluster 2 FedProx includes proximal penalty.
-- Cluster 3 SCAFFOLD maintains and updates control variates.
+## 13.5 FL-method acceptance criteria
 
-### Ledger tests
+Cluster 1:
 
-- Only main-cluster heads create ledger records.
-- Ledger records contain metadata only.
-- Ledger records do not contain raw samples.
-- Ledger records do not contain full model weights.
-- Ledger records include:
-  - round id
-  - cluster id
-  - cluster head id
-  - model version
-  - previous main model hash
-  - new main model hash
-  - clustering method
-  - clustering configuration hash
-  - subcluster count
-  - subcluster membership hash
-  - fl method
-  - aggregation rule
-  - participant count
-  - effective sample count
-  - timestamp start
-  - timestamp end
-  - submitter identity
+- FedBN aggregation excludes BatchNorm-related state.
 
-### Experiment tests
+Cluster 2:
 
-- Baseline A runs for all three clusters.
-- Baseline B runs for all three clusters.
-- Proposed method runs for all three clusters.
-- Metrics CSV files are produced.
-- No experiment silently skips a cluster.
+- FedProx local loss includes the proximal term.
+
+Cluster 3:
+
+- SCAFFOLD local control variates exist,
+- main-cluster server control variate exists,
+- control-variate increments are updated and forwarded,
+- SCAFFOLD state is not used in Cluster 1 or Cluster 2.
+
+## 13.6 Experiment acceptance criteria
+
+The implementation passes experiment validation only if:
+
+- Baseline A runs for all three clusters,
+- Baseline B runs for all three clusters,
+- Proposed method runs for all three clusters,
+- required metrics files are generated,
+- no cluster is silently skipped,
+- all tests pass before full experiments.
 
 ---
 
-# 19. Known ambiguities / TODO items requiring user confirmation
+# 14. Known out-of-scope items
 
-The following items must be confirmed before final training.
-
-## 19.1 Dataset path confirmation
-
-TODO / USER MUST CONFIRM:
+The following are out of scope for the first implementation:
 
 ```text
-Is the real path exactly desktop/thesis/data/
-or is it ~/Desktop/thesis/data/?
-```
-
-## 19.2 HAI label column
-
-TODO / USER MUST CONFIRM:
-
-Expected:
-
-```text
-attack
-```
-
-Confirm actual HAI label column name.
-
-## 19.3 TON IoT label column
-
-TODO / USER MUST CONFIRM:
-
-The exact label column for TON IoT combined telemetry is not safely inferable from the report alone.
-
-User must confirm the exact column name.
-
-Possible candidates for profiling only:
-
-```text
-label
-Label
-attack
-Attack
-target
-Target
-type
-Type
-```
-
-## 19.4 WUSTL-IIOT-2021 label column
-
-TODO / USER MUST CONFIRM:
-
-The exact binary label column for WUSTL-IIOT-2021 is not safely inferable from the report alone.
-
-User must confirm the exact column name.
-
-Possible candidates for profiling only:
-
-```text
-label
-Label
-class
-Class
-target
-Target
-traffic
-Traffic
-attack
-Attack
-```
-
-## 19.5 Dataset file names
-
-TODO / USER MUST CONFIRM:
-
-List actual CSV filenames inside:
-
-```text
-desktop/thesis/data/raw/hai_2103/
-desktop/thesis/data/raw/ton_iot/combined_telemetry/
-desktop/thesis/data/raw/wustl_iiot_2021/
-```
-
-Codex may implement a profiling script to print filenames and columns, but it must not begin model training until the label columns are confirmed.
-
-## 19.6 Categorical columns
-
-TODO / USER MUST CONFIRM:
-
-If any dataset contains categorical columns that are not labels or excluded identifiers, confirm whether to:
-
-```text
-one-hot encode
-drop
-or manually map
-```
-
-Default rule is in Section 4.5.
-
-## 19.7 Training budget
-
-Recommended implementation choice:
-
-```text
-rounds = 50
-local_epochs = 1
-batch_size = 128
-```
-
-TODO / USER MUST CONFIRM if hardware is limited.
-
-## 19.8 Full Fabric vs mock ledger
-
-Recommended implementation choice:
-
-Use a JSONL mock ledger first:
-
-```text
-outputs/ledgers/{experiment_id}_ledger.jsonl
-```
-
-This validates metadata-only governance without requiring full Hyperledger Fabric deployment.
-
-TODO / USER MUST CONFIRM:
-
-Whether actual Hyperledger Fabric integration is required in the first implementation phase.
-
-## 19.9 Leaf-client counts
-
-Recommended implementation choice:
-
-```text
-Cluster 1: 12 leaf clients
-Cluster 2: 15 leaf clients
-Cluster 3: 15 leaf clients
-```
-
-TODO / USER MUST CONFIRM if different client counts are required.
-
----
-
-# 20. Implementation guardrails for Codex
-
-Codex must obey these rules.
-
-## 20.1 Do not change architecture
-
-Do not change:
-
-```text
-N = 3
-K1 = 2
-K2 = 3
-K3 = 3
-HAI + TCN + FedBN
-TON IoT + compact MLP + FedProx
-WUSTL + 1D-CNN + SCAFFOLD
-metadata-only ledger
-one-time offline Agglomerative Clustering
-```
-
-## 20.2 Do not hallucinate dataset columns
-
-If label columns or required feature columns are unclear:
-
-```text
-STOP and ask the user.
-```
-
-Do not guess.
-
-## 20.3 Do not introduce new methods
-
-Do not add:
-
-```text
-new datasets
-new FL methods
-new aggregation methods
+real-world deployment
 dynamic clustering
-reclustering
+reclustering during training
+cross-cluster model averaging
 secure aggregation
 differential privacy
 Byzantine robustness
-central global averaging
+poisoning defense
+full Hyperledger Fabric deployment in phase 1
+multiclass IDS
+new datasets beyond HAI 21.03, TON IoT combined telemetry, WUSTL-IIOT-2021
+new FL methods beyond FedAvg, FedBN, FedProx, SCAFFOLD
 ```
 
-unless explicitly requested by the user.
-
-## 20.4 Do not write raw data to outputs except processed dataset cache
-
-Raw or processed data caches may be saved only under:
-
-```text
-outputs/preprocessing/
-```
-
-Ledger files must never contain raw records.
-
-## 20.5 Every implementation step must be testable
-
-Every major module must have at least one test.
-
-No full experiment should be run until:
-
-```text
-pytest tests/
-```
-
-passes.
+The default phase-1 ledger is a JSONL mock ledger. Real Fabric integration can be added later only if explicitly requested.
 
 ---
 
-# 21. Recommended implementation order
+# Appendix A. Recommended repository structure
+
+Recommended structure:
+
+```text
+fcfl-cps-ids/
+├── AGENTS.md
+├── README.md
+├── requirements.txt
+├── configs/
+│   ├── cluster1_hai.yaml
+│   ├── cluster2_ton_iot.yaml
+│   ├── cluster3_wustl.yaml
+│   ├── baseline_flat.yaml
+│   ├── baseline_hierarchical.yaml
+│   └── proposed.yaml
+├── docs/
+│   ├── FCFL_IMPLEMENTATION_SPEC.md
+│   ├── DATA_CONTRACT.md
+│   ├── ARCHITECTURE_CONTRACT.md
+│   ├── ALGORITHMS.md
+│   ├── EXPERIMENT_MATRIX.csv
+│   └── VALIDATION_CHECKS.md
+├── src/
+│   ├── data/
+│   │   ├── loaders.py
+│   │   ├── preprocess.py
+│   │   ├── partitions.py
+│   │   └── descriptors.py
+│   ├── clustering/
+│   │   └── agglomerative.py
+│   ├── models/
+│   │   ├── cnn1d.py
+│   │   ├── tcn.py
+│   │   └── mlp.py
+│   ├── fl/
+│   │   ├── client.py
+│   │   ├── subcluster.py
+│   │   ├── maincluster.py
+│   │   ├── aggregators.py
+│   │   ├── fedbn.py
+│   │   ├── fedprox.py
+│   │   └── scaffold.py
+│   ├── ledger/
+│   │   ├── metadata_schema.py
+│   │   └── mock_ledger.py
+│   ├── metrics/
+│   │   └── classification.py
+│   └── train.py
+├── scripts/
+│   ├── prepare_data.py
+│   ├── run_clustering.py
+│   ├── run_experiment.py
+│   └── run_all.sh
+├── tests/
+└── outputs/
+```
+
+---
+
+# Appendix B. Recommended implementation order
 
 Codex should implement in this order:
 
