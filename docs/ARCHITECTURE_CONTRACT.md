@@ -6,7 +6,7 @@ This document defines the non-negotiable architectural rules for the FCFL CPS/II
 
 Any code generation, refactoring, or experiment orchestration must obey these rules. If a requested change conflicts with this contract, implementation must stop and ask the user.
 
-This contract is aligned with the current report architecture: three independent main clusters, one fixed sub-cluster layer per main cluster, one-time offline Agglomerative Clustering, no cross-cluster averaging, raw-data locality, and metadata-only governance. fileciteturn3file0
+This contract is aligned with the current report architecture: three independent main clusters, one fixed sub-cluster layer per main cluster, one-time offline Agglomerative Clustering, no cross-cluster averaging, raw-data locality, and metadata-only governance.
 
 ---
 
@@ -22,6 +22,7 @@ This contract is aligned with the current report architecture: three independent
 8. Only main-cluster heads may interact with the ledger / Hyperledger-Fabric-compatible governance layer.
 9. The ledger stores metadata only.
 10. The ledger must never store raw data or full model weights.
+11. The implementation is data-locality-preserving only; it must not claim formal privacy mechanisms such as differential privacy or secure aggregation.
 
 ---
 

@@ -12,7 +12,7 @@ It contains:
 - method-specific rules for FedBN, FedProx, and SCAFFOLD,
 - metadata logging logic.
 
-This document is aligned with the current report architecture and does not introduce dynamic clustering or cross-cluster averaging. fileciteturn3file0
+This document is aligned with the current report architecture and does not introduce dynamic clustering or cross-cluster averaging.
 
 ---
 
@@ -56,18 +56,24 @@ Create candidate leaf clients from each main-cluster dataset before offline sub-
 
 ### Procedure
 
-1. Load the cleaned dataset for main cluster `m`.
-2. Sort samples by timestamp if a valid timestamp column exists.
-3. If no timestamp exists, preserve file order.
-4. Split the ordered samples into `L_m` contiguous shards.
-5. Create one candidate leaf client per shard.
-6. For each candidate leaf client, split local samples into train / validation / test.
-7. Save client metadata and split sizes.
+1. Load the schema-validated dataset for main cluster `m`.
+2. Map labels to binary.
+3. Identify timestamp/order columns if available and keep them temporarily for ordering only.
+4. Sort samples by timestamp if a valid timestamp column exists.
+5. If no timestamp exists, preserve file order.
+6. Split the ordered samples into `L_m` contiguous shards.
+7. Create one candidate leaf client per shard.
+8. For each candidate leaf client, split local samples into train / validation / test.
+9. Construct model/descriptor feature matrices by removing labels, timestamps, identifiers, and leakage-prone fields.
+10. Fit preprocessing objects using the union of training feature matrices inside the same main cluster only.
+11. Transform train / validation / test feature matrices.
+12. Save client metadata and split sizes.
 
 ### Constraints
 
 - Candidate leaf-client creation must occur before Agglomerative Clustering.
 - Validation and test samples must not be used for descriptor computation.
+- Timestamp/order columns must not be included in model features, preprocessing-fit inputs, or descriptor features.
 - Client IDs must be deterministic.
 
 ---
@@ -462,4 +468,6 @@ Run experiments in a consistent order that matches the report.
 ### Constraints
 
 - The same frozen membership files must be used for Baseline B and the proposed method.
+- Baseline A may be executed before or after membership creation, but it must ignore sub-cluster membership files.
+- Baseline B and the proposed method must reuse the same frozen membership files.
 - No experiment may regenerate memberships unless the user explicitly requests reclustering.

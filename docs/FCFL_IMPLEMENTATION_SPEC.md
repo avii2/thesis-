@@ -8,7 +8,7 @@ This document is intended for later use with Codex or any coding assistant. It t
 
 Primary research source: attached report. The report defines the final system as a fixed clustered federated learning architecture with \(N=3\) independent main clusters, one fixed sub-cluster layer inside each main cluster, one-time offline Agglomerative Clustering for fixed sub-cluster formation, no cross-cluster averaging, raw-data locality, and Hyperledger Fabric used only for metadata-level governance.
 
-If this implementation specification conflicts with the report, stop and ask the user before coding.
+This document, together with `ARCHITECTURE_CONTRACT.md`, `DATA_CONTRACT.md`, `ALGORITHMS.md`, `EXPERIMENT_MATRIX.csv`, and `VALIDATION_CHECKS.md`, is the coding source of truth. If any implementation task conflicts with these files or with the research report, stop and ask the user before coding. If the PDF report contains older figure labels or drafting artifacts, follow the implementation documents and flag the mismatch.
 
 ---
 
@@ -30,6 +30,8 @@ The system must implement:
 6. Raw data remain inside simulated leaf-client partitions during FCFL training.
 7. Main-cluster heads log only metadata to a ledger/Fabric-compatible logging layer.
 8. No raw data and no full model weights are written on-chain or into the ledger.
+
+Important scope note: this implementation is **data-locality-preserving**, not a formal privacy mechanism. It does not implement differential privacy, secure aggregation, or Byzantine robustness.
 
 ## 1.2 Implementation objective
 
@@ -226,19 +228,20 @@ These rules apply to all clusters.
    - normal/benign = 0
    - attack/malicious/anomaly = 1
 6. Remove label columns from model features.
-7. Remove timestamp, identifier, and leakage-prone fields from model features according to cluster-specific rules.
-8. Convert numerical features to `float32`.
-9. Handle missing values using training-set median imputation.
-10. Fit preprocessing transformations using training data only.
-11. Apply the fitted transformations to validation and test data.
-12. Save preprocessing artifacts under:
+7. Keep timestamp or ordering columns only temporarily for ordering/partitioning if needed.
+8. Remove timestamp, identifier, and leakage-prone fields from model features before model-input creation and descriptor computation.
+9. Convert numerical features to `float32`.
+10. Handle missing values using training-set median imputation.
+11. Fit preprocessing transformations using training data only.
+12. Apply the fitted transformations to validation and test data.
+13. Save preprocessing artifacts under:
 
 ```text
 outputs/preprocessing/
 ```
 
-13. If a required label column is missing, stop and raise a clear error showing available columns.
-14. If a dataset contains unknown categorical columns, follow the categorical handling rule in Section 4.5.
+14. If a required label column is missing, stop and raise a clear error showing available columns.
+15. If a dataset contains unknown categorical columns, follow the categorical handling rule in Section 4.5.
 
 ## 4.2 Cluster 1 preprocessing: HAI 21.03
 
@@ -800,18 +803,23 @@ For final experiments, run seeds:
 
 Recommended implementation choice:
 
-1. Load and clean each dataset.
+1. Load each dataset and validate schema.
 2. Map labels to binary.
-3. Sort samples using timestamp if a timestamp exists.
-4. If no timestamp exists, preserve file order.
+3. Identify timestamp or ordering columns if available; keep them temporarily only for ordering/partitioning.
+4. Sort samples using timestamp if a timestamp exists; otherwise preserve file order.
 5. Create candidate leaf-client partitions according to Section 8.
 6. Inside each candidate leaf client, split local samples into train/validation/test using the 70/15/15 ratio.
+7. Construct feature matrices for model input and clustering descriptors by removing labels, timestamps, identifiers, and leakage-prone fields while keeping timestamp/order metadata only outside the feature matrices if needed for auditing.
+8. Fit imputers, encoders, and scalers using the union of training feature matrices within the same main cluster only.
+9. Apply the fitted preprocessing objects to train/validation/test feature matrices.
+10. Compute Agglomerative Clustering descriptors from the transformed local training features only.
 
 Important:
 
-- Agglomerative Clustering descriptors must be computed using only each leaf client's **training** partition.
+- Agglomerative Clustering descriptors must be computed using only each leaf client's **training** partition after training-only preprocessing has been fitted.
 - Validation and test data must never be used to compute clustering descriptors.
-- Validation and test data must never be used to fit scalers or imputers.
+- Validation and test data must never be used to fit scalers, imputers, or encoders.
+- Timestamp/order columns may be used only to order samples or create contiguous partitions; they must not be used as model features, scaler inputs, imputer inputs, encoder inputs, or descriptor features.
 - If a candidate leaf client has too few samples for 70/15/15 splitting, merge it with the nearest adjacent candidate partition before clustering or stop and ask the user.
 
 ## 7.4 Class-presence validation
@@ -953,7 +961,7 @@ K3 = 3
 
 For each candidate leaf client \(i\), compute a descriptor using only its local training partition \(X_i\).
 
-Let each \(x \in X_i\) be a cleaned, preprocessed feature vector.
+Let each \(x \in X_i\) be a cleaned, transformed feature vector after training-only imputation/scaling/encoding in the input space of the corresponding main cluster. For Cluster 1, compute descriptors from row-level transformed telemetry features before TCN window generation.
 
 Compute:
 
@@ -1659,6 +1667,7 @@ Rules:
 | P_C1 | 1 | HAI 21.03 | TCN | FedBN | hierarchical | agglomerative | weighted non-BN mean |
 | P_C2 | 2 | TON IoT combined telemetry | compact MLP | FedProx | hierarchical | agglomerative | weighted mean |
 | P_C3 | 3 | WUSTL-IIOT-2021 | 1D-CNN | SCAFFOLD | hierarchical | agglomerative | weighted mean |
+| AB_C3_FEDAVG_CNN1D | 3 | WUSTL-IIOT-2021 | 1D-CNN | FedAvg | hierarchical | agglomerative | weighted mean |
 
 ## 15.2 Required ablations
 
@@ -1668,7 +1677,7 @@ Rules:
 | SPECIALIZATION_EFFECT | Compare Baseline B vs Proposed |
 | C1_FEDAVG_VS_FEDBN | Compare Cluster 1 FedAvg vs FedBN |
 | C2_FEDAVG_VS_FEDPROX | Compare Cluster 2 FedAvg vs FedProx |
-| C3_FEDAVG_VS_SCAFFOLD | Compare Cluster 3 FedAvg vs SCAFFOLD |
+| C3_FEDAVG_VS_SCAFFOLD | Compare Cluster 3 FedAvg vs SCAFFOLD using `AB_C3_FEDAVG_CNN1D` or an equivalent reuse of `B_C3` against `P_C3` |
 
 ---
 

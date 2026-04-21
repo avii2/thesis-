@@ -15,7 +15,7 @@ It specifies:
 
 If the implementation encounters a dataset schema that does not match this contract, it must stop and raise a clear error.
 
-This contract is aligned to the current FCFL report architecture: three independent main clusters, one fixed sub-cluster layer per main cluster, one-time offline Agglomerative Clustering for fixed sub-cluster formation, no cross-cluster averaging, raw-data locality, and metadata-only governance. fileciteturn3file0
+This contract is aligned to the current FCFL report architecture: three independent main clusters, one fixed sub-cluster layer per main cluster, one-time offline Agglomerative Clustering for fixed sub-cluster formation, no cross-cluster averaging, raw-data locality, and metadata-only governance.
 
 ---
 
@@ -74,16 +74,17 @@ These rules apply to all datasets.
 2. Allowed input file type: `.csv`.
 3. If multiple CSV files are present for one dataset, they may be concatenated only after schema validation.
 4. Raw files must never be modified in place.
-5. All preprocessing artifacts must be written under `outputs/preprocessing/`.
-6. Labels must be converted to binary:
+5. Timestamp or ordering columns may be retained temporarily only for sorting/partitioning; they must be removed from model features and clustering descriptors.
+6. All preprocessing artifacts must be written under `outputs/preprocessing/`.
+7. Labels must be converted to binary:
    - `0` = normal / benign
    - `1` = attack / malicious / anomaly
-7. Raw data must remain local to leaf-client partitions during FCFL training.
-8. Raw records must never be written to the ledger.
-9. Full model weights must never be written to the ledger.
-10. Validation and test data must never be used to fit imputers, scalers, or clustering descriptors.
-11. If required columns are missing, the implementation must raise an error and print the available columns.
-12. No silent guessing of label columns is allowed.
+8. Raw data must remain local to leaf-client partitions during FCFL training.
+9. Raw records must never be written to the ledger.
+10. Full model weights must never be written to the ledger.
+11. Validation and test data must never be used to fit imputers, scalers, encoders, or clustering descriptors.
+12. If required columns are missing, the implementation must raise an error and print the available columns.
+13. No silent guessing of label columns is allowed.
 
 ---
 
@@ -553,20 +554,21 @@ Default seed:
 1. load raw data
 2. validate schema
 3. map labels to binary
-4. remove forbidden columns
-5. sort by timestamp if available
-6. preserve file order if timestamp is unavailable
-7. create candidate leaf-client partitions
-8. split each candidate leaf client into train/validation/test locally
-9. compute clustering descriptors using only local training partitions
-10. fit imputers/scalers on training data only
-11. apply to validation/test
+4. identify timestamp/order columns if available and keep them temporarily for ordering only
+5. sort by timestamp if available; otherwise preserve file order
+6. create candidate leaf-client partitions
+7. split each candidate leaf client into train/validation/test locally
+8. construct model/descriptor feature matrices by removing labels, timestamps, identifiers, and leakage-prone fields
+9. fit imputers/scalers/encoders using the union of training feature matrices within the same main cluster only
+10. apply fitted preprocessing objects to train/validation/test feature matrices
+11. compute clustering descriptors using only transformed local training features
 
 ### 10.4 Leakage prevention rules
 
 - validation/test data must not be used to compute clustering descriptors
 - validation/test data must not be used to fit imputers
-- validation/test data must not be used to fit scalers
+- validation/test data must not be used to fit scalers or encoders
+- timestamp/order columns may be used only for sorting or partitioning and must not appear in model features, preprocessing-fit inputs, or descriptor features
 - leakage-prone columns must be removed before model input creation
 
 ---
