@@ -253,7 +253,7 @@ FCFL_DATA_ROOT
 If `FCFL_DATA_ROOT` is not set, use:
 
 ```text
-desktop/thesis/data
+/Desktop/thesis/data
 ```
 
 TODO / USER MUST CONFIRM:
