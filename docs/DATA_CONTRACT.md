@@ -21,19 +21,29 @@ This contract is aligned to the current FCFL report architecture: three independ
 
 ## 2. Data root and expected folder structure
 
-### 2.1 Expected root
+### 2.1 Current audited local root
 
-User-provided folder structure:
+The local repo audited on 2026-04-21 contains the raw data under the repo-local
+`data/` directory:
 
 ```text
-desktop/thesis/data/
+data/
   raw/
     hai_2103/
-    ton_iot/
-      original_archive/
-      combined_telemetry/
-    wustl_iiot_2021/
+      hai-21.03/
+    ton_iot/                  # not present in the audited local repo
+    <space>ton_iot/
+      Train_Test_IoT_Fridge.csv
+      Train_Test_IoT_GPS_Tracker.csv
+      Train_Test_IoT_Garage_Door.csv
+    wustl_iiot_2021/          # not present in the audited local repo
+    <space>wustl_iiot_2021/
+      wustl_iiot_2021.csv
 ```
+
+Important audit note:
+- the current local TON and WUSTL directory names include a leading space after `raw/`
+- no `combined_telemetry/` directory currently exists for TON IoT in this repo snapshot
 
 ### 2.2 Path resolution rule
 
@@ -42,7 +52,7 @@ Recommended implementation choice:
 - Default data root:
 
 ```text
-desktop/thesis/data/
+data/
 ```
 
 - Support override with environment variable:
@@ -54,15 +64,16 @@ FCFL_DATA_ROOT
 Example:
 
 ```bash
-export FCFL_DATA_ROOT=desktop/thesis/data
+export FCFL_DATA_ROOT=data
 ```
 
 ### 2.3 Path ambiguity
 
-TODO / USER MUST CONFIRM:
+Audit resolved the previously documented root ambiguity for the current local repo:
 
-- Confirm whether the actual path is literally `desktop/thesis/data/` or a home-expanded path such as `~/Desktop/thesis/data/`.
-- Confirm operating system path style before final runs.
+- the audited local default root is `data/`
+- path portability should still be handled through `FCFL_DATA_ROOT`
+- code must not silently rewrite the current leading-space directory names during profiling
 
 ---
 
@@ -92,9 +103,9 @@ These rules apply to all datasets.
 
 | Main cluster | Dataset | Expected raw path | Primary modality | Final task |
 |---|---|---|---|---|
-| Cluster 1 | HAI 21.03 | `desktop/thesis/data/raw/hai_2103/` | process-control telemetry | binary classification |
-| Cluster 2 | TON IoT combined telemetry | `desktop/thesis/data/raw/ton_iot/combined_telemetry/` | IIoT telemetry table | binary classification |
-| Cluster 3 | WUSTL-IIOT-2021 | `desktop/thesis/data/raw/wustl_iiot_2021/` | network-flow features | binary classification |
+| Cluster 1 | HAI 21.03 | `data/raw/hai_2103/hai-21.03/` | process-control telemetry | binary classification |
+| Cluster 2 | TON IoT combined telemetry | current raw audit path `data/raw/ ton_iot/`; deterministic processed training input `outputs/processed/cluster2_ton_iot_combined.csv` | IIoT telemetry table | binary classification |
+| Cluster 3 | WUSTL-IIOT-2021 | `data/raw/ wustl_iiot_2021/` | network-flow features | binary classification |
 
 The `original_archive/` under TON IoT must not be used for primary model training unless the combined telemetry dataset is missing or incomplete.
 
@@ -105,12 +116,25 @@ The `original_archive/` under TON IoT must not be used for primary model trainin
 ### 5.1 Expected location
 
 ```text
-desktop/thesis/data/raw/hai_2103/
+data/raw/hai_2103/hai-21.03/
 ```
 
 ### 5.2 Allowed files
 
 - `.csv` only
+
+Observed audited files:
+
+```text
+train1.csv
+train2.csv
+train3.csv
+test1.csv
+test2.csv
+test3.csv
+test4.csv
+test5.csv
+```
 
 ### 5.3 Expected label column
 
@@ -120,18 +144,14 @@ Expected configured label column:
 attack
 ```
 
-TODO / USER MUST CONFIRM:
-- Confirm that the HAI files actually contain a column exactly named `attack`.
+Audit confirmation:
+- all eight audited HAI CSV files contain the binary label column `attack`
+- audited mapped counts are `0: 1314661`, `1: 8947`
 
 Permitted candidate label names for data profiling only:
 
 ```text
 attack
-Attack
-label
-Label
-target
-Target
 ```
 
 The implementation may inspect candidates during schema profiling, but final training must use the configured label column only.
@@ -144,8 +164,11 @@ If present, these are allowed for auxiliary reporting only and must never be use
 attack_P1
 attack_P2
 attack_P3
-attack_P4
 ```
+
+Audit note:
+- `attack_P1`, `attack_P2`, and `attack_P3` are present in the current local files
+- `attack_P4` was not observed in the current local files; if it appears in a different snapshot, exclude it as well
 
 ### 5.5 Included feature columns
 
@@ -160,6 +183,17 @@ Always exclude from model input:
 
 ```text
 attack
+time
+attack_P1
+attack_P2
+attack_P3
+```
+
+If a new identifier-like column appears, stop and log it for user review.
+
+Also exclude if present in a future snapshot:
+
+```text
 Attack
 label
 Label
@@ -167,17 +201,11 @@ target
 Target
 timestamp
 Timestamp
-time
 Time
 date
 Date
-attack_P1
-attack_P2
-attack_P3
 attack_P4
 ```
-
-If a new identifier-like column appears, stop and log it for user review.
 
 ### 5.7 Missing-value handling
 
@@ -232,7 +260,25 @@ batch_size x num_features x window_length
 ### 6.1 Expected location
 
 ```text
-desktop/thesis/data/raw/ton_iot/combined_telemetry/
+data/raw/ ton_iot/
+```
+
+Audit note:
+- the local repo currently contains only per-device TON IoT CSVs in this directory
+- no raw `combined_telemetry/` directory exists in the audited local repo; the deterministic builder writes the training input to `outputs/processed/cluster2_ton_iot_combined.csv`
+
+Observed audited raw files:
+
+```text
+Train_Test_IoT_Fridge.csv
+Train_Test_IoT_GPS_Tracker.csv
+Train_Test_IoT_Garage_Door.csv
+```
+
+Expected training input after deterministic combination:
+
+```text
+outputs/processed/cluster2_ton_iot_combined.csv
 ```
 
 ### 6.2 Allowed files
@@ -241,55 +287,74 @@ desktop/thesis/data/raw/ton_iot/combined_telemetry/
 
 ### 6.3 Data source rule
 
-Use only the combined telemetry dataset for training.
+Training uses a deterministic combined telemetry CSV built from the current
+audited per-device files under `data/raw/ ton_iot/`.
 
-Do not train directly from:
+Do not train directly from the raw per-device files:
 
 ```text
-desktop/thesis/data/raw/ton_iot/original_archive/
+data/raw/ ton_iot/
 ```
 
-unless the user explicitly approves a reconstruction step.
+Run the deterministic builder first and train only from:
+
+```text
+outputs/processed/cluster2_ton_iot_combined.csv
+```
+
+Deterministic combination rule:
+- preserve shared metadata columns `date`, `time`, `label`, and `type`
+- add a provenance column `source` for interpretation only
+- keep the audited telemetry union columns `fridge_temperature`, `temp_condition`, `latitude`, `longitude`, `door_state`, `sphone_signal`
+- for a row whose device does not emit a telemetry column, write an empty value in that field
+- preserve config file order across input files and original row order within each file
 
 ### 6.4 Expected label column
 
-TODO / USER MUST CONFIRM:
-The exact label column name is not safely inferable from the report alone.
+Configured binary label column:
+
+```text
+label
+```
+
+Audit confirmation:
+- all three audited TON raw CSVs contain `label` with binary counts `0: 45000`, `1: 73491`
+- the column `type` contains attack-family strings and is not the binary training label
 
 Permitted candidate label names for profiling only:
 
 ```text
 label
-Label
-attack
-Attack
-target
-Target
 type
-Type
 ```
-
-The implementation must not silently choose among candidates.
 
 ### 6.5 Included feature columns
 
 Include:
-- all numerical telemetry columns from the combined telemetry table
+- telemetry columns from the deterministic combined telemetry table
 - after excluding configured forbidden columns
 - after dropping constant or all-missing columns
+
+Observed current raw per-device telemetry columns:
+
+```text
+fridge_temperature
+temp_condition
+latitude
+longitude
+door_state
+sphone_signal
+```
 
 ### 6.6 Excluded columns
 
 Always exclude from model input:
 
 ```text
-<configured label column>
-timestamp
-Timestamp
-time
-Time
+label
+type
 date
-Date
+time
 device
 Device
 device_id
@@ -303,6 +368,11 @@ ID
 ```
 
 Device-origin fields may be preserved in a side metadata file for interpretation only. They must not be used as model features, and they must not manually define sub-cluster memberships.
+
+Audit note:
+- `label`, `type`, `date`, and `time` are present in all three current raw TON CSVs
+- only `date`, `label`, `time`, and `type` are common across the three audited raw schemas
+- pure intersection after default exclusions would leave zero telemetry features, so the deterministic builder uses the explicit audited telemetry union with blank fill for non-applicable device fields
 
 ### 6.7 Missing-value handling
 
@@ -343,34 +413,37 @@ batch_size x num_features
 ### 7.1 Expected location
 
 ```text
-desktop/thesis/data/raw/wustl_iiot_2021/
+data/raw/ wustl_iiot_2021/
 ```
 
 ### 7.2 Allowed files
 
 - `.csv` only
 
+Observed audited raw file:
+
+```text
+wustl_iiot_2021.csv
+```
+
 ### 7.3 Expected label column
 
-TODO / USER MUST CONFIRM:
-The exact binary label column name is not safely inferable from the report alone.
+Configured binary label column:
+
+```text
+Target
+```
+
+Audit confirmation:
+- the audited WUSTL CSV contains `Target` with binary counts `0: 1107448`, `1: 87016`
+- the observed column `Traffic` contains traffic-class / attack-family strings and must be excluded from model features
 
 Permitted candidate label names for profiling only:
 
 ```text
-label
-Label
-class
-Class
-target
 Target
-traffic
 Traffic
-attack
-Attack
 ```
-
-The implementation must not silently choose among candidates.
 
 ### 7.4 Included feature columns
 
@@ -390,7 +463,8 @@ SrcAddr
 DstAddr
 sIpId
 dIpId
-<configured label column>
+Target
+Traffic
 ```
 
 Also exclude if present:
@@ -629,11 +703,8 @@ The implementation must stop immediately if any of the following happens:
 
 ### TODO / USER MUST CONFIRM
 
-1. actual absolute path of the data root
-2. actual HAI label column name
-3. actual TON IoT combined telemetry label column name
-4. actual WUSTL-IIOT-2021 label column name
-5. actual CSV filenames inside each raw dataset folder
-6. whether any dataset contains high-cardinality categorical fields that should be preserved rather than dropped
+1. whether the current leading-space raw directories for TON and WUSTL should be renamed before implementation
+2. whether the expected TON combined telemetry output path `outputs/processed/cluster2_ton_iot_combined.csv` is acceptable
+3. whether any dataset contains high-cardinality categorical fields that should be preserved rather than dropped
 
 Until these are confirmed, the implementation may only perform schema profiling and pipeline scaffolding, not final training.

@@ -1,0 +1,11 @@
+{
+  "cluster_id": 2,
+  "dataset": "TON IoT combined telemetry",
+  "status": "blocked",
+  "label_column": "label",
+  "error": "TON_IOT_COMBINED_TELEMETRY_REQUIRED: TON IoT combined telemetry requires configured processed input file data/processed/ton_iot/combined_telemetry/ton_iot_combined_telemetry.csv. Refusing to fall back to current raw per-device files.",
+  "expected_processed_input_path": "data/processed/ton_iot/combined_telemetry/ton_iot_combined_telemetry.csv",
+  "windowing_deferred": false,
+  "descriptor_computation_deferred": true,
+  "client_partitioning_deferred": true
+}

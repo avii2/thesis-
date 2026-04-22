@@ -1,0 +1,65 @@
+config_version: 1
+cluster:
+  id: 3
+  key: C3
+  dataset_key: WUSTL_IIOT_2021
+  dataset_name: WUSTL-IIOT-2021
+  audit_report: outputs/reports/data_profile_cluster3.json
+data:
+  data_root_env_var: FCFL_DATA_ROOT
+  default_data_root: data
+  current_raw_input_dir: "data/raw/ wustl_iiot_2021"
+  current_raw_files:
+    - wustl_iiot_2021.csv
+  training_input_mode: single_csv
+  training_input_path: "data/raw/ wustl_iiot_2021/wustl_iiot_2021.csv"
+  schema_consistent_across_files: true
+  label_column: Target
+  label_column_confirmed_from_audit: true
+  candidate_label_columns_present:
+    - Target
+    - Traffic
+  auxiliary_label_like_columns:
+    - Traffic
+  timestamp_or_order_columns:
+    - StartTime
+    - LastTime
+  excluded_columns:
+    - Target
+    - Traffic
+    - StartTime
+    - LastTime
+    - SrcAddr
+    - DstAddr
+    - sIpId
+    - dIpId
+  exclude_if_present:
+    - attack_type
+    - AttackType
+    - traffic_class
+    - TrafficClass
+    - timestamp
+    - Timestamp
+    - time
+    - Time
+    - date
+    - Date
+  missing_values_detected: false
+  current_binary_label_counts:
+    "0": 1107448
+    "1": 87016
+partitioning:
+  candidate_leaf_clients: 15
+clustering:
+  fixed_subclusters: 3
+  fixed_subcluster_ids:
+    - W1
+    - W2
+    - W3
+preprocessing:
+  input_type: fixed_length_network_flow_vector
+  windowing: none
+runtime_validation:
+  require_training_input_to_exist: true
+  require_label_column_to_exist: true
+  error_on_missing_label_column: CONFIGURED_LABEL_COLUMN_MISSING

@@ -1,0 +1,1017 @@
+{
+  "cluster_id": 3,
+  "dataset": "WUSTL-IIOT-2021",
+  "num_leaf_clients": 15,
+  "total_ordered_samples": 1194464,
+  "split_ratios": {
+    "train": 0.7,
+    "validation": 0.15,
+    "test": 0.15
+  },
+  "ordering_mode": "sorted_by_configured_timestamp_or_order_columns",
+  "ordering_columns_used": [
+    "StartTime",
+    "LastTime"
+  ],
+  "source_paths": [
+    "data/raw/ wustl_iiot_2021/wustl_iiot_2021.csv"
+  ],
+  "cluster_label_counts": {
+    "0": 1107448,
+    "1": 87016
+  },
+  "cluster_split_label_counts": {
+    "train": {
+      "0": 783021,
+      "1": 53094
+    },
+    "validation": {
+      "0": 162783,
+      "1": 16391
+    },
+    "test": {
+      "0": 161644,
+      "1": 17531
+    }
+  },
+  "single_class_local_partitions": [
+    {
+      "client_id": "C3_L001",
+      "split": "train",
+      "label_counts": {
+        "0": 55741
+      }
+    },
+    {
+      "client_id": "C3_L001",
+      "split": "validation",
+      "label_counts": {
+        "0": 11944
+      }
+    },
+    {
+      "client_id": "C3_L001",
+      "split": "test",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L002",
+      "split": "train",
+      "label_counts": {
+        "0": 55741
+      }
+    },
+    {
+      "client_id": "C3_L002",
+      "split": "validation",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L002",
+      "split": "test",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L003",
+      "split": "train",
+      "label_counts": {
+        "0": 55741
+      }
+    },
+    {
+      "client_id": "C3_L004",
+      "split": "test",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L005",
+      "split": "train",
+      "label_counts": {
+        "0": 55741
+      }
+    },
+    {
+      "client_id": "C3_L005",
+      "split": "validation",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L005",
+      "split": "test",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L006",
+      "split": "train",
+      "label_counts": {
+        "0": 55741
+      }
+    },
+    {
+      "client_id": "C3_L008",
+      "split": "validation",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L008",
+      "split": "test",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L011",
+      "split": "validation",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L011",
+      "split": "test",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L012",
+      "split": "train",
+      "label_counts": {
+        "0": 55741
+      }
+    },
+    {
+      "client_id": "C3_L012",
+      "split": "validation",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L012",
+      "split": "test",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L013",
+      "split": "train",
+      "label_counts": {
+        "0": 55741
+      }
+    },
+    {
+      "client_id": "C3_L013",
+      "split": "validation",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L013",
+      "split": "test",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L014",
+      "split": "train",
+      "label_counts": {
+        "0": 55741
+      }
+    },
+    {
+      "client_id": "C3_L014",
+      "split": "validation",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L014",
+      "split": "test",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L015",
+      "split": "train",
+      "label_counts": {
+        "0": 55741
+      }
+    },
+    {
+      "client_id": "C3_L015",
+      "split": "validation",
+      "label_counts": {
+        "0": 11945
+      }
+    },
+    {
+      "client_id": "C3_L015",
+      "split": "test",
+      "label_counts": {
+        "0": 11945
+      }
+    }
+  ],
+  "descriptor_source_split": "train",
+  "clients": [
+    {
+      "client_id": "C3_L001",
+      "ordered_start_index": 0,
+      "ordered_end_index": 79630,
+      "num_total_samples": 79630,
+      "num_train_samples": 55741,
+      "num_val_samples": 11944,
+      "num_test_samples": 11945,
+      "train_label_counts": {
+        "0": 55741
+      },
+      "val_label_counts": {
+        "0": 11944
+      },
+      "test_label_counts": {
+        "0": 11945
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 55741,
+        "num_samples": 55741,
+        "label_counts": {
+          "0": 55741
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 55741,
+        "end_index": 67685,
+        "num_samples": 11944,
+        "label_counts": {
+          "0": 11944
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 67685,
+        "end_index": 79630,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "train",
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C3_L002",
+      "ordered_start_index": 79630,
+      "ordered_end_index": 159261,
+      "num_total_samples": 79631,
+      "num_train_samples": 55741,
+      "num_val_samples": 11945,
+      "num_test_samples": 11945,
+      "train_label_counts": {
+        "0": 55741
+      },
+      "val_label_counts": {
+        "0": 11945
+      },
+      "test_label_counts": {
+        "0": 11945
+      },
+      "train_range": {
+        "start_index": 79630,
+        "end_index": 135371,
+        "num_samples": 55741,
+        "label_counts": {
+          "0": 55741
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 135371,
+        "end_index": 147316,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 147316,
+        "end_index": 159261,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "train",
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C3_L003",
+      "ordered_start_index": 159261,
+      "ordered_end_index": 238892,
+      "num_total_samples": 79631,
+      "num_train_samples": 55741,
+      "num_val_samples": 11945,
+      "num_test_samples": 11945,
+      "train_label_counts": {
+        "0": 55741
+      },
+      "val_label_counts": {
+        "0": 11788,
+        "1": 157
+      },
+      "test_label_counts": {
+        "0": 11323,
+        "1": 622
+      },
+      "train_range": {
+        "start_index": 159261,
+        "end_index": 215002,
+        "num_samples": 55741,
+        "label_counts": {
+          "0": 55741
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 215002,
+        "end_index": 226947,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11788,
+          "1": 157
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 226947,
+        "end_index": 238892,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11323,
+          "1": 622
+        },
+        "single_class": false
+      },
+      "single_class_splits": [
+        "train"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C3_L004",
+      "ordered_start_index": 238892,
+      "ordered_end_index": 318523,
+      "num_total_samples": 79631,
+      "num_train_samples": 55741,
+      "num_val_samples": 11945,
+      "num_test_samples": 11945,
+      "train_label_counts": {
+        "0": 51035,
+        "1": 4706
+      },
+      "val_label_counts": {
+        "0": 9190,
+        "1": 2755
+      },
+      "test_label_counts": {
+        "0": 11945
+      },
+      "train_range": {
+        "start_index": 238892,
+        "end_index": 294633,
+        "num_samples": 55741,
+        "label_counts": {
+          "0": 51035,
+          "1": 4706
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 294633,
+        "end_index": 306578,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 9190,
+          "1": 2755
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 306578,
+        "end_index": 318523,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C3_L005",
+      "ordered_start_index": 318523,
+      "ordered_end_index": 398154,
+      "num_total_samples": 79631,
+      "num_train_samples": 55741,
+      "num_val_samples": 11945,
+      "num_test_samples": 11945,
+      "train_label_counts": {
+        "0": 55741
+      },
+      "val_label_counts": {
+        "0": 11945
+      },
+      "test_label_counts": {
+        "0": 11945
+      },
+      "train_range": {
+        "start_index": 318523,
+        "end_index": 374264,
+        "num_samples": 55741,
+        "label_counts": {
+          "0": 55741
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 374264,
+        "end_index": 386209,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 386209,
+        "end_index": 398154,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "train",
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C3_L006",
+      "ordered_start_index": 398154,
+      "ordered_end_index": 477785,
+      "num_total_samples": 79631,
+      "num_train_samples": 55741,
+      "num_val_samples": 11945,
+      "num_test_samples": 11945,
+      "train_label_counts": {
+        "0": 55741
+      },
+      "val_label_counts": {
+        "0": 9671,
+        "1": 2274
+      },
+      "test_label_counts": {
+        "0": 5550,
+        "1": 6395
+      },
+      "train_range": {
+        "start_index": 398154,
+        "end_index": 453895,
+        "num_samples": 55741,
+        "label_counts": {
+          "0": 55741
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 453895,
+        "end_index": 465840,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 9671,
+          "1": 2274
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 465840,
+        "end_index": 477785,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 5550,
+          "1": 6395
+        },
+        "single_class": false
+      },
+      "single_class_splits": [
+        "train"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C3_L007",
+      "ordered_start_index": 477785,
+      "ordered_end_index": 557416,
+      "num_total_samples": 79631,
+      "num_train_samples": 55741,
+      "num_val_samples": 11945,
+      "num_test_samples": 11945,
+      "train_label_counts": {
+        "0": 18564,
+        "1": 37177
+      },
+      "val_label_counts": {
+        "0": 837,
+        "1": 11108
+      },
+      "test_label_counts": {
+        "0": 1512,
+        "1": 10433
+      },
+      "train_range": {
+        "start_index": 477785,
+        "end_index": 533526,
+        "num_samples": 55741,
+        "label_counts": {
+          "0": 18564,
+          "1": 37177
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 533526,
+        "end_index": 545471,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 837,
+          "1": 11108
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 545471,
+        "end_index": 557416,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 1512,
+          "1": 10433
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": []
+    },
+    {
+      "client_id": "C3_L008",
+      "ordered_start_index": 557416,
+      "ordered_end_index": 637047,
+      "num_total_samples": 79631,
+      "num_train_samples": 55741,
+      "num_val_samples": 11945,
+      "num_test_samples": 11945,
+      "train_label_counts": {
+        "0": 44823,
+        "1": 10918
+      },
+      "val_label_counts": {
+        "0": 11945
+      },
+      "test_label_counts": {
+        "0": 11945
+      },
+      "train_range": {
+        "start_index": 557416,
+        "end_index": 613157,
+        "num_samples": 55741,
+        "label_counts": {
+          "0": 44823,
+          "1": 10918
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 613157,
+        "end_index": 625102,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 625102,
+        "end_index": 637047,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C3_L009",
+      "ordered_start_index": 637047,
+      "ordered_end_index": 716678,
+      "num_total_samples": 79631,
+      "num_train_samples": 55741,
+      "num_val_samples": 11945,
+      "num_test_samples": 11945,
+      "train_label_counts": {
+        "0": 55620,
+        "1": 121
+      },
+      "val_label_counts": {
+        "0": 11893,
+        "1": 52
+      },
+      "test_label_counts": {
+        "0": 11887,
+        "1": 58
+      },
+      "train_range": {
+        "start_index": 637047,
+        "end_index": 692788,
+        "num_samples": 55741,
+        "label_counts": {
+          "0": 55620,
+          "1": 121
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 692788,
+        "end_index": 704733,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11893,
+          "1": 52
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 704733,
+        "end_index": 716678,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11887,
+          "1": 58
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": []
+    },
+    {
+      "client_id": "C3_L010",
+      "ordered_start_index": 716678,
+      "ordered_end_index": 796309,
+      "num_total_samples": 79631,
+      "num_train_samples": 55741,
+      "num_val_samples": 11945,
+      "num_test_samples": 11945,
+      "train_label_counts": {
+        "0": 55691,
+        "1": 50
+      },
+      "val_label_counts": {
+        "0": 11900,
+        "1": 45
+      },
+      "test_label_counts": {
+        "0": 11922,
+        "1": 23
+      },
+      "train_range": {
+        "start_index": 716678,
+        "end_index": 772419,
+        "num_samples": 55741,
+        "label_counts": {
+          "0": 55691,
+          "1": 50
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 772419,
+        "end_index": 784364,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11900,
+          "1": 45
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 784364,
+        "end_index": 796309,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11922,
+          "1": 23
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": []
+    },
+    {
+      "client_id": "C3_L011",
+      "ordered_start_index": 796309,
+      "ordered_end_index": 875940,
+      "num_total_samples": 79631,
+      "num_train_samples": 55741,
+      "num_val_samples": 11945,
+      "num_test_samples": 11945,
+      "train_label_counts": {
+        "0": 55619,
+        "1": 122
+      },
+      "val_label_counts": {
+        "0": 11945
+      },
+      "test_label_counts": {
+        "0": 11945
+      },
+      "train_range": {
+        "start_index": 796309,
+        "end_index": 852050,
+        "num_samples": 55741,
+        "label_counts": {
+          "0": 55619,
+          "1": 122
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 852050,
+        "end_index": 863995,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 863995,
+        "end_index": 875940,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C3_L012",
+      "ordered_start_index": 875940,
+      "ordered_end_index": 955571,
+      "num_total_samples": 79631,
+      "num_train_samples": 55741,
+      "num_val_samples": 11945,
+      "num_test_samples": 11945,
+      "train_label_counts": {
+        "0": 55741
+      },
+      "val_label_counts": {
+        "0": 11945
+      },
+      "test_label_counts": {
+        "0": 11945
+      },
+      "train_range": {
+        "start_index": 875940,
+        "end_index": 931681,
+        "num_samples": 55741,
+        "label_counts": {
+          "0": 55741
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 931681,
+        "end_index": 943626,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 943626,
+        "end_index": 955571,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "train",
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C3_L013",
+      "ordered_start_index": 955571,
+      "ordered_end_index": 1035202,
+      "num_total_samples": 79631,
+      "num_train_samples": 55741,
+      "num_val_samples": 11945,
+      "num_test_samples": 11945,
+      "train_label_counts": {
+        "0": 55741
+      },
+      "val_label_counts": {
+        "0": 11945
+      },
+      "test_label_counts": {
+        "0": 11945
+      },
+      "train_range": {
+        "start_index": 955571,
+        "end_index": 1011312,
+        "num_samples": 55741,
+        "label_counts": {
+          "0": 55741
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 1011312,
+        "end_index": 1023257,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 1023257,
+        "end_index": 1035202,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "train",
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C3_L014",
+      "ordered_start_index": 1035202,
+      "ordered_end_index": 1114833,
+      "num_total_samples": 79631,
+      "num_train_samples": 55741,
+      "num_val_samples": 11945,
+      "num_test_samples": 11945,
+      "train_label_counts": {
+        "0": 55741
+      },
+      "val_label_counts": {
+        "0": 11945
+      },
+      "test_label_counts": {
+        "0": 11945
+      },
+      "train_range": {
+        "start_index": 1035202,
+        "end_index": 1090943,
+        "num_samples": 55741,
+        "label_counts": {
+          "0": 55741
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 1090943,
+        "end_index": 1102888,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 1102888,
+        "end_index": 1114833,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "train",
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C3_L015",
+      "ordered_start_index": 1114833,
+      "ordered_end_index": 1194464,
+      "num_total_samples": 79631,
+      "num_train_samples": 55741,
+      "num_val_samples": 11945,
+      "num_test_samples": 11945,
+      "train_label_counts": {
+        "0": 55741
+      },
+      "val_label_counts": {
+        "0": 11945
+      },
+      "test_label_counts": {
+        "0": 11945
+      },
+      "train_range": {
+        "start_index": 1114833,
+        "end_index": 1170574,
+        "num_samples": 55741,
+        "label_counts": {
+          "0": 55741
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 1170574,
+        "end_index": 1182519,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 1182519,
+        "end_index": 1194464,
+        "num_samples": 11945,
+        "label_counts": {
+          "0": 11945
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "train",
+        "validation",
+        "test"
+      ],
+      "notes": []
+    }
+  ]
+}

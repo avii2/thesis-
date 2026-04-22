@@ -1,0 +1,34 @@
+config_version: 1
+ablation_id: ablation_cluster3_fedavg_vs_scaffold
+description: Required Cluster 3 FL-method ablation comparing hierarchical 1D-CNN FedAvg against hierarchical 1D-CNN SCAFFOLD.
+source_of_truth:
+  architecture_contract: docs/ARCHITECTURE_CONTRACT.md
+  implementation_spec: docs/FCFL_IMPLEMENTATION_SPEC.md
+  experiment_matrix: docs/EXPERIMENT_MATRIX.csv
+training_defaults:
+  rounds: 50
+  local_epochs: 1
+  batch_size: 128
+  seeds:
+    - 42
+    - 123
+    - 2025
+smoke_test_defaults:
+  rounds: 2
+  local_epochs: 1
+  batch_size: 64
+  seed: 42
+comparisons:
+  - comparison_id: ablation_cluster3_fedavg_vs_scaffold
+    title: Cluster 3 FedAvg vs SCAFFOLD
+    control:
+      experiment_id: B_C3
+      report_as_experiment_id: AB_C3_FEDAVG_CNN1D
+      run_source: standard
+      label: FedAvg 1D-CNN Control (reuses B_C3)
+    treatment:
+      experiment_id: P_C3
+      run_source: standard
+      label: SCAFFOLD 1D-CNN
+runtime_validation:
+  reuse_baseline_b_control_for_ab_c3: true

@@ -1,0 +1,167 @@
+{
+  "dataset": "TON IoT combined telemetry",
+  "status": "ok",
+  "build_strategy": "deterministic_explicit_union_with_blank_fill_for_non_applicable_device_fields",
+  "config_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/configs/cluster2_ton_iot.yaml",
+  "input_directory": "data/raw/ ton_iot",
+  "input_files": [
+    {
+      "path": "data/raw/ ton_iot/Train_Test_IoT_Fridge.csv",
+      "source_name": "fridge",
+      "row_count": 39944,
+      "raw_columns": [
+        "\ufeffdate",
+        "time",
+        "fridge_temperature",
+        "temp_condition",
+        "label",
+        "type"
+      ],
+      "telemetry_columns": [
+        "fridge_temperature",
+        "temp_condition"
+      ]
+    },
+    {
+      "path": "data/raw/ ton_iot/Train_Test_IoT_GPS_Tracker.csv",
+      "source_name": "gps_tracker",
+      "row_count": 38960,
+      "raw_columns": [
+        "\ufeffdate",
+        "time",
+        "latitude",
+        "longitude",
+        "label",
+        "type"
+      ],
+      "telemetry_columns": [
+        "latitude",
+        "longitude"
+      ]
+    },
+    {
+      "path": "data/raw/ ton_iot/Train_Test_IoT_Garage_Door.csv",
+      "source_name": "garage_door",
+      "row_count": 39587,
+      "raw_columns": [
+        "\ufeffdate",
+        "time",
+        "door_state",
+        "sphone_signal",
+        "label",
+        "type"
+      ],
+      "telemetry_columns": [
+        "door_state",
+        "sphone_signal"
+      ]
+    }
+  ],
+  "required_shared_columns": [
+    "date",
+    "time",
+    "label",
+    "type"
+  ],
+  "kept_feature_columns": [
+    "fridge_temperature",
+    "temp_condition",
+    "latitude",
+    "longitude",
+    "door_state",
+    "sphone_signal"
+  ],
+  "metadata_columns_retained": [
+    "date",
+    "time",
+    "source",
+    "label",
+    "type"
+  ],
+  "source_column_added": "source",
+  "dropped_columns": [],
+  "harmonized_columns": [
+    {
+      "column": "fridge_temperature",
+      "present_in_sources": [
+        "fridge"
+      ],
+      "blank_for_sources": [
+        "gps_tracker",
+        "garage_door"
+      ],
+      "fill_value_when_not_applicable": ""
+    },
+    {
+      "column": "temp_condition",
+      "present_in_sources": [
+        "fridge"
+      ],
+      "blank_for_sources": [
+        "gps_tracker",
+        "garage_door"
+      ],
+      "fill_value_when_not_applicable": ""
+    },
+    {
+      "column": "latitude",
+      "present_in_sources": [
+        "gps_tracker"
+      ],
+      "blank_for_sources": [
+        "fridge",
+        "garage_door"
+      ],
+      "fill_value_when_not_applicable": ""
+    },
+    {
+      "column": "longitude",
+      "present_in_sources": [
+        "gps_tracker"
+      ],
+      "blank_for_sources": [
+        "fridge",
+        "garage_door"
+      ],
+      "fill_value_when_not_applicable": ""
+    },
+    {
+      "column": "door_state",
+      "present_in_sources": [
+        "garage_door"
+      ],
+      "blank_for_sources": [
+        "fridge",
+        "gps_tracker"
+      ],
+      "fill_value_when_not_applicable": ""
+    },
+    {
+      "column": "sphone_signal",
+      "present_in_sources": [
+        "garage_door"
+      ],
+      "blank_for_sources": [
+        "fridge",
+        "gps_tracker"
+      ],
+      "fill_value_when_not_applicable": ""
+    }
+  ],
+  "pure_intersection_after_exclusions_would_be_empty": true,
+  "output_columns": [
+    "date",
+    "time",
+    "source",
+    "fridge_temperature",
+    "temp_condition",
+    "latitude",
+    "longitude",
+    "door_state",
+    "sphone_signal",
+    "label",
+    "type"
+  ],
+  "output_path": "outputs/processed/cluster2_ton_iot_combined.csv",
+  "output_row_count": 118491
+}

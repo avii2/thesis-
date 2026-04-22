@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="520" viewBox="0 0 920 520">
+  <rect width="920" height="520" fill="#f8fafc"/>
+  <text x="30" y="36" font-size="24" font-family="Helvetica, Arial, sans-serif" fill="#0f172a">Test F1 Comparison</text>
+  <text x="30" y="60" font-size="14" font-family="Helvetica, Arial, sans-serif" fill="#475569">Comparison across the currently selected experiments</text>
+  <rect x="80.00" y="70.00" width="780.00" height="340.00" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2" />
+  <line x1="80.00" y1="70.00" x2="860.00" y2="70.00" stroke="#cbd5e1" stroke-width="1" /> <text x="26" y="75.00" font-size="12" font-family="Helvetica, Arial, sans-serif" fill="#475569">1.0</text> <line x1="80.00" y1="138.00" x2="860.00" y2="138.00" stroke="#cbd5e1" stroke-width="1" /> <text x="26" y="143.00" font-size="12" font-family="Helvetica, Arial, sans-serif" fill="#475569">0.8</text> <line x1="80.00" y1="206.00" x2="860.00" y2="206.00" stroke="#cbd5e1" stroke-width="1" /> <text x="26" y="211.00" font-size="12" font-family="Helvetica, Arial, sans-serif" fill="#475569">0.6</text> <line x1="80.00" y1="274.00" x2="860.00" y2="274.00" stroke="#cbd5e1" stroke-width="1" /> <text x="26" y="279.00" font-size="12" font-family="Helvetica, Arial, sans-serif" fill="#475569">0.4</text> <line x1="80.00" y1="342.00" x2="860.00" y2="342.00" stroke="#cbd5e1" stroke-width="1" /> <text x="26" y="347.00" font-size="12" font-family="Helvetica, Arial, sans-serif" fill="#475569">0.2</text> <line x1="80.00" y1="410.00" x2="860.00" y2="410.00" stroke="#cbd5e1" stroke-width="1" /> <text x="26" y="415.00" font-size="12" font-family="Helvetica, Arial, sans-serif" fill="#475569">0.0</text>
+  <rect x="110.00" y="410.00" width="557.14" height="0.00" fill="#2563eb" rx="4" />
+  <text x="376.57" y="434.00" font-size="12" font-family="Helvetica, Arial, sans-serif" fill="#475569">A_C1</text>
+  <text x="378.57" y="402.00" font-size="12" font-family="Helvetica, Arial, sans-serif" fill="#0f172a">0.000</text>
+  <text x="430.00" y="462.00" font-size="13" font-family="Helvetica, Arial, sans-serif" fill="#334155">Experiment ID</text>
+  <text x="18" y="56.00" font-size="13" font-family="Helvetica, Arial, sans-serif" fill="#334155">test_f1</text>
+</svg>

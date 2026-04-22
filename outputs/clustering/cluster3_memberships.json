@@ -1,0 +1,120 @@
+{
+  "cluster_id": 3,
+  "dataset": "WUSTL-IIOT-2021",
+  "status": "ok",
+  "clustering_method": "AgglomerativeClustering",
+  "linkage": "ward",
+  "metric": "euclidean",
+  "descriptor": "feature_mean_std",
+  "descriptor_dim": 82,
+  "descriptor_source_split": "train",
+  "n_subclusters": 3,
+  "fixed_subcluster_ids": [
+    "W1",
+    "W2",
+    "W3"
+  ],
+  "frozen": true,
+  "membership_hash": "f56d3171e2e665c9b46abf6a8b64524a2e8689417598358c290f3cb7d4237770",
+  "client_metadata_path": "outputs/clients/cluster3_leaf_clients.json",
+  "descriptor_scaler_path": "outputs/clustering/cluster3_descriptor_scaler.pkl",
+  "membership_file": "outputs/clustering/cluster3_memberships.json",
+  "reuse_for_experiment_groups": [
+    "baseline_uniform_hierarchical",
+    "proposed_specialized_hierarchical"
+  ],
+  "subclusters": [
+    {
+      "subcluster_id": "W1",
+      "client_ids": [
+        "C3_L001",
+        "C3_L002",
+        "C3_L003",
+        "C3_L005",
+        "C3_L006",
+        "C3_L008",
+        "C3_L009",
+        "C3_L010",
+        "C3_L011",
+        "C3_L012",
+        "C3_L013",
+        "C3_L014",
+        "C3_L015"
+      ]
+    },
+    {
+      "subcluster_id": "W2",
+      "client_ids": [
+        "C3_L004"
+      ]
+    },
+    {
+      "subcluster_id": "W3",
+      "client_ids": [
+        "C3_L007"
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "client_id": "C3_L001",
+      "subcluster_id": "W1"
+    },
+    {
+      "client_id": "C3_L002",
+      "subcluster_id": "W1"
+    },
+    {
+      "client_id": "C3_L003",
+      "subcluster_id": "W1"
+    },
+    {
+      "client_id": "C3_L004",
+      "subcluster_id": "W2"
+    },
+    {
+      "client_id": "C3_L005",
+      "subcluster_id": "W1"
+    },
+    {
+      "client_id": "C3_L006",
+      "subcluster_id": "W1"
+    },
+    {
+      "client_id": "C3_L007",
+      "subcluster_id": "W3"
+    },
+    {
+      "client_id": "C3_L008",
+      "subcluster_id": "W1"
+    },
+    {
+      "client_id": "C3_L009",
+      "subcluster_id": "W1"
+    },
+    {
+      "client_id": "C3_L010",
+      "subcluster_id": "W1"
+    },
+    {
+      "client_id": "C3_L011",
+      "subcluster_id": "W1"
+    },
+    {
+      "client_id": "C3_L012",
+      "subcluster_id": "W1"
+    },
+    {
+      "client_id": "C3_L013",
+      "subcluster_id": "W1"
+    },
+    {
+      "client_id": "C3_L014",
+      "subcluster_id": "W1"
+    },
+    {
+      "client_id": "C3_L015",
+      "subcluster_id": "W1"
+    }
+  ]
+}

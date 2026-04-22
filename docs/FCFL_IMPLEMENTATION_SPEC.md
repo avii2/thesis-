@@ -230,16 +230,21 @@ seed = 42
 
 ## 4.1 Base dataset path
 
-Current expected folder structure:
+Current audited local folder structure:
 
 ```text
-desktop/thesis/data/
+data/
   raw/
     hai_2103/
-    ton_iot/
-      original_archive/
-      combined_telemetry/
-    wustl_iiot_2021/
+      hai-21.03/
+    ton_iot/                  # not present in the audited local repo
+    <space>ton_iot/
+      Train_Test_IoT_Fridge.csv
+      Train_Test_IoT_GPS_Tracker.csv
+      Train_Test_IoT_Garage_Door.csv
+    wustl_iiot_2021/          # not present in the audited local repo
+    <space>wustl_iiot_2021/
+      wustl_iiot_2021.csv
 ```
 
 Recommended implementation choice:
@@ -253,13 +258,14 @@ FCFL_DATA_ROOT
 If `FCFL_DATA_ROOT` is not set, use:
 
 ```text
-/Desktop/thesis/data
+data
 ```
 
-TODO / USER MUST CONFIRM:
+Audit note:
 
 ```text
-Confirm whether the actual path is desktop/thesis/data or ~/Desktop/thesis/data.
+The current local repo uses repo-local data/ and currently has leading-space directory names
+for TON and WUSTL under data/raw/.
 ```
 
 ## 4.2 Cluster 1 dataset contract: HAI 21.03
@@ -267,7 +273,7 @@ Confirm whether the actual path is desktop/thesis/data or ~/Desktop/thesis/data.
 Dataset path:
 
 ```text
-${FCFL_DATA_ROOT}/raw/hai_2103/
+${FCFL_DATA_ROOT}/raw/hai_2103/hai-21.03/
 ```
 
 Expected file type:
@@ -288,10 +294,10 @@ Expected label column:
 attack
 ```
 
-TODO / USER MUST CONFIRM:
+Audit confirmation:
 
 ```text
-Confirm that HAI 21.03 files contain a label column exactly named attack.
+Audit confirmed that all eight local HAI CSVs contain the label column attack.
 ```
 
 Label handling:
@@ -327,21 +333,10 @@ Columns to exclude from model features:
 
 ```text
 attack
-Attack
-label
-Label
-target
-Target
+time
 attack_P1
 attack_P2
 attack_P3
-attack_P4
-timestamp
-Timestamp
-time
-Time
-date
-Date
 ```
 
 Notes:
@@ -349,19 +344,41 @@ Notes:
 - Process-specific attack labels may be used only for auxiliary analysis.
 - They must not be model input features.
 - They must not be used for dynamic clustering.
+- `attack_P4` was not observed in the audited local files; exclude it if it appears in another snapshot.
 
 ## 4.3 Cluster 2 dataset contract: TON IoT combined telemetry
 
 Dataset path:
 
 ```text
-${FCFL_DATA_ROOT}/raw/ton_iot/combined_telemetry/
+${FCFL_DATA_ROOT}/raw/ ton_iot/
 ```
 
-Do not use this folder for training unless explicitly required:
+Audit note:
 
 ```text
-${FCFL_DATA_ROOT}/raw/ton_iot/original_archive/
+The audited local repo currently contains only per-device TON IoT CSVs here.
+No raw combined_telemetry directory exists here; the deterministic builder writes the training CSV to outputs/processed/cluster2_ton_iot_combined.csv.
+```
+
+Expected deterministic combined training input:
+
+```text
+outputs/processed/cluster2_ton_iot_combined.csv
+```
+
+The current audited raw folder may be used for profiling only.
+
+Do not use this folder for training:
+
+```text
+${FCFL_DATA_ROOT}/raw/ ton_iot/
+```
+
+Instead, build the deterministic combined CSV and train from:
+
+```text
+outputs/processed/cluster2_ton_iot_combined.csv
 ```
 
 Expected file type:
@@ -385,34 +402,23 @@ fixed-length tabular telemetry vector
 Expected label column:
 
 ```text
-TODO / USER MUST CONFIRM
+label
 ```
 
-Possible label candidates for profiling only:
+Audit confirmation:
 
 ```text
-label
-Label
-attack
-Attack
-target
-Target
-type
-Type
+The current audited TON raw CSVs contain binary label in column label.
+The column type is an attack-family / traffic-type field and must be excluded from model input.
 ```
-
-Codex must not silently choose a label column. It may print candidate columns during profiling, but training must use the configured label column.
 
 Columns to exclude from model features:
 
 ```text
-configured label column
-timestamp
-Timestamp
-time
-Time
+label
+type
 date
-Date
+time
 device
 Device
 device_id
@@ -430,6 +436,14 @@ Device-origin information:
 - May be used for interpretation only.
 - Must not manually define fixed sub-cluster membership.
 - Fixed sub-clusters are formed by offline Agglomerative Clustering.
+- The deterministic builder may add a `source` column for provenance only; exclude it from model input by default.
+
+Deterministic combination rule:
+- preserve `date`, `time`, `label`, and `type`
+- add `source`
+- keep the audited telemetry union columns `fridge_temperature`, `temp_condition`, `latitude`, `longitude`, `door_state`, and `sphone_signal`
+- write blank values for telemetry columns that are not emitted by the row's source device
+- preserve configured file order and in-file row order
 
 No sliding windowing is used.
 
@@ -440,7 +454,7 @@ Each row is one sample.
 Dataset path:
 
 ```text
-${FCFL_DATA_ROOT}/raw/wustl_iiot_2021/
+${FCFL_DATA_ROOT}/raw/ wustl_iiot_2021/
 ```
 
 Expected file type:
@@ -464,22 +478,13 @@ fixed-length network-flow feature vector
 Expected label column:
 
 ```text
-TODO / USER MUST CONFIRM
+Target
 ```
 
-Possible label candidates for profiling only:
+Audit confirmation:
 
 ```text
-label
-Label
-class
-Class
-target
-Target
-traffic
-Traffic
-attack
-Attack
+The current audited WUSTL CSV contains binary label in Target and multiclass traffic-family text in Traffic.
 ```
 
 Mandatory leakage / identifier columns to exclude:
@@ -491,12 +496,13 @@ SrcAddr
 DstAddr
 sIpId
 dIpId
+Target
+Traffic
 ```
 
 Also exclude:
 
 ```text
-configured label column
 attack type column if present
 traffic class text column if separate from binary label
 timestamp

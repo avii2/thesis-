@@ -1,0 +1,80 @@
+config_version: 1
+cluster:
+  id: 2
+  key: C2
+  dataset_key: TON_IoT_combined_telemetry
+  dataset_name: TON IoT combined telemetry
+  audit_report: outputs/reports/data_profile_cluster2.json
+data:
+  data_root_env_var: FCFL_DATA_ROOT
+  default_data_root: data
+  current_raw_input_dir: "data/raw/ ton_iot"
+  current_raw_files:
+    - Train_Test_IoT_Fridge.csv
+    - Train_Test_IoT_GPS_Tracker.csv
+    - Train_Test_IoT_Garage_Door.csv
+  training_input_mode: combined_processed_csv_required
+  expected_processed_input_path: outputs/processed/cluster2_ton_iot_combined.csv
+  schema_consistent_across_files: false
+  current_raw_schema_intersection_columns:
+    - date
+    - label
+    - time
+    - type
+  current_raw_schema_union_columns:
+    - date
+    - door_state
+    - fridge_temperature
+    - label
+    - latitude
+    - longitude
+    - sphone_signal
+    - temp_condition
+    - time
+    - type
+  requires_deterministic_combine_step: true
+  label_column: label
+  label_column_confirmed_from_audit: true
+  candidate_label_columns_present:
+    - label
+    - type
+  timestamp_or_order_columns:
+    - date
+    - time
+  excluded_columns:
+    - label
+    - type
+    - date
+    - time
+  exclude_if_present:
+    - device
+    - Device
+    - device_id
+    - Device_ID
+    - source
+    - Source
+    - src
+    - dst
+    - id
+    - ID
+  missing_values_detected: false
+  current_binary_label_counts:
+    "0": 45000
+    "1": 73491
+partitioning:
+  candidate_leaf_clients: 15
+clustering:
+  fixed_subclusters: 3
+  fixed_subcluster_ids:
+    - T1
+    - T2
+    - T3
+preprocessing:
+  input_type: fixed_length_tabular
+  windowing: none
+runtime_validation:
+  require_expected_processed_input_to_exist: true
+  require_label_column_to_exist: true
+  error_on_missing_expected_processed_input: TON_IOT_COMBINED_TELEMETRY_REQUIRED
+  error_on_training_from_current_raw_per_device_files: TON_IOT_RAW_PER_DEVICE_FILES_ARE_PROFILE_ONLY
+  error_on_missing_label_column: CONFIGURED_LABEL_COLUMN_MISSING

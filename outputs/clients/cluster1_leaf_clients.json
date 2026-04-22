@@ -1,0 +1,856 @@
+{
+  "cluster_id": 1,
+  "dataset": "HAI 21.03",
+  "num_leaf_clients": 12,
+  "total_ordered_samples": 1323608,
+  "split_ratios": {
+    "train": 0.7,
+    "validation": 0.15,
+    "test": 0.15
+  },
+  "ordering_mode": "sorted_by_configured_timestamp_or_order_columns",
+  "ordering_columns_used": [
+    "time"
+  ],
+  "source_paths": [
+    "data/raw/hai_2103/hai-21.03/train1.csv",
+    "data/raw/hai_2103/hai-21.03/train2.csv",
+    "data/raw/hai_2103/hai-21.03/train3.csv",
+    "data/raw/hai_2103/hai-21.03/test1.csv",
+    "data/raw/hai_2103/hai-21.03/test2.csv",
+    "data/raw/hai_2103/hai-21.03/test3.csv",
+    "data/raw/hai_2103/hai-21.03/test4.csv",
+    "data/raw/hai_2103/hai-21.03/test5.csv"
+  ],
+  "cluster_label_counts": {
+    "0": 1314661,
+    "1": 8947
+  },
+  "cluster_split_label_counts": {
+    "train": {
+      "0": 920078,
+      "1": 6442
+    },
+    "validation": {
+      "0": 197840,
+      "1": 700
+    },
+    "test": {
+      "0": 196743,
+      "1": 1805
+    }
+  },
+  "single_class_local_partitions": [
+    {
+      "client_id": "C1_L002",
+      "split": "validation",
+      "label_counts": {
+        "0": 16545
+      }
+    },
+    {
+      "client_id": "C1_L002",
+      "split": "test",
+      "label_counts": {
+        "0": 16546
+      }
+    },
+    {
+      "client_id": "C1_L003",
+      "split": "train",
+      "label_counts": {
+        "0": 77210
+      }
+    },
+    {
+      "client_id": "C1_L003",
+      "split": "validation",
+      "label_counts": {
+        "0": 16545
+      }
+    },
+    {
+      "client_id": "C1_L003",
+      "split": "test",
+      "label_counts": {
+        "0": 16546
+      }
+    },
+    {
+      "client_id": "C1_L004",
+      "split": "train",
+      "label_counts": {
+        "0": 77210
+      }
+    },
+    {
+      "client_id": "C1_L004",
+      "split": "validation",
+      "label_counts": {
+        "0": 16545
+      }
+    },
+    {
+      "client_id": "C1_L006",
+      "split": "validation",
+      "label_counts": {
+        "0": 16545
+      }
+    },
+    {
+      "client_id": "C1_L006",
+      "split": "test",
+      "label_counts": {
+        "0": 16546
+      }
+    },
+    {
+      "client_id": "C1_L007",
+      "split": "train",
+      "label_counts": {
+        "0": 77210
+      }
+    },
+    {
+      "client_id": "C1_L007",
+      "split": "validation",
+      "label_counts": {
+        "0": 16545
+      }
+    },
+    {
+      "client_id": "C1_L007",
+      "split": "test",
+      "label_counts": {
+        "0": 16545
+      }
+    },
+    {
+      "client_id": "C1_L008",
+      "split": "train",
+      "label_counts": {
+        "0": 77210
+      }
+    },
+    {
+      "client_id": "C1_L008",
+      "split": "validation",
+      "label_counts": {
+        "0": 16545
+      }
+    },
+    {
+      "client_id": "C1_L008",
+      "split": "test",
+      "label_counts": {
+        "0": 16546
+      }
+    },
+    {
+      "client_id": "C1_L009",
+      "split": "train",
+      "label_counts": {
+        "0": 77210
+      }
+    },
+    {
+      "client_id": "C1_L009",
+      "split": "validation",
+      "label_counts": {
+        "0": 16545
+      }
+    },
+    {
+      "client_id": "C1_L009",
+      "split": "test",
+      "label_counts": {
+        "0": 16546
+      }
+    },
+    {
+      "client_id": "C1_L010",
+      "split": "train",
+      "label_counts": {
+        "0": 77210
+      }
+    },
+    {
+      "client_id": "C1_L010",
+      "split": "validation",
+      "label_counts": {
+        "0": 16545
+      }
+    },
+    {
+      "client_id": "C1_L010",
+      "split": "test",
+      "label_counts": {
+        "0": 16545
+      }
+    },
+    {
+      "client_id": "C1_L011",
+      "split": "train",
+      "label_counts": {
+        "0": 77210
+      }
+    },
+    {
+      "client_id": "C1_L011",
+      "split": "validation",
+      "label_counts": {
+        "0": 16545
+      }
+    },
+    {
+      "client_id": "C1_L011",
+      "split": "test",
+      "label_counts": {
+        "0": 16546
+      }
+    },
+    {
+      "client_id": "C1_L012",
+      "split": "train",
+      "label_counts": {
+        "0": 77210
+      }
+    },
+    {
+      "client_id": "C1_L012",
+      "split": "validation",
+      "label_counts": {
+        "0": 16545
+      }
+    },
+    {
+      "client_id": "C1_L012",
+      "split": "test",
+      "label_counts": {
+        "0": 16546
+      }
+    }
+  ],
+  "descriptor_source_split": "train",
+  "clients": [
+    {
+      "client_id": "C1_L001",
+      "ordered_start_index": 0,
+      "ordered_end_index": 110300,
+      "num_total_samples": 110300,
+      "num_train_samples": 77210,
+      "num_val_samples": 16545,
+      "num_test_samples": 16545,
+      "train_label_counts": {
+        "0": 75421,
+        "1": 1789
+      },
+      "val_label_counts": {
+        "0": 16017,
+        "1": 528
+      },
+      "test_label_counts": {
+        "0": 15927,
+        "1": 618
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 77210,
+        "num_samples": 77210,
+        "label_counts": {
+          "0": 75421,
+          "1": 1789
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 77210,
+        "end_index": 93755,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 16017,
+          "1": 528
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 93755,
+        "end_index": 110300,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 15927,
+          "1": 618
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": []
+    },
+    {
+      "client_id": "C1_L002",
+      "ordered_start_index": 110300,
+      "ordered_end_index": 220601,
+      "num_total_samples": 110301,
+      "num_train_samples": 77210,
+      "num_val_samples": 16545,
+      "num_test_samples": 16546,
+      "train_label_counts": {
+        "0": 76067,
+        "1": 1143
+      },
+      "val_label_counts": {
+        "0": 16545
+      },
+      "test_label_counts": {
+        "0": 16546
+      },
+      "train_range": {
+        "start_index": 110300,
+        "end_index": 187510,
+        "num_samples": 77210,
+        "label_counts": {
+          "0": 76067,
+          "1": 1143
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 187510,
+        "end_index": 204055,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 16545
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 204055,
+        "end_index": 220601,
+        "num_samples": 16546,
+        "label_counts": {
+          "0": 16546
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C1_L003",
+      "ordered_start_index": 220601,
+      "ordered_end_index": 330902,
+      "num_total_samples": 110301,
+      "num_train_samples": 77210,
+      "num_val_samples": 16545,
+      "num_test_samples": 16546,
+      "train_label_counts": {
+        "0": 77210
+      },
+      "val_label_counts": {
+        "0": 16545
+      },
+      "test_label_counts": {
+        "0": 16546
+      },
+      "train_range": {
+        "start_index": 220601,
+        "end_index": 297811,
+        "num_samples": 77210,
+        "label_counts": {
+          "0": 77210
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 297811,
+        "end_index": 314356,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 16545
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 314356,
+        "end_index": 330902,
+        "num_samples": 16546,
+        "label_counts": {
+          "0": 16546
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "train",
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C1_L004",
+      "ordered_start_index": 330902,
+      "ordered_end_index": 441202,
+      "num_total_samples": 110300,
+      "num_train_samples": 77210,
+      "num_val_samples": 16545,
+      "num_test_samples": 16545,
+      "train_label_counts": {
+        "0": 77210
+      },
+      "val_label_counts": {
+        "0": 16545
+      },
+      "test_label_counts": {
+        "0": 15992,
+        "1": 553
+      },
+      "train_range": {
+        "start_index": 330902,
+        "end_index": 408112,
+        "num_samples": 77210,
+        "label_counts": {
+          "0": 77210
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 408112,
+        "end_index": 424657,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 16545
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 424657,
+        "end_index": 441202,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 15992,
+          "1": 553
+        },
+        "single_class": false
+      },
+      "single_class_splits": [
+        "train",
+        "validation"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C1_L005",
+      "ordered_start_index": 441202,
+      "ordered_end_index": 551503,
+      "num_total_samples": 110301,
+      "num_train_samples": 77210,
+      "num_val_samples": 16545,
+      "num_test_samples": 16546,
+      "train_label_counts": {
+        "0": 75071,
+        "1": 2139
+      },
+      "val_label_counts": {
+        "0": 16373,
+        "1": 172
+      },
+      "test_label_counts": {
+        "0": 15912,
+        "1": 634
+      },
+      "train_range": {
+        "start_index": 441202,
+        "end_index": 518412,
+        "num_samples": 77210,
+        "label_counts": {
+          "0": 75071,
+          "1": 2139
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 518412,
+        "end_index": 534957,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 16373,
+          "1": 172
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 534957,
+        "end_index": 551503,
+        "num_samples": 16546,
+        "label_counts": {
+          "0": 15912,
+          "1": 634
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": []
+    },
+    {
+      "client_id": "C1_L006",
+      "ordered_start_index": 551503,
+      "ordered_end_index": 661804,
+      "num_total_samples": 110301,
+      "num_train_samples": 77210,
+      "num_val_samples": 16545,
+      "num_test_samples": 16546,
+      "train_label_counts": {
+        "0": 75839,
+        "1": 1371
+      },
+      "val_label_counts": {
+        "0": 16545
+      },
+      "test_label_counts": {
+        "0": 16546
+      },
+      "train_range": {
+        "start_index": 551503,
+        "end_index": 628713,
+        "num_samples": 77210,
+        "label_counts": {
+          "0": 75839,
+          "1": 1371
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 628713,
+        "end_index": 645258,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 16545
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 645258,
+        "end_index": 661804,
+        "num_samples": 16546,
+        "label_counts": {
+          "0": 16546
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C1_L007",
+      "ordered_start_index": 661804,
+      "ordered_end_index": 772104,
+      "num_total_samples": 110300,
+      "num_train_samples": 77210,
+      "num_val_samples": 16545,
+      "num_test_samples": 16545,
+      "train_label_counts": {
+        "0": 77210
+      },
+      "val_label_counts": {
+        "0": 16545
+      },
+      "test_label_counts": {
+        "0": 16545
+      },
+      "train_range": {
+        "start_index": 661804,
+        "end_index": 739014,
+        "num_samples": 77210,
+        "label_counts": {
+          "0": 77210
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 739014,
+        "end_index": 755559,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 16545
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 755559,
+        "end_index": 772104,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 16545
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "train",
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C1_L008",
+      "ordered_start_index": 772104,
+      "ordered_end_index": 882405,
+      "num_total_samples": 110301,
+      "num_train_samples": 77210,
+      "num_val_samples": 16545,
+      "num_test_samples": 16546,
+      "train_label_counts": {
+        "0": 77210
+      },
+      "val_label_counts": {
+        "0": 16545
+      },
+      "test_label_counts": {
+        "0": 16546
+      },
+      "train_range": {
+        "start_index": 772104,
+        "end_index": 849314,
+        "num_samples": 77210,
+        "label_counts": {
+          "0": 77210
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 849314,
+        "end_index": 865859,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 16545
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 865859,
+        "end_index": 882405,
+        "num_samples": 16546,
+        "label_counts": {
+          "0": 16546
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "train",
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C1_L009",
+      "ordered_start_index": 882405,
+      "ordered_end_index": 992706,
+      "num_total_samples": 110301,
+      "num_train_samples": 77210,
+      "num_val_samples": 16545,
+      "num_test_samples": 16546,
+      "train_label_counts": {
+        "0": 77210
+      },
+      "val_label_counts": {
+        "0": 16545
+      },
+      "test_label_counts": {
+        "0": 16546
+      },
+      "train_range": {
+        "start_index": 882405,
+        "end_index": 959615,
+        "num_samples": 77210,
+        "label_counts": {
+          "0": 77210
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 959615,
+        "end_index": 976160,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 16545
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 976160,
+        "end_index": 992706,
+        "num_samples": 16546,
+        "label_counts": {
+          "0": 16546
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "train",
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C1_L010",
+      "ordered_start_index": 992706,
+      "ordered_end_index": 1103006,
+      "num_total_samples": 110300,
+      "num_train_samples": 77210,
+      "num_val_samples": 16545,
+      "num_test_samples": 16545,
+      "train_label_counts": {
+        "0": 77210
+      },
+      "val_label_counts": {
+        "0": 16545
+      },
+      "test_label_counts": {
+        "0": 16545
+      },
+      "train_range": {
+        "start_index": 992706,
+        "end_index": 1069916,
+        "num_samples": 77210,
+        "label_counts": {
+          "0": 77210
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 1069916,
+        "end_index": 1086461,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 16545
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 1086461,
+        "end_index": 1103006,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 16545
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "train",
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C1_L011",
+      "ordered_start_index": 1103006,
+      "ordered_end_index": 1213307,
+      "num_total_samples": 110301,
+      "num_train_samples": 77210,
+      "num_val_samples": 16545,
+      "num_test_samples": 16546,
+      "train_label_counts": {
+        "0": 77210
+      },
+      "val_label_counts": {
+        "0": 16545
+      },
+      "test_label_counts": {
+        "0": 16546
+      },
+      "train_range": {
+        "start_index": 1103006,
+        "end_index": 1180216,
+        "num_samples": 77210,
+        "label_counts": {
+          "0": 77210
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 1180216,
+        "end_index": 1196761,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 16545
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 1196761,
+        "end_index": 1213307,
+        "num_samples": 16546,
+        "label_counts": {
+          "0": 16546
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "train",
+        "validation",
+        "test"
+      ],
+      "notes": []
+    },
+    {
+      "client_id": "C1_L012",
+      "ordered_start_index": 1213307,
+      "ordered_end_index": 1323608,
+      "num_total_samples": 110301,
+      "num_train_samples": 77210,
+      "num_val_samples": 16545,
+      "num_test_samples": 16546,
+      "train_label_counts": {
+        "0": 77210
+      },
+      "val_label_counts": {
+        "0": 16545
+      },
+      "test_label_counts": {
+        "0": 16546
+      },
+      "train_range": {
+        "start_index": 1213307,
+        "end_index": 1290517,
+        "num_samples": 77210,
+        "label_counts": {
+          "0": 77210
+        },
+        "single_class": true
+      },
+      "val_range": {
+        "start_index": 1290517,
+        "end_index": 1307062,
+        "num_samples": 16545,
+        "label_counts": {
+          "0": 16545
+        },
+        "single_class": true
+      },
+      "test_range": {
+        "start_index": 1307062,
+        "end_index": 1323608,
+        "num_samples": 16546,
+        "label_counts": {
+          "0": 16546
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "train",
+        "validation",
+        "test"
+      ],
+      "notes": []
+    }
+  ]
+}

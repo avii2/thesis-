@@ -1,0 +1,120 @@
+{
+  "cluster_id": 2,
+  "dataset": "TON IoT combined telemetry",
+  "status": "ok",
+  "clustering_method": "AgglomerativeClustering",
+  "linkage": "ward",
+  "metric": "euclidean",
+  "descriptor": "feature_mean_std",
+  "descriptor_dim": 28,
+  "descriptor_source_split": "train",
+  "n_subclusters": 3,
+  "fixed_subcluster_ids": [
+    "T1",
+    "T2",
+    "T3"
+  ],
+  "frozen": true,
+  "membership_hash": "572fc5b59e36576bcd52becf06e8095decd701dade53abf72f398ffcda6c02cd",
+  "client_metadata_path": "outputs/clients/cluster2_leaf_clients.json",
+  "descriptor_scaler_path": "outputs/clustering/cluster2_descriptor_scaler.pkl",
+  "membership_file": "outputs/clustering/cluster2_memberships.json",
+  "reuse_for_experiment_groups": [
+    "baseline_uniform_hierarchical",
+    "proposed_specialized_hierarchical"
+  ],
+  "subclusters": [
+    {
+      "subcluster_id": "T1",
+      "client_ids": [
+        "C2_L001",
+        "C2_L002",
+        "C2_L004",
+        "C2_L005",
+        "C2_L010",
+        "C2_L014"
+      ]
+    },
+    {
+      "subcluster_id": "T2",
+      "client_ids": [
+        "C2_L003",
+        "C2_L006"
+      ]
+    },
+    {
+      "subcluster_id": "T3",
+      "client_ids": [
+        "C2_L007",
+        "C2_L008",
+        "C2_L009",
+        "C2_L011",
+        "C2_L012",
+        "C2_L013",
+        "C2_L015"
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "client_id": "C2_L001",
+      "subcluster_id": "T1"
+    },
+    {
+      "client_id": "C2_L002",
+      "subcluster_id": "T1"
+    },
+    {
+      "client_id": "C2_L003",
+      "subcluster_id": "T2"
+    },
+    {
+      "client_id": "C2_L004",
+      "subcluster_id": "T1"
+    },
+    {
+      "client_id": "C2_L005",
+      "subcluster_id": "T1"
+    },
+    {
+      "client_id": "C2_L006",
+      "subcluster_id": "T2"
+    },
+    {
+      "client_id": "C2_L007",
+      "subcluster_id": "T3"
+    },
+    {
+      "client_id": "C2_L008",
+      "subcluster_id": "T3"
+    },
+    {
+      "client_id": "C2_L009",
+      "subcluster_id": "T3"
+    },
+    {
+      "client_id": "C2_L010",
+      "subcluster_id": "T1"
+    },
+    {
+      "client_id": "C2_L011",
+      "subcluster_id": "T3"
+    },
+    {
+      "client_id": "C2_L012",
+      "subcluster_id": "T3"
+    },
+    {
+      "client_id": "C2_L013",
+      "subcluster_id": "T3"
+    },
+    {
+      "client_id": "C2_L014",
+      "subcluster_id": "T1"
+    },
+    {
+      "client_id": "C2_L015",
+      "subcluster_id": "T3"
+    }
+  ]
+}

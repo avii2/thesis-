@@ -60,7 +60,7 @@ No missing required config field.
 
 Mandatory:
 - Cluster 1 raw folder exists and contains at least one CSV
-- Cluster 2 combined telemetry folder exists and contains at least one CSV
+- Cluster 2 deterministic combined telemetry CSV exists at the configured processed path
 - Cluster 3 raw folder exists and contains at least one CSV
 
 Pass condition:

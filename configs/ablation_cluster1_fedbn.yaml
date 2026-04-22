@@ -1,0 +1,44 @@
+config_version: 1
+ablation_id: ablation_cluster1_fedavg_vs_fedbn
+description: Required Cluster 1 FL-method ablation comparing hierarchical TCN FedAvg against hierarchical TCN FedBN.
+source_of_truth:
+  architecture_contract: docs/ARCHITECTURE_CONTRACT.md
+  implementation_spec: docs/FCFL_IMPLEMENTATION_SPEC.md
+  experiment_matrix: docs/EXPERIMENT_MATRIX.csv
+training_defaults:
+  rounds: 50
+  local_epochs: 1
+  batch_size: 128
+  seeds:
+    - 42
+    - 123
+    - 2025
+smoke_test_defaults:
+  rounds: 2
+  local_epochs: 1
+  batch_size: 64
+  seed: 42
+comparisons:
+  - comparison_id: ablation_cluster1_fedavg_vs_fedbn
+    title: Cluster 1 FedAvg vs FedBN
+    control:
+      experiment_id: AB_C1_FEDAVG_TCN
+      run_source: custom_cluster1_fedavg_tcn
+      label: FedAvg TCN Control
+      cluster_id: 1
+      cluster_config: configs/cluster1_hai.yaml
+      membership_file: outputs/clustering/cluster1_memberships.json
+      hierarchy: hierarchical_fixed
+      clustering_method: agglomerative
+      n_subclusters: 2
+      descriptor: feature_mean_std
+      model_family: tcn
+      fl_method: FedAvg
+      aggregation: weighted_arithmetic_mean
+      learning_rate: 0.01
+    treatment:
+      experiment_id: P_C1
+      run_source: standard
+      label: FedBN TCN
+runtime_validation:
+  reuse_frozen_memberships: true

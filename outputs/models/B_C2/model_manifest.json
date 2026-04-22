@@ -1,0 +1,13 @@
+{
+  "experiment_id": "B_C2",
+  "cluster_id": 2,
+  "dataset": "TON IoT combined telemetry",
+  "model_family": "cnn1d",
+  "model_version": "C2_R001",
+  "model_hash": "sha256:41fd36c1433d8cdb56fe57594a130046a35a1efdd310b076e94dc51b212c6e05",
+  "artifact_type": "metadata_manifest",
+  "weights_emitted_by_runner": false,
+  "summary_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/B_C2/run_summary.json",
+  "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/B_C2/round_metrics.csv",
+  "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/metrics/B_C2_metrics.csv"
+}

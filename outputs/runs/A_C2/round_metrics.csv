@@ -1,0 +1,2 @@
+round,train_loss_local_mean,train_accuracy,train_f1,validation_loss,validation_accuracy,validation_f1,test_loss,test_accuracy,test_f1,communication_cost_bytes
+1,0.692968757947286,0.6,0.75,0.6919282078742981,0.6666666666666666,0.8,0.6919242739677429,0.6666666666666666,0.8,4920

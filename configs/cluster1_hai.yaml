@@ -1,0 +1,68 @@
+config_version: 1
+cluster:
+  id: 1
+  key: C1
+  dataset_key: HAI_2103
+  dataset_name: HAI 21.03
+  audit_report: outputs/reports/data_profile_cluster1.json
+data:
+  data_root_env_var: FCFL_DATA_ROOT
+  default_data_root: data
+  current_raw_input_dir: data/raw/hai_2103/hai-21.03
+  current_raw_files:
+    - train1.csv
+    - train2.csv
+    - train3.csv
+    - test1.csv
+    - test2.csv
+    - test3.csv
+    - test4.csv
+    - test5.csv
+  training_input_mode: raw_csv_glob
+  training_input_glob: data/raw/hai_2103/hai-21.03/*.csv
+  schema_consistent_across_files: true
+  label_column: attack
+  label_column_confirmed_from_audit: true
+  candidate_label_columns_present:
+    - attack
+  timestamp_or_order_columns:
+    - time
+  excluded_columns:
+    - attack
+    - time
+    - attack_P1
+    - attack_P2
+    - attack_P3
+  exclude_if_present:
+    - attack_P4
+    - Attack
+    - label
+    - Label
+    - target
+    - Target
+    - timestamp
+    - Timestamp
+    - Time
+    - date
+    - Date
+  missing_values_detected: false
+  current_binary_label_counts:
+    "0": 1314661
+    "1": 8947
+partitioning:
+  candidate_leaf_clients: 12
+clustering:
+  fixed_subclusters: 2
+  fixed_subcluster_ids:
+    - H1
+    - H2
+preprocessing:
+  input_type: multivariate_time_series
+  window_length: 32
+  stride: 8
+  window_label_rule: any_positive_row
+runtime_validation:
+  require_training_input_to_exist: true
+  require_schema_consistency_across_files: true
+  require_label_column_to_exist: true
+  error_on_missing_label_column: CONFIGURED_LABEL_COLUMN_MISSING

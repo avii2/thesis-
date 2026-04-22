@@ -1,0 +1,193 @@
+{
+  "experiment_id": "A_C2",
+  "cluster_id": 2,
+  "dataset": "TON IoT combined telemetry",
+  "cluster_config_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/configs/cluster2_ton_iot.yaml",
+  "hierarchy": "flat",
+  "subcluster_layer_used": false,
+  "membership_file_used": null,
+  "model_family": "cnn1d",
+  "fl_method": "FedAvg",
+  "aggregation": "weighted_arithmetic_mean",
+  "input_adapter": "feature_vector_as_sequence",
+  "input_channels": 1,
+  "input_length": 14,
+  "num_leaf_clients": 15,
+  "rounds": 1,
+  "local_epochs": 1,
+  "batch_size": 64,
+  "learning_rate": 0.05,
+  "seed": 42,
+  "model_parameter_bytes": 164,
+  "communication_cost_per_round_bytes": 4920,
+  "total_communication_cost_bytes": 4920,
+  "best_validation_round": 1,
+  "best_validation_f1": 0.8,
+  "test_f1_at_best_validation_round": 0.8,
+  "wall_clock_training_seconds": 0.012123625005187932,
+  "data_summary": {
+    "cluster_id": 2,
+    "dataset": "TON IoT combined telemetry",
+    "num_clients": 15,
+    "input_adapter": "feature_vector_as_sequence",
+    "input_channels": 1,
+    "input_length": 14,
+    "retained_input_feature_columns": [
+      "fridge_temperature",
+      "temp_condition",
+      "latitude",
+      "longitude",
+      "door_state",
+      "sphone_signal"
+    ],
+    "model_feature_columns": [
+      "fridge_temperature",
+      "latitude",
+      "longitude",
+      "temp_condition=UNKNOWN",
+      "temp_condition=high",
+      "temp_condition=low",
+      "door_state=UNKNOWN",
+      "door_state=closed",
+      "door_state=open",
+      "sphone_signal=0",
+      "sphone_signal=1",
+      "sphone_signal=UNKNOWN",
+      "sphone_signal=false",
+      "sphone_signal=true"
+    ],
+    "dropped_all_missing_feature_columns": [],
+    "dropped_constant_feature_columns": [],
+    "dropped_high_cardinality_categorical_columns": [],
+    "max_train_examples_per_client": 8,
+    "max_eval_examples_per_client": 8,
+    "client_train_sample_counts": {
+      "C2_L001": 8,
+      "C2_L002": 8,
+      "C2_L003": 8,
+      "C2_L004": 8,
+      "C2_L005": 8,
+      "C2_L006": 8,
+      "C2_L007": 8,
+      "C2_L008": 8,
+      "C2_L009": 8,
+      "C2_L010": 8,
+      "C2_L011": 8,
+      "C2_L012": 8,
+      "C2_L013": 8,
+      "C2_L014": 8,
+      "C2_L015": 8
+    },
+    "client_validation_sample_counts": {
+      "C2_L001": 8,
+      "C2_L002": 8,
+      "C2_L003": 8,
+      "C2_L004": 8,
+      "C2_L005": 8,
+      "C2_L006": 8,
+      "C2_L007": 8,
+      "C2_L008": 8,
+      "C2_L009": 8,
+      "C2_L010": 8,
+      "C2_L011": 8,
+      "C2_L012": 8,
+      "C2_L013": 8,
+      "C2_L014": 8,
+      "C2_L015": 8
+    },
+    "client_test_sample_counts": {
+      "C2_L001": 8,
+      "C2_L002": 8,
+      "C2_L003": 8,
+      "C2_L004": 8,
+      "C2_L005": 8,
+      "C2_L006": 8,
+      "C2_L007": 8,
+      "C2_L008": 8,
+      "C2_L009": 8,
+      "C2_L010": 8,
+      "C2_L011": 8,
+      "C2_L012": 8,
+      "C2_L013": 8,
+      "C2_L014": 8,
+      "C2_L015": 8
+    }
+  },
+  "best_round_train_metrics": {
+    "loss": 0.6924717426300049,
+    "accuracy": 0.6,
+    "precision": 0.6,
+    "recall": 1.0,
+    "f1": 0.75,
+    "auroc": 0.5934606481481481,
+    "pr_auc": 0.7120283868441772,
+    "fpr": 1.0,
+    "confusion_matrix": [
+      [
+        0,
+        48
+      ],
+      [
+        0,
+        72
+      ]
+    ],
+    "support": 120,
+    "label_counts": {
+      "0": 48,
+      "1": 72
+    }
+  },
+  "best_round_validation_metrics": {
+    "loss": 0.6919282078742981,
+    "accuracy": 0.6666666666666666,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "f1": 0.8,
+    "auroc": 0.625625,
+    "pr_auc": 0.8175525332733838,
+    "fpr": 1.0,
+    "confusion_matrix": [
+      [
+        0,
+        40
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    "support": 120,
+    "label_counts": {
+      "0": 40,
+      "1": 80
+    }
+  },
+  "best_round_test_metrics": {
+    "loss": 0.6919242739677429,
+    "accuracy": 0.6666666666666666,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "f1": 0.8,
+    "auroc": 0.71,
+    "pr_auc": 0.8305877537885156,
+    "fpr": 1.0,
+    "confusion_matrix": [
+      [
+        0,
+        40
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    "support": 120,
+    "label_counts": {
+      "0": 40,
+      "1": 80
+    }
+  },
+  "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/A_C2/round_metrics.csv",
+  "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/metrics/A_C2_metrics.csv"
+}

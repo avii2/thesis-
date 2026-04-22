@@ -1,0 +1,274 @@
+{
+  "cluster_id": 2,
+  "dataset": "TON IoT combined telemetry",
+  "generated_at_utc": "2026-04-21T17:24:57.284484+00:00",
+  "config_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/configs/cluster2_ton_iot.yaml",
+  "source_kind": "profile",
+  "source_paths": [
+    "data/raw/ ton_iot/Train_Test_IoT_Fridge.csv",
+    "data/raw/ ton_iot/Train_Test_IoT_GPS_Tracker.csv",
+    "data/raw/ ton_iot/Train_Test_IoT_Garage_Door.csv"
+  ],
+  "csv_file_count": 3,
+  "total_rows": 118491,
+  "label_column": "label",
+  "label_column_confirmed_from_audit": true,
+  "schema_consistent_across_files": false,
+  "union_columns": [
+    "date",
+    "door_state",
+    "fridge_temperature",
+    "label",
+    "latitude",
+    "longitude",
+    "sphone_signal",
+    "temp_condition",
+    "time",
+    "type"
+  ],
+  "intersection_columns": [
+    "date",
+    "label",
+    "time",
+    "type"
+  ],
+  "timestamp_or_order_columns": [
+    "date",
+    "time"
+  ],
+  "configured_excluded_columns": [
+    "label",
+    "type",
+    "date",
+    "time"
+  ],
+  "configured_exclude_if_present": [
+    "device",
+    "Device",
+    "device_id",
+    "Device_ID",
+    "source",
+    "Source",
+    "src",
+    "dst",
+    "id",
+    "ID"
+  ],
+  "audit_blockers": [
+    "CSV schemas differ across configured files.",
+    "Configured combined telemetry training file is not present yet."
+  ],
+  "files": [
+    {
+      "file_name": "Train_Test_IoT_Fridge.csv",
+      "relative_path": "data/raw/ ton_iot/Train_Test_IoT_Fridge.csv",
+      "row_count": 39944,
+      "column_count": 6,
+      "raw_columns": [
+        "\ufeffdate",
+        "time",
+        "fridge_temperature",
+        "temp_condition",
+        "label",
+        "type"
+      ],
+      "normalized_columns": [
+        "date",
+        "time",
+        "fridge_temperature",
+        "temp_condition",
+        "label",
+        "type"
+      ],
+      "available_columns": [
+        "date",
+        "time",
+        "fridge_temperature",
+        "temp_condition",
+        "label",
+        "type"
+      ],
+      "missing_value_counts": {
+        "date": 0,
+        "time": 0,
+        "fridge_temperature": 0,
+        "temp_condition": 0,
+        "label": 0,
+        "type": 0
+      },
+      "numeric_columns": [
+        "fridge_temperature",
+        "label"
+      ],
+      "categorical_columns": [
+        "date",
+        "time",
+        "temp_condition",
+        "type"
+      ],
+      "present_excluded_columns": [
+        "date",
+        "time",
+        "label",
+        "type"
+      ],
+      "retained_feature_columns": [
+        "fridge_temperature",
+        "temp_condition"
+      ],
+      "label_raw_value_counts": {
+        "0": 15000,
+        "1": 24944
+      },
+      "binary_label_counts": {
+        "0": 15000,
+        "1": 24944
+      },
+      "header_issues": [
+        "UTF-8 BOM detected on the first header cell."
+      ]
+    },
+    {
+      "file_name": "Train_Test_IoT_GPS_Tracker.csv",
+      "relative_path": "data/raw/ ton_iot/Train_Test_IoT_GPS_Tracker.csv",
+      "row_count": 38960,
+      "column_count": 6,
+      "raw_columns": [
+        "\ufeffdate",
+        "time",
+        "latitude",
+        "longitude",
+        "label",
+        "type"
+      ],
+      "normalized_columns": [
+        "date",
+        "time",
+        "latitude",
+        "longitude",
+        "label",
+        "type"
+      ],
+      "available_columns": [
+        "date",
+        "time",
+        "latitude",
+        "longitude",
+        "label",
+        "type"
+      ],
+      "missing_value_counts": {
+        "date": 0,
+        "time": 0,
+        "latitude": 0,
+        "longitude": 0,
+        "label": 0,
+        "type": 0
+      },
+      "numeric_columns": [
+        "latitude",
+        "longitude",
+        "label"
+      ],
+      "categorical_columns": [
+        "date",
+        "time",
+        "type"
+      ],
+      "present_excluded_columns": [
+        "date",
+        "time",
+        "label",
+        "type"
+      ],
+      "retained_feature_columns": [
+        "latitude",
+        "longitude"
+      ],
+      "label_raw_value_counts": {
+        "0": 15000,
+        "1": 23960
+      },
+      "binary_label_counts": {
+        "0": 15000,
+        "1": 23960
+      },
+      "header_issues": [
+        "UTF-8 BOM detected on the first header cell."
+      ]
+    },
+    {
+      "file_name": "Train_Test_IoT_Garage_Door.csv",
+      "relative_path": "data/raw/ ton_iot/Train_Test_IoT_Garage_Door.csv",
+      "row_count": 39587,
+      "column_count": 6,
+      "raw_columns": [
+        "\ufeffdate",
+        "time",
+        "door_state",
+        "sphone_signal",
+        "label",
+        "type"
+      ],
+      "normalized_columns": [
+        "date",
+        "time",
+        "door_state",
+        "sphone_signal",
+        "label",
+        "type"
+      ],
+      "available_columns": [
+        "date",
+        "time",
+        "door_state",
+        "sphone_signal",
+        "label",
+        "type"
+      ],
+      "missing_value_counts": {
+        "date": 0,
+        "time": 0,
+        "door_state": 0,
+        "sphone_signal": 0,
+        "label": 0,
+        "type": 0
+      },
+      "numeric_columns": [
+        "label"
+      ],
+      "categorical_columns": [
+        "date",
+        "time",
+        "door_state",
+        "sphone_signal",
+        "type"
+      ],
+      "present_excluded_columns": [
+        "date",
+        "time",
+        "label",
+        "type"
+      ],
+      "retained_feature_columns": [
+        "door_state",
+        "sphone_signal"
+      ],
+      "label_raw_value_counts": {
+        "0": 15000,
+        "1": 24587
+      },
+      "binary_label_counts": {
+        "0": 15000,
+        "1": 24587
+      },
+      "header_issues": [
+        "UTF-8 BOM detected on the first header cell."
+      ]
+    }
+  ],
+  "training_input_status": {
+    "available": false,
+    "error": "TON_IOT_COMBINED_TELEMETRY_REQUIRED: TON IoT combined telemetry requires configured processed input file data/processed/ton_iot/combined_telemetry/ton_iot_combined_telemetry.csv. Refusing to fall back to current raw per-device files."
+  }
+}
