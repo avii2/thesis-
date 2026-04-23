@@ -1,11 +1,66 @@
 {
   "cluster_id": 2,
   "dataset": "TON IoT combined telemetry",
-  "status": "blocked",
+  "status": "ok",
+  "source_kind": "training",
+  "source_paths": [
+    "outputs/processed/cluster2_ton_iot_combined.csv"
+  ],
+  "fit_scope": "full_loaded_training_input_pre_split",
   "label_column": "label",
-  "error": "TON_IOT_COMBINED_TELEMETRY_REQUIRED: TON IoT combined telemetry requires configured processed input file data/processed/ton_iot/combined_telemetry/ton_iot_combined_telemetry.csv. Refusing to fall back to current raw per-device files.",
-  "expected_processed_input_path": "data/processed/ton_iot/combined_telemetry/ton_iot_combined_telemetry.csv",
+  "label_counts": {
+    "0": 45000,
+    "1": 73491
+  },
+  "retained_input_feature_columns": [
+    "fridge_temperature",
+    "temp_condition",
+    "latitude",
+    "longitude",
+    "door_state",
+    "sphone_signal"
+  ],
+  "numeric_input_feature_columns": [
+    "fridge_temperature",
+    "latitude",
+    "longitude"
+  ],
+  "categorical_input_feature_columns": [
+    "temp_condition",
+    "door_state",
+    "sphone_signal"
+  ],
+  "dropped_all_missing_feature_columns": [],
+  "dropped_constant_feature_columns": [],
+  "dropped_high_cardinality_categorical_columns": [],
+  "output_feature_columns": [
+    "fridge_temperature",
+    "latitude",
+    "longitude",
+    "temp_condition=UNKNOWN",
+    "temp_condition=high",
+    "temp_condition=low",
+    "door_state=UNKNOWN",
+    "door_state=closed",
+    "door_state=open",
+    "sphone_signal=0",
+    "sphone_signal=1",
+    "sphone_signal=UNKNOWN",
+    "sphone_signal=false",
+    "sphone_signal=true"
+  ],
+  "output_feature_count": 14,
+  "row_count": 118491,
+  "transformed_shape": [
+    118491,
+    14
+  ],
   "windowing_deferred": false,
   "descriptor_computation_deferred": true,
-  "client_partitioning_deferred": true
+  "client_partitioning_deferred": true,
+  "artifact_paths": {
+    "imputer": "outputs/preprocessing/cluster2_ton_iot_imputer.pkl",
+    "scaler": "outputs/preprocessing/cluster2_ton_iot_scaler.pkl",
+    "preprocessor": "outputs/preprocessing/cluster2_ton_iot_preprocessor.pkl"
+  }
 }

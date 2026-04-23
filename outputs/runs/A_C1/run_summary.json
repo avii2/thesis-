@@ -13,18 +13,18 @@
   "input_channels": 60,
   "input_length": 32,
   "num_leaf_clients": 12,
-  "rounds": 1,
+  "rounds": 50,
   "local_epochs": 1,
-  "batch_size": 64,
+  "batch_size": 128,
   "learning_rate": 0.05,
   "seed": 42,
   "model_parameter_bytes": 5828,
   "communication_cost_per_round_bytes": 139872,
-  "total_communication_cost_bytes": 139872,
-  "best_validation_round": 1,
+  "total_communication_cost_bytes": 6993600,
+  "best_validation_round": 50,
   "best_validation_f1": 0.0,
   "test_f1_at_best_validation_round": 0.0,
-  "wall_clock_training_seconds": 0.02213987499999348,
+  "wall_clock_training_seconds": 96.1244998339971,
   "data_summary": {
     "cluster_id": 1,
     "dataset": "HAI 21.03",
@@ -198,121 +198,124 @@
       "P3_LL"
     ],
     "dropped_high_cardinality_categorical_columns": [],
-    "max_train_examples_per_client": 8,
-    "max_eval_examples_per_client": 8,
+    "max_train_examples_per_client": null,
+    "max_eval_examples_per_client": null,
     "client_train_sample_counts": {
-      "C1_L001": 8,
-      "C1_L002": 8,
-      "C1_L003": 8,
-      "C1_L004": 8,
-      "C1_L005": 8,
-      "C1_L006": 8,
-      "C1_L007": 8,
-      "C1_L008": 8,
-      "C1_L009": 8,
-      "C1_L010": 8,
-      "C1_L011": 8,
-      "C1_L012": 8
+      "C1_L001": 9648,
+      "C1_L002": 9648,
+      "C1_L003": 9648,
+      "C1_L004": 9648,
+      "C1_L005": 9648,
+      "C1_L006": 9648,
+      "C1_L007": 9648,
+      "C1_L008": 9648,
+      "C1_L009": 9648,
+      "C1_L010": 9648,
+      "C1_L011": 9648,
+      "C1_L012": 9648
     },
     "client_validation_sample_counts": {
-      "C1_L001": 8,
-      "C1_L002": 8,
-      "C1_L003": 8,
-      "C1_L004": 8,
-      "C1_L005": 8,
-      "C1_L006": 8,
-      "C1_L007": 8,
-      "C1_L008": 8,
-      "C1_L009": 8,
-      "C1_L010": 8,
-      "C1_L011": 8,
-      "C1_L012": 8
+      "C1_L001": 2065,
+      "C1_L002": 2065,
+      "C1_L003": 2065,
+      "C1_L004": 2065,
+      "C1_L005": 2065,
+      "C1_L006": 2065,
+      "C1_L007": 2065,
+      "C1_L008": 2065,
+      "C1_L009": 2065,
+      "C1_L010": 2065,
+      "C1_L011": 2065,
+      "C1_L012": 2065
     },
     "client_test_sample_counts": {
-      "C1_L001": 8,
-      "C1_L002": 8,
-      "C1_L003": 8,
-      "C1_L004": 8,
-      "C1_L005": 8,
-      "C1_L006": 8,
-      "C1_L007": 8,
-      "C1_L008": 8,
-      "C1_L009": 8,
-      "C1_L010": 8,
-      "C1_L011": 8,
-      "C1_L012": 8
+      "C1_L001": 2065,
+      "C1_L002": 2065,
+      "C1_L003": 2065,
+      "C1_L004": 2065,
+      "C1_L005": 2065,
+      "C1_L006": 2065,
+      "C1_L007": 2065,
+      "C1_L008": 2065,
+      "C1_L009": 2065,
+      "C1_L010": 2065,
+      "C1_L011": 2065,
+      "C1_L012": 2065
     }
   },
   "best_round_train_metrics": {
-    "loss": 0.6990607380867004,
-    "accuracy": 0.375,
+    "loss": 0.03167393058538437,
+    "accuracy": 0.9917513128800443,
     "precision": 0.0,
     "recall": 0.0,
     "f1": 0.0,
-    "auroc": "metric_unavailable_single_class",
-    "pr_auc": "metric_unavailable_single_class",
-    "fpr": 0.625,
+    "auroc": 0.9060496668363063,
+    "pr_auc": 0.485720727165344,
+    "fpr": 0.0,
     "confusion_matrix": [
       [
-        36,
-        60
+        114821,
+        0
       ],
       [
-        0,
+        955,
         0
       ]
     ],
-    "support": 96,
+    "support": 115776,
     "label_counts": {
-      "0": 96
+      "0": 114821,
+      "1": 955
     }
   },
   "best_round_validation_metrics": {
-    "loss": 0.6958375573158264,
-    "accuracy": 0.3854166666666667,
+    "loss": 0.01790243200957775,
+    "accuracy": 0.9958030669895077,
     "precision": 0.0,
     "recall": 0.0,
     "f1": 0.0,
-    "auroc": "metric_unavailable_single_class",
-    "pr_auc": "metric_unavailable_single_class",
-    "fpr": 0.6145833333333334,
+    "auroc": 0.9485175957330074,
+    "pr_auc": 0.42030392969227953,
+    "fpr": 0.0,
     "confusion_matrix": [
       [
-        37,
-        59
+        24676,
+        0
       ],
       [
-        0,
+        104,
         0
       ]
     ],
-    "support": 96,
+    "support": 24780,
     "label_counts": {
-      "0": 96
+      "0": 24676,
+      "1": 104
     }
   },
   "best_round_test_metrics": {
-    "loss": 0.6927527785301208,
-    "accuracy": 0.46875,
+    "loss": 0.045885223895311356,
+    "accuracy": 0.9896690879741727,
     "precision": 0.0,
     "recall": 0.0,
     "f1": 0.0,
-    "auroc": "metric_unavailable_single_class",
-    "pr_auc": "metric_unavailable_single_class",
-    "fpr": 0.53125,
+    "auroc": 0.8340363011743599,
+    "pr_auc": 0.3551872102134908,
+    "fpr": 0.0,
     "confusion_matrix": [
       [
-        45,
-        51
+        24524,
+        0
       ],
       [
-        0,
+        256,
         0
       ]
     ],
-    "support": 96,
+    "support": 24780,
     "label_counts": {
-      "0": 96
+      "0": 24524,
+      "1": 256
     }
   },
   "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/A_C1/round_metrics.csv",

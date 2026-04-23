@@ -8,7 +8,10 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
+import matplotlib
 import yaml
+from matplotlib import pyplot as plt
+from matplotlib.ticker import MaxNLocator
 
 from src.ledger.metadata_schema import LedgerRecord, canonical_sha256, model_version_for_round
 from src.ledger.mock_ledger import JSONLMockLedger, MAIN_CLUSTER_HEAD_ROLE
@@ -17,6 +20,8 @@ from src.train_cluster2_proposed import run_cluster2_proposed
 from src.train_cluster3_proposed import run_cluster3_proposed
 from src.train_flat_baseline import run_flat_baseline_experiments
 from src.train_hierarchical_baseline import run_hierarchical_baseline_experiments
+
+matplotlib.use("Agg")
 
 
 SUPPORTED_EXPERIMENT_IDS = (
@@ -672,6 +677,27 @@ def _write_note_svg(path: Path, *, title: str, note: str) -> Path:
     return path
 
 
+def _experiment_color(experiment_id: str) -> str:
+    if experiment_id.startswith("A_"):
+        return "#2563eb"
+    if experiment_id.startswith("B_"):
+        return "#f59e0b"
+    if experiment_id.startswith("P_"):
+        return "#059669"
+    if experiment_id.startswith("AB_"):
+        return "#7c3aed"
+    return "#475569"
+
+
+def _metric_label(metric_key: str) -> str:
+    return {
+        "best_validation_f1": "Best Validation F1",
+        "test_f1": "Test F1",
+        "train_f1": "Train F1",
+        "validation_f1": "Validation F1",
+    }.get(metric_key, metric_key.replace("_", " ").title())
+
+
 def _polyline_points(
     xs: Sequence[float],
     ys: Sequence[float],
@@ -723,83 +749,40 @@ def _write_convergence_plot(experiment_id: str, round_rows: Sequence[Mapping[str
             title=f"{experiment_id} convergence",
             note="Round metrics were present, but no numeric F1 values were available to plot.",
         )
+    plt.close("all")
+    fig, ax = plt.subplots(figsize=(10, 5.5), constrained_layout=True)
+    fig.patch.set_facecolor("#f8fafc")
+    ax.set_facecolor("#ffffff")
 
-    width = 840
-    height = 460
-    chart_left = 70.0
-    chart_top = 70.0
-    chart_width = 720.0
-    chart_height = 300.0
-
-    grid_lines = []
-    for index in range(6):
-        y = chart_top + (chart_height / 5.0) * index
-        value = 1.0 - index * 0.2
-        grid_lines.append(
-            f'<line x1="{chart_left:.2f}" y1="{y:.2f}" x2="{chart_left + chart_width:.2f}" y2="{y:.2f}" '
-            f'stroke="#cbd5e1" stroke-width="1" />'
-        )
-        grid_lines.append(
-            f'<text x="18" y="{y + 5:.2f}" font-size="12" font-family="Helvetica, Arial, sans-serif" '
-            f'fill="#475569">{value:.1f}</text>'
-        )
-
-    x_ticks = []
-    min_round = int(min(xs))
-    max_round = int(max(xs))
-    x_span = max(max_round - min_round, 1)
-    tick_count = min(len(xs), 6)
-    for tick_index in range(tick_count):
-        round_value = min_round + int(round((x_span * tick_index) / max(tick_count - 1, 1)))
-        x = chart_left + ((round_value - min_round) / max(x_span, 1)) * chart_width
-        x_ticks.append(
-            f'<line x1="{x:.2f}" y1="{chart_top + chart_height:.2f}" x2="{x:.2f}" y2="{chart_top + chart_height + 6:.2f}" '
-            f'stroke="#475569" stroke-width="1" />'
-        )
-        x_ticks.append(
-            f'<text x="{x - 8:.2f}" y="{chart_top + chart_height + 24:.2f}" font-size="12" '
-            f'font-family="Helvetica, Arial, sans-serif" fill="#475569">{round_value}</text>'
-        )
-
-    polylines = []
-    legend = []
-    legend_y = 28
-    for series_index, (name, color, _, raw_values) in enumerate(available_series):
+    for name, color, _, raw_values in available_series:
         filtered_pairs = [(x_value, y_value) for x_value, y_value in zip(xs, raw_values) if y_value is not None]
-        polyline = _polyline_points(
-            [pair[0] for pair in filtered_pairs],
-            [pair[1] for pair in filtered_pairs],
-            chart_left=chart_left,
-            chart_top=chart_top,
-            chart_width=chart_width,
-            chart_height=chart_height,
-        )
-        polylines.append(
-            f'<polyline fill="none" stroke="{color}" stroke-width="3" points="{polyline}" />'
-        )
-        legend_x = 520 + series_index * 100
-        legend.append(
-            f'<line x1="{legend_x}" y1="{legend_y}" x2="{legend_x + 22}" y2="{legend_y}" stroke="{color}" stroke-width="3" />'
-        )
-        legend.append(
-            f'<text x="{legend_x + 28}" y="{legend_y + 4}" font-size="13" font-family="Helvetica, Arial, sans-serif" '
-            f'fill="#1e293b">{_svg_escape(name)}</text>'
+        filtered_xs = [pair[0] for pair in filtered_pairs]
+        filtered_ys = [pair[1] for pair in filtered_pairs]
+        ax.plot(
+            filtered_xs,
+            filtered_ys,
+            marker="o",
+            linewidth=2.5,
+            markersize=5,
+            color=color,
+            label=_metric_label(name),
         )
 
-    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">
-  <rect width="{width}" height="{height}" fill="#f8fafc"/>
-  <text x="28" y="34" font-size="24" font-family="Helvetica, Arial, sans-serif" fill="#0f172a">{_svg_escape(experiment_id)} Convergence</text>
-  <text x="28" y="58" font-size="14" font-family="Helvetica, Arial, sans-serif" fill="#475569">Round-wise train/validation/test F1</text>
-  {' '.join(legend)}
-  <rect x="{chart_left:.2f}" y="{chart_top:.2f}" width="{chart_width:.2f}" height="{chart_height:.2f}" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2" />
-  {' '.join(grid_lines)}
-  {' '.join(x_ticks)}
-  {' '.join(polylines)}
-  <text x="{chart_left + chart_width / 2 - 24:.2f}" y="{chart_top + chart_height + 48:.2f}" font-size="13" font-family="Helvetica, Arial, sans-serif" fill="#334155">Round</text>
-  <text x="16" y="{chart_top - 14:.2f}" font-size="13" font-family="Helvetica, Arial, sans-serif" fill="#334155">F1</text>
-</svg>
-"""
-    plot_path.write_text(svg, encoding="utf-8")
+    ax.set_title(f"{experiment_id} Convergence", fontsize=16, pad=14)
+    ax.set_xlabel("Round")
+    ax.set_ylabel("F1")
+    ax.set_ylim(0.0, 1.0)
+    ax.grid(True, axis="y", alpha=0.28)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    if len(set(xs)) == 1:
+        only_round = int(xs[0])
+        ax.set_xticks([only_round])
+        ax.set_xlim(only_round - 0.5, only_round + 0.5)
+    ax.legend(frameon=False, loc="best")
+    fig.savefig(plot_path, format="svg")
+    plt.close(fig)
     return plot_path
 
 
@@ -821,57 +804,38 @@ def _write_comparison_plot(
             note=f"No numeric {metric_key} values were available for comparison.",
         )
 
-    width = 920
-    height = 520
-    chart_left = 80.0
-    chart_top = 70.0
-    chart_width = 780.0
-    chart_height = 340.0
-    bar_width = chart_width / max(len(ordered_rows) * 1.4, 1.0)
-    bars = []
-    labels = []
-    values = []
-    for index, (experiment_id, value) in enumerate(ordered_rows):
-        x = chart_left + 30 + index * (bar_width * 1.4)
-        bar_height = chart_height * max(min(value, 1.0), 0.0)
-        y = chart_top + chart_height - bar_height
-        bars.append(
-            f'<rect x="{x:.2f}" y="{y:.2f}" width="{bar_width:.2f}" height="{bar_height:.2f}" fill="#2563eb" rx="4" />'
-        )
-        labels.append(
-            f'<text x="{x + bar_width / 2 - 12:.2f}" y="{chart_top + chart_height + 24:.2f}" font-size="12" '
-            f'font-family="Helvetica, Arial, sans-serif" fill="#475569">{_svg_escape(experiment_id)}</text>'
-        )
-        values.append(
-            f'<text x="{x + bar_width / 2 - 10:.2f}" y="{max(y - 8.0, chart_top + 12):.2f}" font-size="12" '
-            f'font-family="Helvetica, Arial, sans-serif" fill="#0f172a">{value:.3f}</text>'
+    experiment_ids = [experiment_id for experiment_id, _ in ordered_rows]
+    values = [float(value) for _, value in ordered_rows]
+    colors = [_experiment_color(experiment_id) for experiment_id in experiment_ids]
+
+    plt.close("all")
+    fig, ax = plt.subplots(figsize=(11, 6), constrained_layout=True)
+    fig.patch.set_facecolor("#f8fafc")
+    ax.set_facecolor("#ffffff")
+
+    bars = ax.bar(experiment_ids, values, color=colors, edgecolor="#0f172a", linewidth=0.4)
+    ax.set_title(title, fontsize=16, pad=14)
+    ax.set_xlabel("Experiment ID")
+    ax.set_ylabel(_metric_label(metric_key))
+    ax.set_ylim(0.0, 1.0)
+    ax.grid(True, axis="y", alpha=0.28)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.tick_params(axis="x", rotation=35)
+
+    for bar, value in zip(bars, values):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2.0,
+            min(value + 0.02, 0.99),
+            f"{value:.3f}",
+            ha="center",
+            va="bottom",
+            fontsize=9,
+            color="#0f172a",
         )
 
-    grid = []
-    for index in range(6):
-        y = chart_top + (chart_height / 5.0) * index
-        value = 1.0 - index * 0.2
-        grid.append(
-            f'<line x1="{chart_left:.2f}" y1="{y:.2f}" x2="{chart_left + chart_width:.2f}" y2="{y:.2f}" stroke="#cbd5e1" stroke-width="1" />'
-        )
-        grid.append(
-            f'<text x="26" y="{y + 5:.2f}" font-size="12" font-family="Helvetica, Arial, sans-serif" fill="#475569">{value:.1f}</text>'
-        )
-
-    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">
-  <rect width="{width}" height="{height}" fill="#f8fafc"/>
-  <text x="30" y="36" font-size="24" font-family="Helvetica, Arial, sans-serif" fill="#0f172a">{_svg_escape(title)}</text>
-  <text x="30" y="60" font-size="14" font-family="Helvetica, Arial, sans-serif" fill="#475569">Comparison across the currently selected experiments</text>
-  <rect x="{chart_left:.2f}" y="{chart_top:.2f}" width="{chart_width:.2f}" height="{chart_height:.2f}" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2" />
-  {' '.join(grid)}
-  {' '.join(bars)}
-  {' '.join(labels)}
-  {' '.join(values)}
-  <text x="{chart_left + chart_width / 2 - 40:.2f}" y="{chart_top + chart_height + 52:.2f}" font-size="13" font-family="Helvetica, Arial, sans-serif" fill="#334155">Experiment ID</text>
-  <text x="18" y="{chart_top - 14:.2f}" font-size="13" font-family="Helvetica, Arial, sans-serif" fill="#334155">{_svg_escape(metric_key)}</text>
-</svg>
-"""
-    plot_path.write_text(svg, encoding="utf-8")
+    fig.savefig(plot_path, format="svg")
+    plt.close(fig)
     return plot_path
 
 
