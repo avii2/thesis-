@@ -22,18 +22,18 @@
     "W2": 1,
     "W3": 1
   },
-  "rounds": 1,
+  "rounds": 50,
   "local_epochs": 1,
-  "batch_size": 64,
+  "batch_size": 128,
   "learning_rate": 0.05,
   "seed": 42,
   "model_parameter_bytes": 164,
   "communication_cost_per_round_bytes": 5904,
-  "total_communication_cost_bytes": 5904,
-  "best_validation_round": 1,
-  "best_validation_f1": 0.03125,
-  "test_f1_at_best_validation_round": 0.017543859649122806,
-  "wall_clock_training_seconds": 0.02607470899965847,
+  "total_communication_cost_bytes": 295200,
+  "best_validation_round": 18,
+  "best_validation_f1": 0.010102169670531512,
+  "test_f1_at_best_validation_round": 0.0078252363873492,
+  "wall_clock_training_seconds": 180.08062020799844,
   "data_summary": {
     "cluster_id": 3,
     "dataset": "WUSTL-IIOT-2021",
@@ -130,145 +130,145 @@
     "dropped_all_missing_feature_columns": [],
     "dropped_constant_feature_columns": [],
     "dropped_high_cardinality_categorical_columns": [],
-    "max_train_examples_per_client": 64,
-    "max_eval_examples_per_client": 64,
+    "max_train_examples_per_client": null,
+    "max_eval_examples_per_client": null,
     "client_train_sample_counts": {
-      "C3_L001": 64,
-      "C3_L002": 64,
-      "C3_L003": 64,
-      "C3_L004": 64,
-      "C3_L005": 64,
-      "C3_L006": 64,
-      "C3_L007": 64,
-      "C3_L008": 64,
-      "C3_L009": 64,
-      "C3_L010": 64,
-      "C3_L011": 64,
-      "C3_L012": 64,
-      "C3_L013": 64,
-      "C3_L014": 64,
-      "C3_L015": 64
+      "C3_L001": 55741,
+      "C3_L002": 55741,
+      "C3_L003": 55741,
+      "C3_L004": 55741,
+      "C3_L005": 55741,
+      "C3_L006": 55741,
+      "C3_L007": 55741,
+      "C3_L008": 55741,
+      "C3_L009": 55741,
+      "C3_L010": 55741,
+      "C3_L011": 55741,
+      "C3_L012": 55741,
+      "C3_L013": 55741,
+      "C3_L014": 55741,
+      "C3_L015": 55741
     },
     "client_validation_sample_counts": {
-      "C3_L001": 64,
-      "C3_L002": 64,
-      "C3_L003": 64,
-      "C3_L004": 64,
-      "C3_L005": 64,
-      "C3_L006": 64,
-      "C3_L007": 64,
-      "C3_L008": 64,
-      "C3_L009": 64,
-      "C3_L010": 64,
-      "C3_L011": 64,
-      "C3_L012": 64,
-      "C3_L013": 64,
-      "C3_L014": 64,
-      "C3_L015": 64
+      "C3_L001": 11944,
+      "C3_L002": 11945,
+      "C3_L003": 11945,
+      "C3_L004": 11945,
+      "C3_L005": 11945,
+      "C3_L006": 11945,
+      "C3_L007": 11945,
+      "C3_L008": 11945,
+      "C3_L009": 11945,
+      "C3_L010": 11945,
+      "C3_L011": 11945,
+      "C3_L012": 11945,
+      "C3_L013": 11945,
+      "C3_L014": 11945,
+      "C3_L015": 11945
     },
     "client_test_sample_counts": {
-      "C3_L001": 64,
-      "C3_L002": 64,
-      "C3_L003": 64,
-      "C3_L004": 64,
-      "C3_L005": 64,
-      "C3_L006": 64,
-      "C3_L007": 64,
-      "C3_L008": 64,
-      "C3_L009": 64,
-      "C3_L010": 64,
-      "C3_L011": 64,
-      "C3_L012": 64,
-      "C3_L013": 64,
-      "C3_L014": 64,
-      "C3_L015": 64
+      "C3_L001": 11945,
+      "C3_L002": 11945,
+      "C3_L003": 11945,
+      "C3_L004": 11945,
+      "C3_L005": 11945,
+      "C3_L006": 11945,
+      "C3_L007": 11945,
+      "C3_L008": 11945,
+      "C3_L009": 11945,
+      "C3_L010": 11945,
+      "C3_L011": 11945,
+      "C3_L012": 11945,
+      "C3_L013": 11945,
+      "C3_L014": 11945,
+      "C3_L015": 11945
     }
   },
   "best_round_train_metrics": {
-    "loss": 0.6840179562568665,
-    "accuracy": 0.9270833333333334,
-    "precision": 1.0,
-    "recall": 0.014084507042253521,
-    "f1": 0.027777777777777776,
-    "auroc": 0.9897178345664539,
-    "pr_auc": 0.7710259130004421,
-    "fpr": 0.0,
+    "loss": 0.20531924068927765,
+    "accuracy": 0.9348546551610724,
+    "precision": 0.145801133436373,
+    "recall": 0.005330169133988775,
+    "f1": 0.01028436449532116,
+    "auroc": 0.98217256397922,
+    "pr_auc": 0.7498652400325779,
+    "fpr": 0.0021174400175729643,
     "confusion_matrix": [
       [
-        889,
-        0
+        781363,
+        1658
       ],
       [
-        70,
-        1
+        52811,
+        283
       ]
     ],
-    "support": 960,
+    "support": 836115,
     "label_counts": {
-      "0": 889,
-      "1": 71
+      "0": 783021,
+      "1": 53094
     }
   },
   "best_round_validation_metrics": {
-    "loss": 0.6838468909263611,
-    "accuracy": 0.9354166666666667,
-    "precision": 1.0,
-    "recall": 0.015873015873015872,
-    "f1": 0.03125,
-    "auroc": 0.9941250376032985,
-    "pr_auc": 0.8386826517044493,
-    "fpr": 0.0,
+    "loss": 0.3251517117023468,
+    "accuracy": 0.9037471954636276,
+    "precision": 0.08535402521823472,
+    "recall": 0.0053687999511927275,
+    "f1": 0.010102169670531512,
+    "auroc": 0.9734314961100695,
+    "pr_auc": 0.7219935538601447,
+    "fpr": 0.005792988211299706,
     "confusion_matrix": [
       [
-        897,
-        0
+        161840,
+        943
       ],
       [
-        62,
-        1
+        16303,
+        88
       ]
     ],
-    "support": 960,
+    "support": 179174,
     "label_counts": {
-      "0": 897,
-      "1": 63
+      "0": 162783,
+      "1": 16391
     }
   },
   "best_round_test_metrics": {
-    "loss": 0.6848829388618469,
-    "accuracy": 0.8833333333333333,
-    "precision": 0.5,
-    "recall": 0.008928571428571428,
-    "f1": 0.017543859649122806,
-    "auroc": 0.9848909198113207,
-    "pr_auc": 0.7759941225051594,
-    "fpr": 0.0011792452830188679,
+    "loss": 0.32524141669273376,
+    "accuracy": 0.8980996232733361,
+    "precision": 0.08266360505166476,
+    "recall": 0.004107010438651531,
+    "f1": 0.0078252363873492,
+    "auroc": 0.9827336436296281,
+    "pr_auc": 0.7548066709239704,
+    "fpr": 0.004942961074954839,
     "confusion_matrix": [
       [
-        847,
-        1
+        160845,
+        799
       ],
       [
-        111,
-        1
+        17459,
+        72
       ]
     ],
-    "support": 960,
+    "support": 179175,
     "label_counts": {
-      "0": 848,
-      "1": 112
+      "0": 161644,
+      "1": 17531
     }
   },
   "best_round_subcluster_train_sample_counts": {
-    "W1": 832,
-    "W2": 64,
-    "W3": 64
+    "W1": 724633,
+    "W2": 55741,
+    "W3": 55741
   },
   "best_round_subcluster_client_counts": {
     "W1": 13,
     "W2": 1,
     "W3": 1
   },
-  "round_metrics_path": "outputs/runs/B_C3/round_metrics.csv",
-  "metrics_csv_path": "outputs/metrics/B_C3_metrics.csv"
+  "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/B_C3/round_metrics.csv",
+  "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/metrics/B_C3_metrics.csv"
 }

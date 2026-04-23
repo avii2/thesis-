@@ -13,18 +13,18 @@
   "input_channels": 1,
   "input_length": 41,
   "num_leaf_clients": 15,
-  "rounds": 1,
+  "rounds": 50,
   "local_epochs": 1,
-  "batch_size": 64,
+  "batch_size": 128,
   "learning_rate": 0.05,
   "seed": 42,
   "model_parameter_bytes": 164,
   "communication_cost_per_round_bytes": 4920,
-  "total_communication_cost_bytes": 4920,
-  "best_validation_round": 1,
-  "best_validation_f1": 0.0,
-  "test_f1_at_best_validation_round": 0.0,
-  "wall_clock_training_seconds": 0.014869708000333048,
+  "total_communication_cost_bytes": 246000,
+  "best_validation_round": 28,
+  "best_validation_f1": 0.010642558791554615,
+  "test_f1_at_best_validation_round": 0.008447500947636324,
+  "wall_clock_training_seconds": 180.3743500000055,
   "data_summary": {
     "cluster_id": 3,
     "dataset": "WUSTL-IIOT-2021",
@@ -121,133 +121,133 @@
     "dropped_all_missing_feature_columns": [],
     "dropped_constant_feature_columns": [],
     "dropped_high_cardinality_categorical_columns": [],
-    "max_train_examples_per_client": 8,
-    "max_eval_examples_per_client": 8,
+    "max_train_examples_per_client": null,
+    "max_eval_examples_per_client": null,
     "client_train_sample_counts": {
-      "C3_L001": 8,
-      "C3_L002": 8,
-      "C3_L003": 8,
-      "C3_L004": 8,
-      "C3_L005": 8,
-      "C3_L006": 8,
-      "C3_L007": 8,
-      "C3_L008": 8,
-      "C3_L009": 8,
-      "C3_L010": 8,
-      "C3_L011": 8,
-      "C3_L012": 8,
-      "C3_L013": 8,
-      "C3_L014": 8,
-      "C3_L015": 8
+      "C3_L001": 55741,
+      "C3_L002": 55741,
+      "C3_L003": 55741,
+      "C3_L004": 55741,
+      "C3_L005": 55741,
+      "C3_L006": 55741,
+      "C3_L007": 55741,
+      "C3_L008": 55741,
+      "C3_L009": 55741,
+      "C3_L010": 55741,
+      "C3_L011": 55741,
+      "C3_L012": 55741,
+      "C3_L013": 55741,
+      "C3_L014": 55741,
+      "C3_L015": 55741
     },
     "client_validation_sample_counts": {
-      "C3_L001": 8,
-      "C3_L002": 8,
-      "C3_L003": 8,
-      "C3_L004": 8,
-      "C3_L005": 8,
-      "C3_L006": 8,
-      "C3_L007": 8,
-      "C3_L008": 8,
-      "C3_L009": 8,
-      "C3_L010": 8,
-      "C3_L011": 8,
-      "C3_L012": 8,
-      "C3_L013": 8,
-      "C3_L014": 8,
-      "C3_L015": 8
+      "C3_L001": 11944,
+      "C3_L002": 11945,
+      "C3_L003": 11945,
+      "C3_L004": 11945,
+      "C3_L005": 11945,
+      "C3_L006": 11945,
+      "C3_L007": 11945,
+      "C3_L008": 11945,
+      "C3_L009": 11945,
+      "C3_L010": 11945,
+      "C3_L011": 11945,
+      "C3_L012": 11945,
+      "C3_L013": 11945,
+      "C3_L014": 11945,
+      "C3_L015": 11945
     },
     "client_test_sample_counts": {
-      "C3_L001": 8,
-      "C3_L002": 8,
-      "C3_L003": 8,
-      "C3_L004": 8,
-      "C3_L005": 8,
-      "C3_L006": 8,
-      "C3_L007": 8,
-      "C3_L008": 8,
-      "C3_L009": 8,
-      "C3_L010": 8,
-      "C3_L011": 8,
-      "C3_L012": 8,
-      "C3_L013": 8,
-      "C3_L014": 8,
-      "C3_L015": 8
+      "C3_L001": 11945,
+      "C3_L002": 11945,
+      "C3_L003": 11945,
+      "C3_L004": 11945,
+      "C3_L005": 11945,
+      "C3_L006": 11945,
+      "C3_L007": 11945,
+      "C3_L008": 11945,
+      "C3_L009": 11945,
+      "C3_L010": 11945,
+      "C3_L011": 11945,
+      "C3_L012": 11945,
+      "C3_L013": 11945,
+      "C3_L014": 11945,
+      "C3_L015": 11945
     }
   },
   "best_round_train_metrics": {
-    "loss": 0.6846115589141846,
-    "accuracy": 0.9166666666666666,
-    "precision": 1.0,
-    "recall": 0.09090909090909091,
-    "f1": 0.16666666666666666,
-    "auroc": 0.9924937447873228,
-    "pr_auc": 0.8845566050111505,
-    "fpr": 0.0,
+    "loss": 0.20863614976406097,
+    "accuracy": 0.9346082775694731,
+    "precision": 0.14051841746248295,
+    "recall": 0.005819866651599051,
+    "f1": 0.011176821659161196,
+    "auroc": 0.9841107558914417,
+    "pr_auc": 0.7529042331282928,
+    "fpr": 0.0024137283674384212,
     "confusion_matrix": [
       [
-        109,
-        0
+        781131,
+        1890
       ],
       [
-        10,
-        1
+        52785,
+        309
       ]
     ],
-    "support": 120,
+    "support": 836115,
     "label_counts": {
-      "0": 109,
-      "1": 11
+      "0": 783021,
+      "1": 53094
     }
   },
   "best_round_validation_metrics": {
-    "loss": 0.6842164993286133,
-    "accuracy": 0.9333333333333333,
-    "precision": 0.0,
-    "recall": 0.0,
-    "f1": 0.0,
-    "auroc": 0.9966517857142857,
-    "pr_auc": 0.9526289682539683,
-    "fpr": 0.0,
+    "loss": 0.332012414932251,
+    "accuracy": 0.9034960429526605,
+    "precision": 0.0856353591160221,
+    "recall": 0.005673845402965042,
+    "f1": 0.010642558791554615,
+    "auroc": 0.9761664214229262,
+    "pr_auc": 0.725088144307799,
+    "fpr": 0.006100145592598736,
     "confusion_matrix": [
       [
-        112,
-        0
+        161790,
+        993
       ],
       [
-        8,
-        0
+        16298,
+        93
       ]
     ],
-    "support": 120,
+    "support": 179174,
     "label_counts": {
-      "0": 112,
-      "1": 8
+      "0": 162783,
+      "1": 16391
     }
   },
   "best_round_test_metrics": {
-    "loss": 0.6846388578414917,
-    "accuracy": 0.9166666666666666,
-    "precision": 0.0,
-    "recall": 0.0,
-    "f1": 0.0,
-    "auroc": 0.9669669669669669,
-    "pr_auc": 0.5334326167659501,
-    "fpr": 0.009009009009009009,
+    "loss": 0.3355501890182495,
+    "accuracy": 0.8978038230779963,
+    "precision": 0.08333333333333333,
+    "recall": 0.004449261308539159,
+    "f1": 0.008447500947636324,
+    "auroc": 0.9836048723983171,
+    "pr_auc": 0.7538185747390086,
+    "fpr": 0.0053079607037687755,
     "confusion_matrix": [
       [
-        110,
-        1
+        160786,
+        858
       ],
       [
-        9,
-        0
+        17453,
+        78
       ]
     ],
-    "support": 120,
+    "support": 179175,
     "label_counts": {
-      "0": 111,
-      "1": 9
+      "0": 161644,
+      "1": 17531
     }
   },
   "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/A_C3/round_metrics.csv",
