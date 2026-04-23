@@ -3,10 +3,11 @@
   "cluster_id": 1,
   "dataset": "HAI 21.03",
   "model_family": "cnn1d",
-  "model_version": "C1_R050",
-  "model_hash": "sha256:f24b3bc82b4f1509c433c7f13f317bcf2dcf3cef1d5d03f98f5a23b833ed86d8",
+  "model_version": "C1_R040",
+  "model_hash": "sha256:4ed36c7aec4364f83127d3de9495222d9aaadec6de2318de545d5a9e34120652",
   "artifact_type": "metadata_manifest",
   "weights_emitted_by_runner": false,
+  "seed": null,
   "summary_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/A_C1/run_summary.json",
   "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/A_C1/round_metrics.csv",
   "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/metrics/A_C1_metrics.csv"

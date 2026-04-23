@@ -1,0 +1,550 @@
+{
+  "audit_scope": {
+    "outputs_inspected": [
+      "outputs/runs",
+      "outputs/metrics",
+      "outputs/plots",
+      "outputs/ledgers",
+      "outputs/reports"
+    ],
+    "source_files_inspected": [
+      "src/train.py",
+      "src/ledger/metadata_schema.py",
+      "src/ledger/mock_ledger.py"
+    ],
+    "training_rerun": false
+  },
+  "overall_verdict": {
+    "results_appear_experiment_generated": true,
+    "source_code_hardcoded_metrics_found": false,
+    "plots_generated_from_real_metrics": true,
+    "ledger_metadata_only": true,
+    "integrity_failures_found": true
+  },
+  "complete_experiments": {
+    "A_C1": {
+      "artifact_presence": {
+        "run_summary": true,
+        "round_metrics": true,
+        "metrics_csv": true,
+        "ledger": true,
+        "convergence_plot": true
+      },
+      "metrics_vs_summary": {
+        "best_validation_round_match": true,
+        "best_validation_f1_match": true,
+        "test_accuracy_match": true,
+        "test_precision_match": true,
+        "test_recall_match": true,
+        "test_f1_match": true,
+        "test_auroc_match": true,
+        "test_pr_auc_match": true,
+        "test_fpr_match": true
+      },
+      "best_round_in_round_metrics": true,
+      "best_round_row_consistency": {
+        "validation_f1_match": true,
+        "test_f1_match": true,
+        "test_accuracy_match": true
+      }
+    },
+    "A_C2": {
+      "artifact_presence": {
+        "run_summary": true,
+        "round_metrics": true,
+        "metrics_csv": true,
+        "ledger": true,
+        "convergence_plot": true
+      },
+      "metrics_vs_summary": {
+        "best_validation_round_match": true,
+        "best_validation_f1_match": true,
+        "test_accuracy_match": true,
+        "test_precision_match": true,
+        "test_recall_match": true,
+        "test_f1_match": true,
+        "test_auroc_match": true,
+        "test_pr_auc_match": true,
+        "test_fpr_match": true
+      },
+      "best_round_in_round_metrics": true,
+      "best_round_row_consistency": {
+        "validation_f1_match": true,
+        "test_f1_match": true,
+        "test_accuracy_match": true
+      }
+    },
+    "A_C3": {
+      "artifact_presence": {
+        "run_summary": true,
+        "round_metrics": true,
+        "metrics_csv": true,
+        "ledger": true,
+        "convergence_plot": true
+      },
+      "metrics_vs_summary": {
+        "best_validation_round_match": true,
+        "best_validation_f1_match": true,
+        "test_accuracy_match": true,
+        "test_precision_match": true,
+        "test_recall_match": true,
+        "test_f1_match": true,
+        "test_auroc_match": true,
+        "test_pr_auc_match": true,
+        "test_fpr_match": true
+      },
+      "best_round_in_round_metrics": true,
+      "best_round_row_consistency": {
+        "validation_f1_match": true,
+        "test_f1_match": true,
+        "test_accuracy_match": true
+      }
+    },
+    "B_C1": {
+      "artifact_presence": {
+        "run_summary": true,
+        "round_metrics": true,
+        "metrics_csv": true,
+        "ledger": true,
+        "convergence_plot": true
+      },
+      "metrics_vs_summary": {
+        "best_validation_round_match": true,
+        "best_validation_f1_match": true,
+        "test_accuracy_match": true,
+        "test_precision_match": true,
+        "test_recall_match": true,
+        "test_f1_match": true,
+        "test_auroc_match": true,
+        "test_pr_auc_match": true,
+        "test_fpr_match": true
+      },
+      "best_round_in_round_metrics": true,
+      "best_round_row_consistency": {
+        "validation_f1_match": true,
+        "test_f1_match": true,
+        "test_accuracy_match": true
+      }
+    },
+    "B_C2": {
+      "artifact_presence": {
+        "run_summary": true,
+        "round_metrics": true,
+        "metrics_csv": true,
+        "ledger": true,
+        "convergence_plot": true
+      },
+      "metrics_vs_summary": {
+        "best_validation_round_match": true,
+        "best_validation_f1_match": true,
+        "test_accuracy_match": true,
+        "test_precision_match": true,
+        "test_recall_match": true,
+        "test_f1_match": true,
+        "test_auroc_match": true,
+        "test_pr_auc_match": true,
+        "test_fpr_match": true
+      },
+      "best_round_in_round_metrics": true,
+      "best_round_row_consistency": {
+        "validation_f1_match": true,
+        "test_f1_match": true,
+        "test_accuracy_match": true
+      }
+    },
+    "B_C3": {
+      "artifact_presence": {
+        "run_summary": true,
+        "round_metrics": true,
+        "metrics_csv": true,
+        "ledger": true,
+        "convergence_plot": true
+      },
+      "metrics_vs_summary": {
+        "best_validation_round_match": true,
+        "best_validation_f1_match": true,
+        "test_accuracy_match": true,
+        "test_precision_match": true,
+        "test_recall_match": true,
+        "test_f1_match": true,
+        "test_auroc_match": true,
+        "test_pr_auc_match": true,
+        "test_fpr_match": true
+      },
+      "best_round_in_round_metrics": true,
+      "best_round_row_consistency": {
+        "validation_f1_match": true,
+        "test_f1_match": true,
+        "test_accuracy_match": true
+      }
+    },
+    "P_C1": {
+      "artifact_presence": {
+        "run_summary": true,
+        "round_metrics": true,
+        "metrics_csv": true,
+        "ledger": true,
+        "convergence_plot": true
+      },
+      "metrics_vs_summary": {
+        "best_validation_round_match": true,
+        "best_validation_f1_match": true,
+        "test_accuracy_match": true,
+        "test_precision_match": true,
+        "test_recall_match": true,
+        "test_f1_match": true,
+        "test_auroc_match": true,
+        "test_pr_auc_match": true,
+        "test_fpr_match": true
+      },
+      "best_round_in_round_metrics": true,
+      "best_round_row_consistency": {
+        "validation_f1_match": true,
+        "test_f1_match": true,
+        "test_accuracy_match": true
+      }
+    },
+    "P_C2": {
+      "artifact_presence": {
+        "run_summary": true,
+        "round_metrics": true,
+        "metrics_csv": true,
+        "ledger": true,
+        "convergence_plot": true
+      },
+      "metrics_vs_summary": {
+        "best_validation_round_match": true,
+        "best_validation_f1_match": true,
+        "test_accuracy_match": true,
+        "test_precision_match": true,
+        "test_recall_match": true,
+        "test_f1_match": true,
+        "test_auroc_match": true,
+        "test_pr_auc_match": true,
+        "test_fpr_match": true
+      },
+      "best_round_in_round_metrics": true,
+      "best_round_row_consistency": {
+        "validation_f1_match": true,
+        "test_f1_match": true,
+        "test_accuracy_match": true
+      }
+    },
+    "P_C3": {
+      "artifact_presence": {
+        "run_summary": true,
+        "round_metrics": true,
+        "metrics_csv": true,
+        "ledger": true,
+        "convergence_plot": true
+      },
+      "metrics_vs_summary": {
+        "best_validation_round_match": true,
+        "best_validation_f1_match": true,
+        "test_accuracy_match": true,
+        "test_precision_match": true,
+        "test_recall_match": true,
+        "test_f1_match": true,
+        "test_auroc_match": true,
+        "test_pr_auc_match": true,
+        "test_fpr_match": true
+      },
+      "best_round_in_round_metrics": true,
+      "best_round_row_consistency": {
+        "validation_f1_match": true,
+        "test_f1_match": true,
+        "test_accuracy_match": true
+      }
+    }
+  },
+  "missing_ablation_ids": [
+    {
+      "experiment_id": "AB_C1_FEDAVG_TCN",
+      "standalone_output_artifacts": []
+    },
+    {
+      "experiment_id": "AB_C2_FEDAVG_MLP",
+      "standalone_output_artifacts": []
+    },
+    {
+      "experiment_id": "AB_C3_FEDAVG_CNN1D",
+      "standalone_output_artifacts": []
+    }
+  ],
+  "plot_provenance": {
+    "code_path": {
+      "convergence_plot_function": "src/train.py:723-786",
+      "comparison_plot_function": "src/train.py:789-839",
+      "summary_csv_function": "src/train.py:842-888",
+      "artifact_finalization_function": "src/train.py:891-942"
+    },
+    "file_checks": {
+      "outputs/plots/convergence_A_C1.svg": {
+        "contains_matplotlib_metadata": true,
+        "is_placeholder_note_svg": false
+      },
+      "outputs/plots/convergence_P_C1.svg": {
+        "contains_matplotlib_metadata": true,
+        "is_placeholder_note_svg": false
+      },
+      "outputs/plots/comparison_test_f1.svg": {
+        "contains_matplotlib_metadata": true,
+        "is_placeholder_note_svg": false
+      }
+    }
+  },
+  "hardcoded_metric_search": {
+    "source_code_matches_in_src_scripts_tests_configs": [],
+    "documentation_matches_outside_outputs": [
+      "docs/RESULTS_SUMMARY.md"
+    ]
+  },
+  "ledger_metadata_only": {
+    "schema_code": {
+      "allowed_fields_defined": "src/ledger/metadata_schema.py:13-34",
+      "forbidden_patterns_defined": "src/ledger/metadata_schema.py:36-47",
+      "main_cluster_writer_enforced": "src/ledger/mock_ledger.py:81-96"
+    },
+    "per_experiment": {
+      "A_C1": {
+        "record_count": 50,
+        "flat_metadata_records_only": true,
+        "forbidden_field_names_found": false
+      },
+      "A_C2": {
+        "record_count": 50,
+        "flat_metadata_records_only": true,
+        "forbidden_field_names_found": false
+      },
+      "A_C3": {
+        "record_count": 50,
+        "flat_metadata_records_only": true,
+        "forbidden_field_names_found": false
+      },
+      "B_C1": {
+        "record_count": 50,
+        "flat_metadata_records_only": true,
+        "forbidden_field_names_found": false
+      },
+      "B_C2": {
+        "record_count": 50,
+        "flat_metadata_records_only": true,
+        "forbidden_field_names_found": false
+      },
+      "B_C3": {
+        "record_count": 50,
+        "flat_metadata_records_only": true,
+        "forbidden_field_names_found": false
+      },
+      "P_C1": {
+        "record_count": 50,
+        "flat_metadata_records_only": true,
+        "forbidden_field_names_found": false
+      },
+      "P_C2": {
+        "record_count": 50,
+        "flat_metadata_records_only": true,
+        "forbidden_field_names_found": false
+      },
+      "P_C3": {
+        "record_count": 50,
+        "flat_metadata_records_only": true,
+        "forbidden_field_names_found": false
+      }
+    }
+  },
+  "report_layer": {
+    "results_master_table_csv_rows": 12,
+    "results_master_table_json_rows": 12,
+    "checked_in_generator_for_results_master_or_results_summary_found": false,
+    "consistency_with_summary_all_experiments": {
+      "A_C1": true,
+      "A_C2": true,
+      "A_C3": true,
+      "B_C1": true,
+      "B_C2": true,
+      "B_C3": true,
+      "P_C1": true,
+      "P_C2": true,
+      "P_C3": true
+    }
+  },
+  "confusion_matrix_report": {
+    "status": "INCONSISTENT_WITH_CURRENT_METRICS",
+    "file": "outputs/reports/confusion_matrices.json",
+    "per_experiment": {
+      "A_C1": {
+        "source": "outputs/metrics/A_C1_metrics.csv",
+        "matches_metrics_csv": false,
+        "observed": {
+          "tn": 45,
+          "fp": 51,
+          "fn": 0,
+          "tp": 0
+        },
+        "expected": {
+          "tn": 24524,
+          "fp": 0,
+          "fn": 256,
+          "tp": 0
+        }
+      },
+      "A_C2": {
+        "source": "outputs/metrics/A_C2_metrics.csv",
+        "matches_metrics_csv": false,
+        "observed": {
+          "tn": 0,
+          "fp": 40,
+          "fn": 0,
+          "tp": 80
+        },
+        "expected": {
+          "tn": 0,
+          "fp": 5925,
+          "fn": 0,
+          "tp": 11850
+        }
+      },
+      "A_C3": {
+        "source": "outputs/metrics/A_C3_metrics.csv",
+        "matches_metrics_csv": false,
+        "observed": {
+          "tn": 110,
+          "fp": 1,
+          "fn": 9,
+          "tp": 0
+        },
+        "expected": {
+          "tn": 160786,
+          "fp": 858,
+          "fn": 17453,
+          "tp": 78
+        }
+      },
+      "B_C1": {
+        "source": "outputs/metrics/B_C1_metrics.csv",
+        "matches_metrics_csv": false,
+        "observed": {
+          "tn": 45,
+          "fp": 51,
+          "fn": 0,
+          "tp": 0
+        },
+        "expected": {
+          "tn": 24524,
+          "fp": 0,
+          "fn": 256,
+          "tp": 0
+        }
+      },
+      "B_C2": {
+        "source": "outputs/metrics/B_C2_metrics.csv",
+        "matches_metrics_csv": false,
+        "observed": {
+          "tn": 0,
+          "fp": 320,
+          "fn": 0,
+          "tp": 640
+        },
+        "expected": {
+          "tn": 0,
+          "fp": 5925,
+          "fn": 0,
+          "tp": 11850
+        }
+      },
+      "B_C3": {
+        "source": "outputs/metrics/B_C3_metrics.csv",
+        "matches_metrics_csv": false,
+        "observed": {
+          "tn": 847,
+          "fp": 1,
+          "fn": 111,
+          "tp": 1
+        },
+        "expected": {
+          "tn": 160845,
+          "fp": 799,
+          "fn": 17459,
+          "tp": 72
+        }
+      },
+      "P_C1": {
+        "source": "outputs/metrics/P_C1_metrics.csv",
+        "matches_metrics_csv": false,
+        "observed": {
+          "tn": 702,
+          "fp": 30,
+          "fn": 31,
+          "tp": 5
+        },
+        "expected": {
+          "tn": 24517,
+          "fp": 7,
+          "fn": 164,
+          "tp": 92
+        }
+      },
+      "P_C2": {
+        "source": "outputs/metrics/P_C2_metrics.csv",
+        "matches_metrics_csv": false,
+        "observed": {
+          "tn": 0,
+          "fp": 320,
+          "fn": 0,
+          "tp": 640
+        },
+        "expected": {
+          "tn": 2370,
+          "fp": 3555,
+          "fn": 0,
+          "tp": 11850
+        }
+      },
+      "P_C3": {
+        "source": "outputs/metrics/P_C3_metrics.csv",
+        "matches_metrics_csv": false,
+        "observed": {
+          "tn": 835,
+          "fp": 13,
+          "fn": 56,
+          "tp": 56
+        },
+        "expected": {
+          "tn": 158485,
+          "fp": 3159,
+          "fn": 4899,
+          "tp": 12632
+        }
+      }
+    }
+  },
+  "tests_run": [
+    {
+      "command": "python3 -m unittest tests.test_experiment_matrix tests.test_ledger_metadata_only tests.test_maincluster_only_ledger_access",
+      "result": "passed"
+    }
+  ],
+  "suspicious_files": [
+    {
+      "path": "outputs/reports/confusion_matrices.json",
+      "issue": "does not match the current outputs/metrics/*.csv confusion matrices",
+      "severity": "high"
+    },
+    {
+      "path": "docs/RESULTS_SUMMARY.md",
+      "issue": "contains derived rounded metric values outside outputs/, but values align with current experiment outputs",
+      "severity": "informational"
+    },
+    {
+      "path": "outputs/reports/results_master_table.csv",
+      "issue": "matches current experiment outputs, but no checked-in generator script was found",
+      "severity": "informational"
+    },
+    {
+      "path": "outputs/reports/results_master_table.json",
+      "issue": "matches current experiment outputs, but no checked-in generator script was found",
+      "severity": "informational"
+    }
+  ]
+}

@@ -6,7 +6,7 @@ import time
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 import numpy as np
 import yaml
@@ -27,6 +27,7 @@ from src.models.cnn1d import CNN1DClassifier, CNN1DConfig
 
 
 UNAVAILABLE_METRIC = "metric_unavailable_single_class"
+DEFAULT_CLASSIFICATION_THRESHOLD = 0.5
 
 
 @dataclass(frozen=True)
@@ -39,6 +40,31 @@ class FlatMainClusterRunResult:
     round_metrics_path: Path
     metrics_csv_path: Path
     summary: Mapping[str, Any]
+
+
+def compute_positive_class_weight_from_labels(labels: np.ndarray) -> float:
+    flattened = np.asarray(labels, dtype=np.int8).reshape(-1)
+    positives = int(np.sum(flattened == 1))
+    negatives = int(np.sum(flattened == 0))
+    if positives <= 0 or negatives <= 0:
+        raise ValueError(
+            "Positive-class weighting requires both classes to be present in training labels. "
+            f"Observed positives={positives}, negatives={negatives}."
+        )
+    return float(negatives / positives)
+
+
+def compute_cluster_positive_class_weight(clients: Sequence[FlatClientDataset]) -> float:
+    if not clients:
+        raise ValueError("Positive-class weighting requires at least one client.")
+    train_labels = [
+        client.train.labels.astype(np.int8, copy=False)
+        for client in clients
+        if client.train.num_samples > 0
+    ]
+    if not train_labels:
+        raise ValueError("Positive-class weighting requires at least one non-empty client train split.")
+    return compute_positive_class_weight_from_labels(np.concatenate(train_labels))
 
 
 def _load_yaml(path: str | Path) -> Mapping[str, Any]:
@@ -323,6 +349,8 @@ def build_flat_federated_clients(
 def _split_metrics(
     labels: np.ndarray,
     probabilities: np.ndarray,
+    *,
+    threshold: float = DEFAULT_CLASSIFICATION_THRESHOLD,
 ) -> dict[str, Any]:
     if labels.size == 0:
         return {
@@ -336,9 +364,10 @@ def _split_metrics(
             "fpr": None,
             "confusion_matrix": [[0, 0], [0, 0]],
             "support": 0,
+            "threshold_used": float(threshold),
         }
 
-    predictions = (probabilities >= 0.5).astype(np.int8, copy=False)
+    predictions = (probabilities >= threshold).astype(np.int8, copy=False)
     labels = labels.astype(np.int8, copy=False)
     loss = float(
         -np.mean(
@@ -377,6 +406,181 @@ def _split_metrics(
         "confusion_matrix": matrix.astype(int).tolist(),
         "support": int(labels.shape[0]),
         "label_counts": {key: int(value) for key, value in sorted(Counter(labels.tolist()).items())},
+        "threshold_used": float(threshold),
+    }
+
+
+def _collect_split_outputs(
+    clients: Sequence[Any],
+    *,
+    split_name: str,
+    predictor: Callable[[Any, Any], np.ndarray],
+) -> tuple[np.ndarray, np.ndarray]:
+    probabilities: list[np.ndarray] = []
+    labels: list[np.ndarray] = []
+    for client in clients:
+        split = getattr(client, split_name)
+        split_probabilities = predictor(client, split)
+        if split_probabilities.size == 0:
+            continue
+        probabilities.append(split_probabilities.astype(np.float32, copy=False))
+        labels.append(split.labels.astype(np.int8, copy=False))
+
+    if not probabilities:
+        return np.empty(0, dtype=np.int8), np.empty(0, dtype=np.float32)
+    return np.concatenate(labels), np.concatenate(probabilities)
+
+
+def select_threshold_maximizing_validation_f1(
+    labels: np.ndarray,
+    probabilities: np.ndarray,
+    *,
+    default_threshold: float = DEFAULT_CLASSIFICATION_THRESHOLD,
+) -> float:
+    labels = np.asarray(labels, dtype=np.int8).reshape(-1)
+    probabilities = np.asarray(probabilities, dtype=np.float32).reshape(-1)
+    if labels.size == 0 or probabilities.size == 0:
+        return float(default_threshold)
+
+    positives = int(np.sum(labels == 1))
+    negatives = int(np.sum(labels == 0))
+    if positives <= 0 or negatives <= 0:
+        return float(default_threshold)
+
+    order = np.argsort(-probabilities, kind="mergesort")
+    sorted_probabilities = probabilities[order]
+    sorted_labels = labels[order]
+    cumulative_true_positives = np.cumsum(sorted_labels == 1)
+    cumulative_false_positives = np.cumsum(sorted_labels == 0)
+    unique_last_indices = np.flatnonzero(
+        np.r_[sorted_probabilities[1:] != sorted_probabilities[:-1], True]
+    )
+
+    tp = cumulative_true_positives[unique_last_indices].astype(np.float64, copy=False)
+    fp = cumulative_false_positives[unique_last_indices].astype(np.float64, copy=False)
+    fn = float(positives) - tp
+    denominator = 2.0 * tp + fp + fn
+    f1_scores = np.divide(
+        2.0 * tp,
+        denominator,
+        out=np.zeros_like(tp, dtype=np.float64),
+        where=denominator > 0.0,
+    )
+    thresholds = sorted_probabilities[unique_last_indices].astype(np.float64, copy=False)
+
+    best_f1 = float(np.max(f1_scores))
+    candidate_indices = np.flatnonzero(np.isclose(f1_scores, best_f1))
+    candidate_thresholds = thresholds[candidate_indices]
+    default_distance = np.abs(candidate_thresholds - float(default_threshold))
+    best_index = candidate_indices[int(np.argmin(default_distance))]
+    return float(thresholds[best_index])
+
+
+def evaluate_round_with_validation_threshold(
+    clients: Sequence[Any],
+    *,
+    predictor: Callable[[Any, Any], np.ndarray],
+) -> dict[str, Any]:
+    train_labels, train_probabilities = _collect_split_outputs(
+        clients,
+        split_name="train",
+        predictor=predictor,
+    )
+    validation_labels, validation_probabilities = _collect_split_outputs(
+        clients,
+        split_name="validation",
+        predictor=predictor,
+    )
+    selected_threshold = select_threshold_maximizing_validation_f1(
+        validation_labels,
+        validation_probabilities,
+    )
+    test_labels, test_probabilities = _collect_split_outputs(
+        clients,
+        split_name="test",
+        predictor=predictor,
+    )
+
+    return {
+        "train_metrics": _split_metrics(
+            train_labels,
+            train_probabilities,
+            threshold=DEFAULT_CLASSIFICATION_THRESHOLD,
+        ),
+        "validation_metrics_default_threshold": _split_metrics(
+            validation_labels,
+            validation_probabilities,
+            threshold=DEFAULT_CLASSIFICATION_THRESHOLD,
+        ),
+        "validation_metrics": _split_metrics(
+            validation_labels,
+            validation_probabilities,
+            threshold=selected_threshold,
+        ),
+        "test_metrics_default_threshold": _split_metrics(
+            test_labels,
+            test_probabilities,
+            threshold=DEFAULT_CLASSIFICATION_THRESHOLD,
+        ),
+        "test_metrics": _split_metrics(
+            test_labels,
+            test_probabilities,
+            threshold=selected_threshold,
+        ),
+        "selected_threshold": float(selected_threshold),
+        "validation_labels": validation_labels,
+        "validation_probabilities": validation_probabilities,
+        "test_labels": test_labels,
+        "test_probabilities": test_probabilities,
+    }
+
+
+def _prediction_file_suffix(seed: int | None) -> str:
+    return f"_seed_{int(seed)}" if seed is not None else ""
+
+
+def write_prediction_outputs(
+    *,
+    output_root: str | Path,
+    experiment_id: str,
+    validation_labels: np.ndarray,
+    validation_probabilities: np.ndarray,
+    test_labels: np.ndarray,
+    test_probabilities: np.ndarray,
+    selected_threshold: float,
+    seed: int | None = None,
+) -> dict[str, str]:
+    prediction_dir = Path(output_root) / "predictions" / experiment_id
+    prediction_dir.mkdir(parents=True, exist_ok=True)
+    suffix = _prediction_file_suffix(seed)
+    validation_path = prediction_dir / f"validation_predictions{suffix}.npz"
+    test_path = prediction_dir / f"test_predictions{suffix}.npz"
+    threshold_path = prediction_dir / f"selected_threshold{suffix}.json"
+
+    np.savez_compressed(
+        validation_path,
+        probabilities=np.asarray(validation_probabilities, dtype=np.float32),
+        labels=np.asarray(validation_labels, dtype=np.int8),
+    )
+    np.savez_compressed(
+        test_path,
+        probabilities=np.asarray(test_probabilities, dtype=np.float32),
+        labels=np.asarray(test_labels, dtype=np.int8),
+    )
+    threshold_payload = {
+        "experiment_id": experiment_id,
+        "seed": int(seed) if seed is not None else None,
+        "threshold_selected_on": "validation",
+        "selection_metric": "f1",
+        "default_threshold": float(DEFAULT_CLASSIFICATION_THRESHOLD),
+        "selected_threshold": float(selected_threshold),
+    }
+    threshold_path.write_text(json.dumps(threshold_payload, indent=2) + "\n", encoding="utf-8")
+    return {
+        "prediction_dir": str(prediction_dir),
+        "validation_predictions_path": str(validation_path),
+        "test_predictions_path": str(test_path),
+        "selected_threshold_path": str(threshold_path),
     }
 
 
@@ -387,20 +591,12 @@ def _evaluate_cluster_split(
     *,
     split_name: str,
 ) -> dict[str, Any]:
-    probabilities: list[np.ndarray] = []
-    labels: list[np.ndarray] = []
-    for client in clients:
-        split = getattr(client, split_name)
-        split_probabilities, _ = predict_split(state, model_config, split)
-        if split_probabilities.size == 0:
-            continue
-        probabilities.append(split_probabilities)
-        labels.append(split.labels.astype(np.int8, copy=False))
-
-    if not probabilities:
-        return _split_metrics(np.empty(0, dtype=np.int8), np.empty(0, dtype=np.float32))
-
-    return _split_metrics(np.concatenate(labels), np.concatenate(probabilities))
+    labels, probabilities = _collect_split_outputs(
+        clients,
+        split_name=split_name,
+        predictor=lambda _client, split: predict_split(state, model_config, split)[0],
+    )
+    return _split_metrics(labels, probabilities, threshold=DEFAULT_CLASSIFICATION_THRESHOLD)
 
 
 def _round_row(
@@ -410,20 +606,59 @@ def _round_row(
     validation_metrics: Mapping[str, Any],
     test_metrics: Mapping[str, Any],
     communication_cost_bytes: int,
+    *,
+    validation_metrics_default_threshold: Mapping[str, Any] | None = None,
+    test_metrics_default_threshold: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    return {
+    row = {
         "round": round_index,
         "train_loss_local_mean": train_loss,
         "train_accuracy": train_metrics["accuracy"],
         "train_f1": train_metrics["f1"],
         "validation_loss": validation_metrics["loss"],
         "validation_accuracy": validation_metrics["accuracy"],
+        "validation_precision": validation_metrics["precision"],
+        "validation_recall": validation_metrics["recall"],
         "validation_f1": validation_metrics["f1"],
+        "validation_auroc": validation_metrics["auroc"],
+        "validation_pr_auc": validation_metrics["pr_auc"],
+        "validation_fpr": validation_metrics["fpr"],
         "test_loss": test_metrics["loss"],
         "test_accuracy": test_metrics["accuracy"],
+        "test_precision": test_metrics["precision"],
+        "test_recall": test_metrics["recall"],
         "test_f1": test_metrics["f1"],
+        "test_auroc": test_metrics["auroc"],
+        "test_pr_auc": test_metrics["pr_auc"],
+        "test_fpr": test_metrics["fpr"],
+        "threshold_used": test_metrics["threshold_used"],
         "communication_cost_bytes": communication_cost_bytes,
     }
+    if validation_metrics_default_threshold is not None:
+        row.update(
+            {
+                "validation_accuracy_default_threshold": validation_metrics_default_threshold["accuracy"],
+                "validation_precision_default_threshold": validation_metrics_default_threshold["precision"],
+                "validation_recall_default_threshold": validation_metrics_default_threshold["recall"],
+                "validation_f1_default_threshold": validation_metrics_default_threshold["f1"],
+                "validation_auroc_default_threshold": validation_metrics_default_threshold["auroc"],
+                "validation_pr_auc_default_threshold": validation_metrics_default_threshold["pr_auc"],
+                "validation_fpr_default_threshold": validation_metrics_default_threshold["fpr"],
+            }
+        )
+    if test_metrics_default_threshold is not None:
+        row.update(
+            {
+                "test_accuracy_default_threshold": test_metrics_default_threshold["accuracy"],
+                "test_precision_default_threshold": test_metrics_default_threshold["precision"],
+                "test_recall_default_threshold": test_metrics_default_threshold["recall"],
+                "test_f1_default_threshold": test_metrics_default_threshold["f1"],
+                "test_auroc_default_threshold": test_metrics_default_threshold["auroc"],
+                "test_pr_auc_default_threshold": test_metrics_default_threshold["pr_auc"],
+                "test_fpr_default_threshold": test_metrics_default_threshold["fpr"],
+            }
+        )
+    return row
 
 
 def _write_round_metrics(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
@@ -467,6 +702,7 @@ def run_flat_maincluster_experiment(
         max_train_examples_per_client=max_train_examples_per_client,
         max_eval_examples_per_client=max_eval_examples_per_client,
     )
+    positive_class_weight = compute_cluster_positive_class_weight(clients)
 
     output_root = Path(output_root)
     run_dir = output_root / "runs" / experiment_id
@@ -484,8 +720,15 @@ def run_flat_maincluster_experiment(
     best_round_index = 1
     best_validation_f1 = float("-inf")
     best_test_metrics: Mapping[str, Any] | None = None
+    best_test_metrics_default_threshold: Mapping[str, Any] | None = None
     best_validation_metrics: Mapping[str, Any] | None = None
+    best_validation_metrics_default_threshold: Mapping[str, Any] | None = None
     best_train_metrics: Mapping[str, Any] | None = None
+    best_selected_threshold: float = DEFAULT_CLASSIFICATION_THRESHOLD
+    best_validation_labels: np.ndarray | None = None
+    best_validation_probabilities: np.ndarray | None = None
+    best_test_labels: np.ndarray | None = None
+    best_test_probabilities: np.ndarray | None = None
 
     for round_index in range(1, rounds + 1):
         local_updates: list[WeightedState] = []
@@ -499,6 +742,7 @@ def run_flat_maincluster_experiment(
                 batch_size=batch_size,
                 learning_rate=learning_rate,
                 seed=seed + round_index * 1000 + client_index,
+                positive_class_weight=positive_class_weight,
             )
             local_updates.append(result.to_weighted_state(cluster_id=client.cluster_id))
             local_losses.append(result.train_loss)
@@ -507,9 +751,15 @@ def run_flat_maincluster_experiment(
             local_updates,
             expected_cluster_id=int(cluster_section["id"]),
         )
-        train_metrics = _evaluate_cluster_split(clients, global_state, model_config, split_name="train")
-        validation_metrics = _evaluate_cluster_split(clients, global_state, model_config, split_name="validation")
-        test_metrics = _evaluate_cluster_split(clients, global_state, model_config, split_name="test")
+        round_evaluation = evaluate_round_with_validation_threshold(
+            clients,
+            predictor=lambda _client, split: predict_split(global_state, model_config, split)[0],
+        )
+        train_metrics = round_evaluation["train_metrics"]
+        validation_metrics = round_evaluation["validation_metrics"]
+        validation_metrics_default_threshold = round_evaluation["validation_metrics_default_threshold"]
+        test_metrics = round_evaluation["test_metrics"]
+        test_metrics_default_threshold = round_evaluation["test_metrics_default_threshold"]
         communication_cost_bytes = int(parameter_bytes * len(clients) * 2)
 
         round_rows.append(
@@ -520,6 +770,8 @@ def run_flat_maincluster_experiment(
                 validation_metrics,
                 test_metrics,
                 communication_cost_bytes,
+                validation_metrics_default_threshold=validation_metrics_default_threshold,
+                test_metrics_default_threshold=test_metrics_default_threshold,
             )
         )
 
@@ -529,13 +781,40 @@ def run_flat_maincluster_experiment(
             best_round_index = round_index
             best_train_metrics = dict(train_metrics)
             best_validation_metrics = dict(validation_metrics)
+            best_validation_metrics_default_threshold = dict(validation_metrics_default_threshold)
             best_test_metrics = dict(test_metrics)
+            best_test_metrics_default_threshold = dict(test_metrics_default_threshold)
+            best_selected_threshold = float(round_evaluation["selected_threshold"])
+            best_validation_labels = round_evaluation["validation_labels"].copy()
+            best_validation_probabilities = round_evaluation["validation_probabilities"].copy()
+            best_test_labels = round_evaluation["test_labels"].copy()
+            best_test_probabilities = round_evaluation["test_probabilities"].copy()
 
     elapsed_seconds = float(time.perf_counter() - started_at)
-    if best_test_metrics is None or best_validation_metrics is None or best_train_metrics is None:
+    if (
+        best_test_metrics is None
+        or best_test_metrics_default_threshold is None
+        or best_validation_metrics is None
+        or best_validation_metrics_default_threshold is None
+        or best_train_metrics is None
+        or best_validation_labels is None
+        or best_validation_probabilities is None
+        or best_test_labels is None
+        or best_test_probabilities is None
+    ):
         raise ValueError(f"{experiment_id}: unable to determine best validation round.")
 
     total_communication_cost_bytes = int(sum(row["communication_cost_bytes"] for row in round_rows))
+    prediction_outputs = write_prediction_outputs(
+        output_root=output_root,
+        experiment_id=experiment_id,
+        validation_labels=best_validation_labels,
+        validation_probabilities=best_validation_probabilities,
+        test_labels=best_test_labels,
+        test_probabilities=best_test_probabilities,
+        selected_threshold=best_selected_threshold,
+        seed=seed,
+    )
     summary = {
         "experiment_id": experiment_id,
         "cluster_id": int(cluster_section["id"]),
@@ -556,17 +835,23 @@ def run_flat_maincluster_experiment(
         "batch_size": batch_size,
         "learning_rate": learning_rate,
         "seed": seed,
+        "positive_class_weight": positive_class_weight,
         "model_parameter_bytes": parameter_bytes,
         "communication_cost_per_round_bytes": round_rows[-1]["communication_cost_bytes"],
         "total_communication_cost_bytes": total_communication_cost_bytes,
         "best_validation_round": best_round_index,
         "best_validation_f1": best_validation_metrics["f1"],
+        "best_validation_f1_default_threshold": best_validation_metrics_default_threshold["f1"],
+        "threshold_used": best_selected_threshold,
         "test_f1_at_best_validation_round": best_test_metrics["f1"],
         "wall_clock_training_seconds": elapsed_seconds,
         "data_summary": data_summary,
         "best_round_train_metrics": best_train_metrics,
+        "best_round_validation_metrics_default_threshold": best_validation_metrics_default_threshold,
         "best_round_validation_metrics": best_validation_metrics,
+        "best_round_test_metrics_default_threshold": best_test_metrics_default_threshold,
         "best_round_test_metrics": best_test_metrics,
+        "prediction_outputs": prediction_outputs,
         "round_metrics_path": str(round_metrics_path),
         "metrics_csv_path": str(metrics_csv_path),
     }
@@ -582,8 +867,11 @@ def run_flat_maincluster_experiment(
         "input_adapter": data_summary["input_adapter"],
         "num_leaf_clients": len(clients),
         "rounds": rounds,
+        "positive_class_weight": positive_class_weight,
         "best_validation_round": best_round_index,
         "best_validation_f1": best_validation_metrics["f1"],
+        "best_validation_f1_default_threshold": best_validation_metrics_default_threshold["f1"],
+        "threshold_used": best_selected_threshold,
         "test_accuracy": best_test_metrics["accuracy"],
         "test_precision": best_test_metrics["precision"],
         "test_recall": best_test_metrics["recall"],
@@ -592,6 +880,16 @@ def run_flat_maincluster_experiment(
         "test_pr_auc": best_test_metrics["pr_auc"],
         "test_fpr": best_test_metrics["fpr"],
         "test_confusion_matrix": json.dumps(best_test_metrics["confusion_matrix"]),
+        "test_accuracy_default_threshold": best_test_metrics_default_threshold["accuracy"],
+        "test_precision_default_threshold": best_test_metrics_default_threshold["precision"],
+        "test_recall_default_threshold": best_test_metrics_default_threshold["recall"],
+        "test_f1_default_threshold": best_test_metrics_default_threshold["f1"],
+        "test_auroc_default_threshold": best_test_metrics_default_threshold["auroc"],
+        "test_pr_auc_default_threshold": best_test_metrics_default_threshold["pr_auc"],
+        "test_fpr_default_threshold": best_test_metrics_default_threshold["fpr"],
+        "test_confusion_matrix_default_threshold": json.dumps(
+            best_test_metrics_default_threshold["confusion_matrix"]
+        ),
         "communication_cost_per_round_bytes": round_rows[-1]["communication_cost_bytes"],
         "total_communication_cost_bytes": total_communication_cost_bytes,
         "wall_clock_training_seconds": elapsed_seconds,

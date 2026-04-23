@@ -11,13 +11,17 @@ import numpy as np
 import yaml
 
 from src.fl.aggregators import aggregate_subcluster_updates_to_maincluster
+from src.fl.client import predict_split
 from src.fl.maincluster import (
-    _evaluate_cluster_split,
+    DEFAULT_CLASSIFICATION_THRESHOLD,
     _load_yaml,
     _round_row,
     _write_round_metrics,
     _write_summary_metrics,
     build_flat_federated_clients,
+    compute_cluster_positive_class_weight,
+    evaluate_round_with_validation_threshold,
+    write_prediction_outputs,
 )
 from src.fl.subcluster import group_clients_by_subcluster, load_frozen_membership, run_subcluster_round
 from src.models.cnn1d import CNN1DClassifier
@@ -79,6 +83,7 @@ def run_hierarchical_baseline_experiment(
         max_train_examples_per_client=max_train_examples_per_client,
         max_eval_examples_per_client=max_eval_examples_per_client,
     )
+    positive_class_weight = compute_cluster_positive_class_weight(clients)
     membership = load_frozen_membership(
         membership_file,
         expected_cluster_id=cluster_id,
@@ -104,10 +109,17 @@ def run_hierarchical_baseline_experiment(
     best_round_index = 1
     best_validation_f1 = float("-inf")
     best_test_metrics: Mapping[str, Any] | None = None
+    best_test_metrics_default_threshold: Mapping[str, Any] | None = None
     best_validation_metrics: Mapping[str, Any] | None = None
+    best_validation_metrics_default_threshold: Mapping[str, Any] | None = None
     best_train_metrics: Mapping[str, Any] | None = None
     best_subcluster_sample_counts: Mapping[str, int] | None = None
     best_subcluster_client_counts: Mapping[str, int] | None = None
+    best_selected_threshold: float = DEFAULT_CLASSIFICATION_THRESHOLD
+    best_validation_labels: np.ndarray | None = None
+    best_validation_probabilities: np.ndarray | None = None
+    best_test_labels: np.ndarray | None = None
+    best_test_probabilities: np.ndarray | None = None
 
     for round_index in range(1, rounds + 1):
         subcluster_updates = []
@@ -126,6 +138,7 @@ def run_hierarchical_baseline_experiment(
                 batch_size=batch_size,
                 learning_rate=learning_rate,
                 seed=seed + round_index * 1000 + subcluster_index * 100,
+                positive_class_weight=positive_class_weight,
             )
             subcluster_updates.append(result.to_weighted_state())
             subcluster_losses.append(result.mean_local_loss)
@@ -137,9 +150,19 @@ def run_hierarchical_baseline_experiment(
             expected_cluster_id=cluster_id,
         )
 
-        train_metrics = _evaluate_cluster_split(clients, global_state, model_config, split_name="train")
-        validation_metrics = _evaluate_cluster_split(clients, global_state, model_config, split_name="validation")
-        test_metrics = _evaluate_cluster_split(clients, global_state, model_config, split_name="test")
+        round_evaluation = evaluate_round_with_validation_threshold(
+            clients,
+            predictor=lambda _client, split: predict_split(
+                global_state,
+                model_config,
+                split,
+            )[0],
+        )
+        train_metrics = round_evaluation["train_metrics"]
+        validation_metrics = round_evaluation["validation_metrics"]
+        validation_metrics_default_threshold = round_evaluation["validation_metrics_default_threshold"]
+        test_metrics = round_evaluation["test_metrics"]
+        test_metrics_default_threshold = round_evaluation["test_metrics_default_threshold"]
         communication_cost_bytes = int(parameter_bytes * 2 * (len(clients) + membership.n_subclusters))
 
         round_rows.append(
@@ -150,6 +173,8 @@ def run_hierarchical_baseline_experiment(
                 validation_metrics,
                 test_metrics,
                 communication_cost_bytes,
+                validation_metrics_default_threshold=validation_metrics_default_threshold,
+                test_metrics_default_threshold=test_metrics_default_threshold,
             )
         )
 
@@ -159,12 +184,29 @@ def run_hierarchical_baseline_experiment(
             best_round_index = round_index
             best_train_metrics = dict(train_metrics)
             best_validation_metrics = dict(validation_metrics)
+            best_validation_metrics_default_threshold = dict(validation_metrics_default_threshold)
             best_test_metrics = dict(test_metrics)
+            best_test_metrics_default_threshold = dict(test_metrics_default_threshold)
             best_subcluster_sample_counts = dict(subcluster_sample_counts)
             best_subcluster_client_counts = dict(subcluster_client_counts)
+            best_selected_threshold = float(round_evaluation["selected_threshold"])
+            best_validation_labels = round_evaluation["validation_labels"].copy()
+            best_validation_probabilities = round_evaluation["validation_probabilities"].copy()
+            best_test_labels = round_evaluation["test_labels"].copy()
+            best_test_probabilities = round_evaluation["test_probabilities"].copy()
 
     elapsed_seconds = float(time.perf_counter() - started_at)
-    if best_test_metrics is None or best_validation_metrics is None or best_train_metrics is None:
+    if (
+        best_test_metrics is None
+        or best_test_metrics_default_threshold is None
+        or best_validation_metrics is None
+        or best_validation_metrics_default_threshold is None
+        or best_train_metrics is None
+        or best_validation_labels is None
+        or best_validation_probabilities is None
+        or best_test_labels is None
+        or best_test_probabilities is None
+    ):
         raise ValueError(f"{experiment_id}: unable to determine best validation round.")
     if best_subcluster_sample_counts is None or best_subcluster_client_counts is None:
         raise ValueError(f"{experiment_id}: missing best-round subcluster statistics.")
@@ -174,6 +216,16 @@ def run_hierarchical_baseline_experiment(
         raise ValueError(f"{experiment_id}: frozen membership file changed during hierarchical baseline execution.")
 
     total_communication_cost_bytes = int(sum(row["communication_cost_bytes"] for row in round_rows))
+    prediction_outputs = write_prediction_outputs(
+        output_root=output_root,
+        experiment_id=experiment_id,
+        validation_labels=best_validation_labels,
+        validation_probabilities=best_validation_probabilities,
+        test_labels=best_test_labels,
+        test_probabilities=best_test_probabilities,
+        selected_threshold=best_selected_threshold,
+        seed=seed,
+    )
     summary = {
         "experiment_id": experiment_id,
         "cluster_id": cluster_id,
@@ -202,19 +254,25 @@ def run_hierarchical_baseline_experiment(
         "batch_size": batch_size,
         "learning_rate": learning_rate,
         "seed": seed,
+        "positive_class_weight": positive_class_weight,
         "model_parameter_bytes": parameter_bytes,
         "communication_cost_per_round_bytes": round_rows[-1]["communication_cost_bytes"],
         "total_communication_cost_bytes": total_communication_cost_bytes,
         "best_validation_round": best_round_index,
         "best_validation_f1": best_validation_metrics["f1"],
+        "best_validation_f1_default_threshold": best_validation_metrics_default_threshold["f1"],
+        "threshold_used": best_selected_threshold,
         "test_f1_at_best_validation_round": best_test_metrics["f1"],
         "wall_clock_training_seconds": elapsed_seconds,
         "data_summary": data_summary,
         "best_round_train_metrics": best_train_metrics,
+        "best_round_validation_metrics_default_threshold": best_validation_metrics_default_threshold,
         "best_round_validation_metrics": best_validation_metrics,
+        "best_round_test_metrics_default_threshold": best_test_metrics_default_threshold,
         "best_round_test_metrics": best_test_metrics,
         "best_round_subcluster_train_sample_counts": best_subcluster_sample_counts,
         "best_round_subcluster_client_counts": best_subcluster_client_counts,
+        "prediction_outputs": prediction_outputs,
         "round_metrics_path": str(round_metrics_path),
         "metrics_csv_path": str(metrics_csv_path),
     }
@@ -233,8 +291,11 @@ def run_hierarchical_baseline_experiment(
         "num_leaf_clients": len(clients),
         "n_subclusters": membership.n_subclusters,
         "rounds": rounds,
+        "positive_class_weight": positive_class_weight,
         "best_validation_round": best_round_index,
         "best_validation_f1": best_validation_metrics["f1"],
+        "best_validation_f1_default_threshold": best_validation_metrics_default_threshold["f1"],
+        "threshold_used": best_selected_threshold,
         "test_accuracy": best_test_metrics["accuracy"],
         "test_precision": best_test_metrics["precision"],
         "test_recall": best_test_metrics["recall"],
@@ -243,6 +304,16 @@ def run_hierarchical_baseline_experiment(
         "test_pr_auc": best_test_metrics["pr_auc"],
         "test_fpr": best_test_metrics["fpr"],
         "test_confusion_matrix": json.dumps(best_test_metrics["confusion_matrix"]),
+        "test_accuracy_default_threshold": best_test_metrics_default_threshold["accuracy"],
+        "test_precision_default_threshold": best_test_metrics_default_threshold["precision"],
+        "test_recall_default_threshold": best_test_metrics_default_threshold["recall"],
+        "test_f1_default_threshold": best_test_metrics_default_threshold["f1"],
+        "test_auroc_default_threshold": best_test_metrics_default_threshold["auroc"],
+        "test_pr_auc_default_threshold": best_test_metrics_default_threshold["pr_auc"],
+        "test_fpr_default_threshold": best_test_metrics_default_threshold["fpr"],
+        "test_confusion_matrix_default_threshold": json.dumps(
+            best_test_metrics_default_threshold["confusion_matrix"]
+        ),
         "communication_cost_per_round_bytes": round_rows[-1]["communication_cost_bytes"],
         "total_communication_cost_bytes": total_communication_cost_bytes,
         "wall_clock_training_seconds": elapsed_seconds,

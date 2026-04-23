@@ -118,10 +118,21 @@ class CNN1DClassifier:
     def predict(self, inputs: np.ndarray, *, threshold: float = 0.5) -> np.ndarray:
         return (self.predict_proba(inputs) >= threshold).astype(np.int8, copy=False)
 
-    def binary_cross_entropy(self, inputs: np.ndarray, labels: np.ndarray) -> float:
+    def binary_cross_entropy(
+        self,
+        inputs: np.ndarray,
+        labels: np.ndarray,
+        *,
+        positive_class_weight: float = 1.0,
+    ) -> float:
         labels = labels.astype(np.float32, copy=False)
         probs = self.predict_proba(inputs)
-        return float(-np.mean(labels * np.log(probs) + (1.0 - labels) * np.log(1.0 - probs)))
+        return float(
+            -np.mean(
+                positive_class_weight * labels * np.log(probs)
+                + (1.0 - labels) * np.log(1.0 - probs)
+            )
+        )
 
     def train_epoch(
         self,
@@ -131,6 +142,7 @@ class CNN1DClassifier:
         batch_size: int,
         learning_rate: float,
         rng: np.random.Generator,
+        positive_class_weight: float = 1.0,
     ) -> float:
         if inputs.shape[0] == 0:
             raise ValueError("CNN1DClassifier cannot train on an empty batch.")
@@ -141,7 +153,11 @@ class CNN1DClassifier:
             batch_indices = indices[start : start + batch_size]
             batch_inputs = inputs[batch_indices]
             batch_labels = labels[batch_indices].astype(np.float32, copy=False)
-            loss, gradients = self._loss_and_gradients(batch_inputs, batch_labels)
+            loss, gradients = self._loss_and_gradients(
+                batch_inputs,
+                batch_labels,
+                positive_class_weight=positive_class_weight,
+            )
             batch_losses.append(loss)
             for key in STATE_KEYS:
                 self._state[key] = self._state[key] - gradients[key] * learning_rate
@@ -188,13 +204,26 @@ class CNN1DClassifier:
         self,
         inputs: np.ndarray,
         labels: np.ndarray,
+        *,
+        positive_class_weight: float = 1.0,
     ) -> tuple[float, dict[str, np.ndarray]]:
         cache = self._forward(inputs)
         probs = cache["probs"]
         batch_size = max(1, inputs.shape[0])
-        loss = float(-np.mean(labels * np.log(probs) + (1.0 - labels) * np.log(1.0 - probs)))
+        loss = float(
+            -np.mean(
+                positive_class_weight * labels * np.log(probs)
+                + (1.0 - labels) * np.log(1.0 - probs)
+            )
+        )
 
-        dlogits = ((probs - labels) / batch_size).astype(np.float32, copy=False)
+        dlogits = (
+            (
+                probs * (1.0 - labels)
+                - positive_class_weight * labels * (1.0 - probs)
+            )
+            / batch_size
+        ).astype(np.float32, copy=False)
         grad_dense_weight = cache["pooled"].T @ dlogits
         grad_dense_bias = np.asarray(dlogits.sum(), dtype=np.float32)
 

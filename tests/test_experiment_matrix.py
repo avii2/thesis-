@@ -15,7 +15,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.ledger.metadata_schema import canonical_sha256  # noqa: E402
-from src.train import SUPPORTED_EXPERIMENT_IDS, load_config_registry, load_experiment_matrix, run_experiments  # noqa: E402
+from src.train import DEFAULT_RUN_ALL_EXPERIMENT_IDS, SUPPORTED_EXPERIMENT_IDS, load_config_registry, load_experiment_matrix, run_experiments  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -279,7 +279,7 @@ class ExperimentMatrixTests(unittest.TestCase):
                     output_root=output_root,
                 )
 
-            self.assertEqual(len(batch.experiments), 9)
+            self.assertEqual(len(batch.experiments), len(DEFAULT_RUN_ALL_EXPERIMENT_IDS))
             self.assertTrue(batch.summary_csv_path.exists())
             self.assertEqual(len(batch.comparison_plot_paths), 2)
             for path in batch.comparison_plot_paths:
@@ -287,8 +287,8 @@ class ExperimentMatrixTests(unittest.TestCase):
 
             with batch.summary_csv_path.open("r", encoding="utf-8", newline="") as handle:
                 rows = list(csv.DictReader(handle))
-            self.assertEqual(len(rows), 9)
-            self.assertEqual({row["experiment_id"] for row in rows}, set(SUPPORTED_EXPERIMENT_IDS))
+            self.assertEqual(len(rows), len(DEFAULT_RUN_ALL_EXPERIMENT_IDS))
+            self.assertEqual({row["experiment_id"] for row in rows}, set(DEFAULT_RUN_ALL_EXPERIMENT_IDS))
 
             for artifact in batch.experiments:
                 self.assertTrue(artifact.model_manifest_path.exists())
@@ -301,10 +301,10 @@ class ExperimentMatrixTests(unittest.TestCase):
                 self.assertEqual(payload["cluster_id"], artifact.cluster_id)
                 self.assertNotIn("full_model_weights", payload)
 
-    def test_requesting_unsupported_ablation_fails_clearly(self) -> None:
-        with self.assertRaisesRegex(ValueError, "supports only the required A/B/P experiments"):
+    def test_requesting_unknown_experiment_fails_clearly(self) -> None:
+        with self.assertRaisesRegex(ValueError, "supports the required A/B/P experiments plus the dedicated AB_\\* ablations"):
             run_experiments(
-                experiment_ids=["AB_C1_FEDAVG_TCN"],
+                experiment_ids=["UNKNOWN_EXPERIMENT"],
                 matrix_path=REPO_ROOT / "docs" / "EXPERIMENT_MATRIX.csv",
                 baseline_flat_config_path=REPO_ROOT / "configs" / "baseline_flat.yaml",
                 baseline_hierarchical_config_path=REPO_ROOT / "configs" / "baseline_hierarchical.yaml",

@@ -180,12 +180,19 @@ class AblationRunnerTests(unittest.TestCase):
                 del args, kwargs
                 return _fake_raw_result(output_root, experiment_id="AB_C2_FEDAVG_MLP", cluster_id=2, dataset="TON", hierarchy="hierarchical_fixed", model_family="compact_mlp", fl_method="FedAvg", aggregation="weighted_arithmetic_mean", clustering_method="agglomerative", best_validation_f1=0.61, test_f1=0.60)
 
+            def fake_cluster3(*args: object, **kwargs: object) -> SimpleNamespace:
+                del args, kwargs
+                return _fake_raw_result(output_root, experiment_id="AB_C3_FEDAVG_CNN1D", cluster_id=3, dataset="WUSTL", hierarchy="hierarchical_fixed", model_family="cnn1d", fl_method="FedAvg", aggregation="weighted_arithmetic_mean", clustering_method="agglomerative", best_validation_f1=0.65, test_f1=0.64)
+
             with patch("scripts.run_ablation._dispatch_experiment", side_effect=fake_dispatch), patch(
                 "scripts.run_ablation.run_cluster1_fedavg_tcn_ablation",
                 side_effect=fake_cluster1,
             ), patch(
                 "scripts.run_ablation.run_cluster2_fedavg_mlp_ablation",
                 side_effect=fake_cluster2,
+            ), patch(
+                "scripts.run_ablation.run_cluster3_fedavg_cnn1d_ablation",
+                side_effect=fake_cluster3,
             ):
                 artifacts = run_ablation_configs(
                     run_all=True,
@@ -208,7 +215,7 @@ class AblationRunnerTests(unittest.TestCase):
                 rows = list(csv.DictReader(handle))
             self.assertEqual(len(rows), 1)
             self.assertEqual(rows[0]["control_experiment_id"], "AB_C3_FEDAVG_CNN1D")
-            self.assertEqual(rows[0]["control_source_experiment_id"], "B_C3")
+            self.assertEqual(rows[0]["control_source_experiment_id"], "AB_C3_FEDAVG_CNN1D")
             self.assertEqual(rows[0]["treatment_experiment_id"], "P_C3")
 
             plot_names = {artifact.plot_path.name for artifact in artifacts}

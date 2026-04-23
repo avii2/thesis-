@@ -189,6 +189,7 @@ def run_subcluster_round(
     batch_size: int,
     learning_rate: float,
     seed: int,
+    positive_class_weight: float = 1.0,
 ) -> SubclusterRoundResult:
     if not clients:
         raise ValueError(f"{subcluster_id}: hierarchical baseline requires at least one leaf client.")
@@ -204,6 +205,7 @@ def run_subcluster_round(
             batch_size=batch_size,
             learning_rate=learning_rate,
             seed=seed + client_index,
+            positive_class_weight=positive_class_weight,
         )
         local_updates.append(result.to_weighted_state(cluster_id=cluster_id))
         local_losses.append(result.train_loss)

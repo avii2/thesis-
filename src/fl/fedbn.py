@@ -81,6 +81,7 @@ def train_fedbn_client(
     batch_size: int,
     learning_rate: float,
     seed: int,
+    positive_class_weight: float = 1.0,
 ) -> LocalTrainingResult:
     if client.num_train_samples <= 0:
         raise ValueError(f"{client.client_id}: train split must contain at least one sample.")
@@ -97,6 +98,7 @@ def train_fedbn_client(
                 batch_size=batch_size,
                 learning_rate=learning_rate,
                 rng=rng,
+                positive_class_weight=positive_class_weight,
             )
         )
     return LocalTrainingResult(
@@ -111,13 +113,15 @@ def predict_split_fedbn(
     state: Mapping[str, np.ndarray],
     model_config: TCNConfig,
     split: ClientSplit,
+    *,
+    threshold: float = 0.5,
 ) -> tuple[np.ndarray, np.ndarray]:
     if split.num_samples == 0:
         return np.empty(0, dtype=np.float32), np.empty(0, dtype=np.int8)
 
     model = TCNClassifier.from_state(model_config, state)
     probabilities = model.predict_proba(split.inputs)
-    predictions = (probabilities >= 0.5).astype(np.int8, copy=False)
+    predictions = (probabilities >= threshold).astype(np.int8, copy=False)
     return probabilities, predictions
 
 

@@ -94,6 +94,7 @@ def train_fedprox_client(
     learning_rate: float,
     mu: float,
     seed: int,
+    positive_class_weight: float = 1.0,
 ) -> FedProxTrainingResult:
     if client.num_train_samples <= 0:
         raise ValueError(f"{client.client_id}: train split must contain at least one sample.")
@@ -120,7 +121,12 @@ def train_fedprox_client(
             batch_inputs = train_inputs[batch_indices]
             batch_labels = train_labels[batch_indices]
 
-            base_loss, gradients = model.loss_and_gradients(batch_inputs, batch_labels, rng=rng)
+            base_loss, gradients = model.loss_and_gradients(
+                batch_inputs,
+                batch_labels,
+                rng=rng,
+                positive_class_weight=positive_class_weight,
+            )
             current_state = model.state_dict()
             prox_components = fedprox_loss_components(
                 base_loss=base_loss,
@@ -156,13 +162,15 @@ def predict_split_fedprox(
     state: Mapping[str, np.ndarray],
     model_config: MLPConfig,
     split: ClientSplit,
+    *,
+    threshold: float = 0.5,
 ) -> tuple[np.ndarray, np.ndarray]:
     if split.num_samples == 0:
         return np.empty(0, dtype=np.float32), np.empty(0, dtype=np.int8)
 
     model = CompactMLPClassifier.from_state(model_config, state)
     probabilities = model.predict_proba(_as_tabular_inputs(split))
-    predictions = (probabilities >= 0.5).astype(np.int8, copy=False)
+    predictions = (probabilities >= threshold).astype(np.int8, copy=False)
     return probabilities, predictions
 
 

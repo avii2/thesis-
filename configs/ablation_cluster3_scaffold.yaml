@@ -22,13 +22,23 @@ comparisons:
   - comparison_id: ablation_cluster3_fedavg_vs_scaffold
     title: Cluster 3 FedAvg vs SCAFFOLD
     control:
-      experiment_id: B_C3
-      report_as_experiment_id: AB_C3_FEDAVG_CNN1D
-      run_source: standard
-      label: FedAvg 1D-CNN Control (reuses B_C3)
+      experiment_id: AB_C3_FEDAVG_CNN1D
+      run_source: custom_cluster3_fedavg_cnn1d
+      label: FedAvg 1D-CNN Control
+      cluster_id: 3
+      cluster_config: configs/cluster3_wustl.yaml
+      membership_file: outputs/clustering/cluster3_memberships.json
+      hierarchy: hierarchical_fixed
+      clustering_method: agglomerative
+      n_subclusters: 3
+      descriptor: feature_mean_std
+      model_family: cnn1d
+      fl_method: FedAvg
+      aggregation: weighted_arithmetic_mean
+      learning_rate: 0.05
     treatment:
       experiment_id: P_C3
       run_source: standard
       label: SCAFFOLD 1D-CNN
 runtime_validation:
-  reuse_baseline_b_control_for_ab_c3: true
+  reuse_frozen_memberships: true

@@ -182,10 +182,21 @@ class TCNClassifier:
     def predict(self, inputs: np.ndarray, *, threshold: float = 0.5) -> np.ndarray:
         return (self.predict_proba(inputs) >= threshold).astype(np.int8, copy=False)
 
-    def binary_cross_entropy(self, inputs: np.ndarray, labels: np.ndarray) -> float:
+    def binary_cross_entropy(
+        self,
+        inputs: np.ndarray,
+        labels: np.ndarray,
+        *,
+        positive_class_weight: float = 1.0,
+    ) -> float:
         labels = labels.astype(np.float32, copy=False)
         probabilities = self.predict_proba(inputs)
-        return float(-np.mean(labels * np.log(probabilities) + (1.0 - labels) * np.log(1.0 - probabilities)))
+        return float(
+            -np.mean(
+                positive_class_weight * labels * np.log(probabilities)
+                + (1.0 - labels) * np.log(1.0 - probabilities)
+            )
+        )
 
     def train_epoch(
         self,
@@ -195,6 +206,7 @@ class TCNClassifier:
         batch_size: int,
         learning_rate: float,
         rng: np.random.Generator,
+        positive_class_weight: float = 1.0,
     ) -> float:
         if inputs.shape[0] == 0:
             raise ValueError("TCNClassifier cannot train on an empty batch.")
@@ -205,7 +217,12 @@ class TCNClassifier:
             batch_indices = indices[start : start + batch_size]
             batch_inputs = inputs[batch_indices]
             batch_labels = labels[batch_indices].astype(np.float32, copy=False)
-            loss, gradients = self._loss_and_gradients(batch_inputs, batch_labels, rng)
+            loss, gradients = self._loss_and_gradients(
+                batch_inputs,
+                batch_labels,
+                rng,
+                positive_class_weight=positive_class_weight,
+            )
             losses.append(loss)
             for key in self.state_keys:
                 if key.endswith("running_mean") or key.endswith("running_var") or key.endswith("num_batches_tracked"):
@@ -218,14 +235,27 @@ class TCNClassifier:
         inputs: np.ndarray,
         labels: np.ndarray,
         rng: np.random.Generator,
+        *,
+        positive_class_weight: float = 1.0,
     ) -> tuple[float, dict[str, np.ndarray]]:
         cache = self._forward(inputs, training=True, rng=rng)
         logits = cache["logits"]
         probabilities = 1.0 / (1.0 + np.exp(-np.clip(logits, -30.0, 30.0)))
         probabilities = np.clip(probabilities, 1e-6, 1.0 - 1e-6).astype(np.float32, copy=False)
         batch_size = max(1, inputs.shape[0])
-        loss = float(-np.mean(labels * np.log(probabilities) + (1.0 - labels) * np.log(1.0 - probabilities)))
-        dlogits = ((probabilities - labels) / batch_size).astype(np.float32, copy=False)
+        loss = float(
+            -np.mean(
+                positive_class_weight * labels * np.log(probabilities)
+                + (1.0 - labels) * np.log(1.0 - probabilities)
+            )
+        )
+        dlogits = (
+            (
+                probabilities * (1.0 - labels)
+                - positive_class_weight * labels * (1.0 - probabilities)
+            )
+            / batch_size
+        ).astype(np.float32, copy=False)
 
         gradients: dict[str, np.ndarray] = {}
         linear2_weight = self._state["linear2_weight"]

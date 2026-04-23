@@ -1,0 +1,13 @@
+{
+  "experiment_id": "AB_C3_FEDAVG_CNN1D",
+  "cluster_id": 3,
+  "dataset": "WUSTL-IIOT-2021",
+  "model_family": "cnn1d",
+  "model_version": "C3_R018",
+  "model_hash": "sha256:5a10f322dbd65f343a7fbaed34a89dd21578a0652450a59ddd232176f193a97d",
+  "artifact_type": "metadata_manifest",
+  "weights_emitted_by_runner": false,
+  "summary_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/AB_C3_FEDAVG_CNN1D/run_summary.json",
+  "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/AB_C3_FEDAVG_CNN1D/round_metrics.csv",
+  "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/metrics/AB_C3_FEDAVG_CNN1D_metrics.csv"
+}

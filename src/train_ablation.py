@@ -11,16 +11,21 @@ import numpy as np
 from src.fl.aggregators import WeightedState, aggregate_leaf_updates_to_subcluster, aggregate_subcluster_updates_to_maincluster
 from src.fl.client import ClientSplit, FlatClientDataset, LocalTrainingResult
 from src.fl.maincluster import (
+    DEFAULT_CLASSIFICATION_THRESHOLD,
     _load_yaml,
     _round_row,
     _split_metrics,
     _write_round_metrics,
     _write_summary_metrics,
     build_flat_federated_clients,
+    compute_cluster_positive_class_weight,
+    evaluate_round_with_validation_threshold,
+    write_prediction_outputs,
 )
 from src.fl.subcluster import group_clients_by_subcluster, load_frozen_membership
 from src.models.mlp import CompactMLPClassifier, MLPConfig, STATE_KEYS
 from src.models.tcn import TCNClassifier, TCNConfig
+from src.train_hierarchical_baseline import run_hierarchical_baseline_experiment
 
 
 @dataclass(frozen=True)
@@ -135,6 +140,7 @@ def _train_tcn_fedavg_client(
     batch_size: int,
     learning_rate: float,
     seed: int,
+    positive_class_weight: float = 1.0,
 ) -> LocalTrainingResult:
     if client.num_train_samples <= 0:
         raise ValueError(f"{client.client_id}: train split must contain at least one sample.")
@@ -150,6 +156,7 @@ def _train_tcn_fedavg_client(
                 batch_size=batch_size,
                 learning_rate=learning_rate,
                 rng=rng,
+                positive_class_weight=positive_class_weight,
             )
         )
     return LocalTrainingResult(
@@ -164,13 +171,15 @@ def _predict_tcn_split(
     state: Mapping[str, np.ndarray],
     model_config: TCNConfig,
     split: ClientSplit,
+    *,
+    threshold: float = 0.5,
 ) -> tuple[np.ndarray, np.ndarray]:
     if split.num_samples == 0:
         return np.empty(0, dtype=np.float32), np.empty(0, dtype=np.int8)
 
     model = TCNClassifier.from_state(model_config, state)
     probabilities = model.predict_proba(split.inputs)
-    predictions = (probabilities >= 0.5).astype(np.int8, copy=False)
+    predictions = (probabilities >= threshold).astype(np.int8, copy=False)
     return probabilities, predictions
 
 
@@ -216,6 +225,7 @@ def _train_mlp_fedavg_client(
     batch_size: int,
     learning_rate: float,
     seed: int,
+    positive_class_weight: float = 1.0,
 ) -> LocalTrainingResult:
     if client.num_train_samples <= 0:
         raise ValueError(f"{client.client_id}: train split must contain at least one sample.")
@@ -233,7 +243,12 @@ def _train_mlp_fedavg_client(
             batch_indices = indices[start : start + batch_size]
             batch_inputs = train_inputs[batch_indices]
             batch_labels = train_labels[batch_indices]
-            loss, gradients = model.loss_and_gradients(batch_inputs, batch_labels, rng=rng)
+            loss, gradients = model.loss_and_gradients(
+                batch_inputs,
+                batch_labels,
+                rng=rng,
+                positive_class_weight=positive_class_weight,
+            )
             model.apply_adam_gradients(
                 {
                     key: np.asarray(gradients[key], dtype=np.float32)
@@ -256,13 +271,15 @@ def _predict_mlp_split(
     state: Mapping[str, np.ndarray],
     model_config: MLPConfig,
     split: ClientSplit,
+    *,
+    threshold: float = 0.5,
 ) -> tuple[np.ndarray, np.ndarray]:
     if split.num_samples == 0:
         return np.empty(0, dtype=np.float32), np.empty(0, dtype=np.int8)
 
     model = CompactMLPClassifier.from_state(model_config, state)
     probabilities = model.predict_proba(_as_tabular_inputs(split))
-    predictions = (probabilities >= 0.5).astype(np.int8, copy=False)
+    predictions = (probabilities >= threshold).astype(np.int8, copy=False)
     return probabilities, predictions
 
 
@@ -331,6 +348,7 @@ def run_cluster1_fedavg_tcn_ablation(
         max_train_examples_per_client=max_train_examples_per_client,
         max_eval_examples_per_client=max_eval_examples_per_client,
     )
+    positive_class_weight = compute_cluster_positive_class_weight(clients)
     if data_summary["input_adapter"] != "sliding_window_feature_channels":
         raise ValueError("AB_C1_FEDAVG_TCN requires sliding-window Cluster 1 inputs.")
 
@@ -363,10 +381,17 @@ def run_cluster1_fedavg_tcn_ablation(
     best_round_index = 1
     best_validation_f1 = float("-inf")
     best_test_metrics: Mapping[str, Any] | None = None
+    best_test_metrics_default_threshold: Mapping[str, Any] | None = None
     best_validation_metrics: Mapping[str, Any] | None = None
+    best_validation_metrics_default_threshold: Mapping[str, Any] | None = None
     best_train_metrics: Mapping[str, Any] | None = None
     best_subcluster_sample_counts: Mapping[str, int] | None = None
     best_subcluster_client_counts: Mapping[str, int] | None = None
+    best_selected_threshold: float = DEFAULT_CLASSIFICATION_THRESHOLD
+    best_validation_labels: np.ndarray | None = None
+    best_validation_probabilities: np.ndarray | None = None
+    best_test_labels: np.ndarray | None = None
+    best_test_probabilities: np.ndarray | None = None
 
     for round_index in range(1, configured_rounds + 1):
         subcluster_updates: list[WeightedState] = []
@@ -388,6 +413,7 @@ def run_cluster1_fedavg_tcn_ablation(
                     batch_size=configured_batch_size,
                     learning_rate=learning_rate,
                     seed=configured_seed + round_index * 1000 + subcluster_index * 100 + client_index,
+                    positive_class_weight=positive_class_weight,
                 )
                 local_updates.append(result.to_weighted_state(cluster_id=cluster_id))
                 local_losses.append(result.train_loss)
@@ -414,14 +440,19 @@ def run_cluster1_fedavg_tcn_ablation(
             subcluster_updates,
             expected_cluster_id=cluster_id,
         )
-        train_metrics = _evaluate_tcn_cluster_split(clients, state=global_state, model_config=model_config, split_name="train")
-        validation_metrics = _evaluate_tcn_cluster_split(
+        round_evaluation = evaluate_round_with_validation_threshold(
             clients,
-            state=global_state,
-            model_config=model_config,
-            split_name="validation",
+            predictor=lambda _client, split: _predict_tcn_split(
+                global_state,
+                model_config,
+                split,
+            )[0],
         )
-        test_metrics = _evaluate_tcn_cluster_split(clients, state=global_state, model_config=model_config, split_name="test")
+        train_metrics = round_evaluation["train_metrics"]
+        validation_metrics = round_evaluation["validation_metrics"]
+        validation_metrics_default_threshold = round_evaluation["validation_metrics_default_threshold"]
+        test_metrics = round_evaluation["test_metrics"]
+        test_metrics_default_threshold = round_evaluation["test_metrics_default_threshold"]
         communication_cost_bytes = int(parameter_bytes * 2 * (len(clients) + membership.n_subclusters))
 
         round_rows.append(
@@ -432,6 +463,8 @@ def run_cluster1_fedavg_tcn_ablation(
                 validation_metrics,
                 test_metrics,
                 communication_cost_bytes,
+                validation_metrics_default_threshold=validation_metrics_default_threshold,
+                test_metrics_default_threshold=test_metrics_default_threshold,
             )
         )
 
@@ -441,12 +474,29 @@ def run_cluster1_fedavg_tcn_ablation(
             best_round_index = round_index
             best_train_metrics = dict(train_metrics)
             best_validation_metrics = dict(validation_metrics)
+            best_validation_metrics_default_threshold = dict(validation_metrics_default_threshold)
             best_test_metrics = dict(test_metrics)
+            best_test_metrics_default_threshold = dict(test_metrics_default_threshold)
             best_subcluster_sample_counts = dict(subcluster_sample_counts)
             best_subcluster_client_counts = dict(subcluster_client_counts)
+            best_selected_threshold = float(round_evaluation["selected_threshold"])
+            best_validation_labels = round_evaluation["validation_labels"].copy()
+            best_validation_probabilities = round_evaluation["validation_probabilities"].copy()
+            best_test_labels = round_evaluation["test_labels"].copy()
+            best_test_probabilities = round_evaluation["test_probabilities"].copy()
 
     elapsed_seconds = float(time.perf_counter() - started_at)
-    if best_test_metrics is None or best_validation_metrics is None or best_train_metrics is None:
+    if (
+        best_test_metrics is None
+        or best_test_metrics_default_threshold is None
+        or best_validation_metrics is None
+        or best_validation_metrics_default_threshold is None
+        or best_train_metrics is None
+        or best_validation_labels is None
+        or best_validation_probabilities is None
+        or best_test_labels is None
+        or best_test_probabilities is None
+    ):
         raise ValueError("AB_C1_FEDAVG_TCN: unable to determine best validation round.")
     if best_subcluster_sample_counts is None or best_subcluster_client_counts is None:
         raise ValueError("AB_C1_FEDAVG_TCN: missing best-round subcluster statistics.")
@@ -456,6 +506,16 @@ def run_cluster1_fedavg_tcn_ablation(
         raise ValueError("AB_C1_FEDAVG_TCN: frozen membership file changed during ablation execution.")
 
     total_communication_cost_bytes = int(sum(row["communication_cost_bytes"] for row in round_rows))
+    prediction_outputs = write_prediction_outputs(
+        output_root=output_root,
+        experiment_id="AB_C1_FEDAVG_TCN",
+        validation_labels=best_validation_labels,
+        validation_probabilities=best_validation_probabilities,
+        test_labels=best_test_labels,
+        test_probabilities=best_test_probabilities,
+        selected_threshold=best_selected_threshold,
+        seed=configured_seed,
+    )
     summary = {
         "experiment_id": "AB_C1_FEDAVG_TCN",
         "comparison_id": str(comparison["comparison_id"]),
@@ -486,19 +546,25 @@ def run_cluster1_fedavg_tcn_ablation(
         "learning_rate": learning_rate,
         "optimizer_style": "sgd",
         "seed": configured_seed,
+        "positive_class_weight": positive_class_weight,
         "model_parameter_bytes": parameter_bytes,
         "communication_cost_per_round_bytes": round_rows[-1]["communication_cost_bytes"],
         "total_communication_cost_bytes": total_communication_cost_bytes,
         "best_validation_round": best_round_index,
         "best_validation_f1": best_validation_metrics["f1"],
+        "best_validation_f1_default_threshold": best_validation_metrics_default_threshold["f1"],
+        "threshold_used": best_selected_threshold,
         "test_f1_at_best_validation_round": best_test_metrics["f1"],
         "wall_clock_training_seconds": elapsed_seconds,
         "data_summary": data_summary,
         "best_round_train_metrics": best_train_metrics,
+        "best_round_validation_metrics_default_threshold": best_validation_metrics_default_threshold,
         "best_round_validation_metrics": best_validation_metrics,
+        "best_round_test_metrics_default_threshold": best_test_metrics_default_threshold,
         "best_round_test_metrics": best_test_metrics,
         "best_round_subcluster_train_sample_counts": best_subcluster_sample_counts,
         "best_round_subcluster_client_counts": best_subcluster_client_counts,
+        "prediction_outputs": prediction_outputs,
         "round_metrics_path": str(round_metrics_path),
         "metrics_csv_path": str(metrics_csv_path),
     }
@@ -517,8 +583,11 @@ def run_cluster1_fedavg_tcn_ablation(
         "num_leaf_clients": len(clients),
         "n_subclusters": membership.n_subclusters,
         "rounds": configured_rounds,
+        "positive_class_weight": positive_class_weight,
         "best_validation_round": best_round_index,
         "best_validation_f1": best_validation_metrics["f1"],
+        "best_validation_f1_default_threshold": best_validation_metrics_default_threshold["f1"],
+        "threshold_used": best_selected_threshold,
         "test_accuracy": best_test_metrics["accuracy"],
         "test_precision": best_test_metrics["precision"],
         "test_recall": best_test_metrics["recall"],
@@ -527,6 +596,16 @@ def run_cluster1_fedavg_tcn_ablation(
         "test_pr_auc": best_test_metrics["pr_auc"],
         "test_fpr": best_test_metrics["fpr"],
         "test_confusion_matrix": json.dumps(best_test_metrics["confusion_matrix"]),
+        "test_accuracy_default_threshold": best_test_metrics_default_threshold["accuracy"],
+        "test_precision_default_threshold": best_test_metrics_default_threshold["precision"],
+        "test_recall_default_threshold": best_test_metrics_default_threshold["recall"],
+        "test_f1_default_threshold": best_test_metrics_default_threshold["f1"],
+        "test_auroc_default_threshold": best_test_metrics_default_threshold["auroc"],
+        "test_pr_auc_default_threshold": best_test_metrics_default_threshold["pr_auc"],
+        "test_fpr_default_threshold": best_test_metrics_default_threshold["fpr"],
+        "test_confusion_matrix_default_threshold": json.dumps(
+            best_test_metrics_default_threshold["confusion_matrix"]
+        ),
         "communication_cost_per_round_bytes": round_rows[-1]["communication_cost_bytes"],
         "total_communication_cost_bytes": total_communication_cost_bytes,
         "wall_clock_training_seconds": elapsed_seconds,
@@ -626,10 +705,17 @@ def run_cluster2_fedavg_mlp_ablation(
     best_round_index = 1
     best_validation_f1 = float("-inf")
     best_test_metrics: Mapping[str, Any] | None = None
+    best_test_metrics_default_threshold: Mapping[str, Any] | None = None
     best_validation_metrics: Mapping[str, Any] | None = None
+    best_validation_metrics_default_threshold: Mapping[str, Any] | None = None
     best_train_metrics: Mapping[str, Any] | None = None
     best_subcluster_sample_counts: Mapping[str, int] | None = None
     best_subcluster_client_counts: Mapping[str, int] | None = None
+    best_selected_threshold: float = DEFAULT_CLASSIFICATION_THRESHOLD
+    best_validation_labels: np.ndarray | None = None
+    best_validation_probabilities: np.ndarray | None = None
+    best_test_labels: np.ndarray | None = None
+    best_test_probabilities: np.ndarray | None = None
 
     for round_index in range(1, configured_rounds + 1):
         subcluster_updates: list[WeightedState] = []
@@ -651,6 +737,7 @@ def run_cluster2_fedavg_mlp_ablation(
                     batch_size=configured_batch_size,
                     learning_rate=learning_rate,
                     seed=configured_seed + round_index * 1000 + subcluster_index * 100 + client_index,
+                    positive_class_weight=positive_class_weight,
                 )
                 local_updates.append(result.to_weighted_state(cluster_id=cluster_id))
                 local_losses.append(result.train_loss)
@@ -677,14 +764,19 @@ def run_cluster2_fedavg_mlp_ablation(
             subcluster_updates,
             expected_cluster_id=cluster_id,
         )
-        train_metrics = _evaluate_mlp_cluster_split(clients, state=global_state, model_config=model_config, split_name="train")
-        validation_metrics = _evaluate_mlp_cluster_split(
+        round_evaluation = evaluate_round_with_validation_threshold(
             clients,
-            state=global_state,
-            model_config=model_config,
-            split_name="validation",
+            predictor=lambda _client, split: _predict_mlp_split(
+                global_state,
+                model_config,
+                split,
+            )[0],
         )
-        test_metrics = _evaluate_mlp_cluster_split(clients, state=global_state, model_config=model_config, split_name="test")
+        train_metrics = round_evaluation["train_metrics"]
+        validation_metrics = round_evaluation["validation_metrics"]
+        validation_metrics_default_threshold = round_evaluation["validation_metrics_default_threshold"]
+        test_metrics = round_evaluation["test_metrics"]
+        test_metrics_default_threshold = round_evaluation["test_metrics_default_threshold"]
         communication_cost_bytes = int(parameter_bytes * 2 * (len(clients) + membership.n_subclusters))
 
         round_rows.append(
@@ -695,6 +787,8 @@ def run_cluster2_fedavg_mlp_ablation(
                 validation_metrics,
                 test_metrics,
                 communication_cost_bytes,
+                validation_metrics_default_threshold=validation_metrics_default_threshold,
+                test_metrics_default_threshold=test_metrics_default_threshold,
             )
         )
 
@@ -704,12 +798,29 @@ def run_cluster2_fedavg_mlp_ablation(
             best_round_index = round_index
             best_train_metrics = dict(train_metrics)
             best_validation_metrics = dict(validation_metrics)
+            best_validation_metrics_default_threshold = dict(validation_metrics_default_threshold)
             best_test_metrics = dict(test_metrics)
+            best_test_metrics_default_threshold = dict(test_metrics_default_threshold)
             best_subcluster_sample_counts = dict(subcluster_sample_counts)
             best_subcluster_client_counts = dict(subcluster_client_counts)
+            best_selected_threshold = float(round_evaluation["selected_threshold"])
+            best_validation_labels = round_evaluation["validation_labels"].copy()
+            best_validation_probabilities = round_evaluation["validation_probabilities"].copy()
+            best_test_labels = round_evaluation["test_labels"].copy()
+            best_test_probabilities = round_evaluation["test_probabilities"].copy()
 
     elapsed_seconds = float(time.perf_counter() - started_at)
-    if best_test_metrics is None or best_validation_metrics is None or best_train_metrics is None:
+    if (
+        best_test_metrics is None
+        or best_test_metrics_default_threshold is None
+        or best_validation_metrics is None
+        or best_validation_metrics_default_threshold is None
+        or best_train_metrics is None
+        or best_validation_labels is None
+        or best_validation_probabilities is None
+        or best_test_labels is None
+        or best_test_probabilities is None
+    ):
         raise ValueError("AB_C2_FEDAVG_MLP: unable to determine best validation round.")
     if best_subcluster_sample_counts is None or best_subcluster_client_counts is None:
         raise ValueError("AB_C2_FEDAVG_MLP: missing best-round subcluster statistics.")
@@ -719,6 +830,16 @@ def run_cluster2_fedavg_mlp_ablation(
         raise ValueError("AB_C2_FEDAVG_MLP: frozen membership file changed during ablation execution.")
 
     total_communication_cost_bytes = int(sum(row["communication_cost_bytes"] for row in round_rows))
+    prediction_outputs = write_prediction_outputs(
+        output_root=output_root,
+        experiment_id="AB_C2_FEDAVG_MLP",
+        validation_labels=best_validation_labels,
+        validation_probabilities=best_validation_probabilities,
+        test_labels=best_test_labels,
+        test_probabilities=best_test_probabilities,
+        selected_threshold=best_selected_threshold,
+        seed=configured_seed,
+    )
     summary = {
         "experiment_id": "AB_C2_FEDAVG_MLP",
         "comparison_id": str(comparison["comparison_id"]),
@@ -751,19 +872,25 @@ def run_cluster2_fedavg_mlp_ablation(
         "learning_rate": learning_rate,
         "optimizer": "Adam",
         "seed": configured_seed,
+        "positive_class_weight": positive_class_weight,
         "model_parameter_bytes": parameter_bytes,
         "communication_cost_per_round_bytes": round_rows[-1]["communication_cost_bytes"],
         "total_communication_cost_bytes": total_communication_cost_bytes,
         "best_validation_round": best_round_index,
         "best_validation_f1": best_validation_metrics["f1"],
+        "best_validation_f1_default_threshold": best_validation_metrics_default_threshold["f1"],
+        "threshold_used": best_selected_threshold,
         "test_f1_at_best_validation_round": best_test_metrics["f1"],
         "wall_clock_training_seconds": elapsed_seconds,
         "data_summary": data_summary,
         "best_round_train_metrics": best_train_metrics,
+        "best_round_validation_metrics_default_threshold": best_validation_metrics_default_threshold,
         "best_round_validation_metrics": best_validation_metrics,
+        "best_round_test_metrics_default_threshold": best_test_metrics_default_threshold,
         "best_round_test_metrics": best_test_metrics,
         "best_round_subcluster_train_sample_counts": best_subcluster_sample_counts,
         "best_round_subcluster_client_counts": best_subcluster_client_counts,
+        "prediction_outputs": prediction_outputs,
         "round_metrics_path": str(round_metrics_path),
         "metrics_csv_path": str(metrics_csv_path),
     }
@@ -783,8 +910,11 @@ def run_cluster2_fedavg_mlp_ablation(
         "num_leaf_clients": len(clients),
         "n_subclusters": membership.n_subclusters,
         "rounds": configured_rounds,
+        "positive_class_weight": positive_class_weight,
         "best_validation_round": best_round_index,
         "best_validation_f1": best_validation_metrics["f1"],
+        "best_validation_f1_default_threshold": best_validation_metrics_default_threshold["f1"],
+        "threshold_used": best_selected_threshold,
         "test_accuracy": best_test_metrics["accuracy"],
         "test_precision": best_test_metrics["precision"],
         "test_recall": best_test_metrics["recall"],
@@ -793,6 +923,16 @@ def run_cluster2_fedavg_mlp_ablation(
         "test_pr_auc": best_test_metrics["pr_auc"],
         "test_fpr": best_test_metrics["fpr"],
         "test_confusion_matrix": json.dumps(best_test_metrics["confusion_matrix"]),
+        "test_accuracy_default_threshold": best_test_metrics_default_threshold["accuracy"],
+        "test_precision_default_threshold": best_test_metrics_default_threshold["precision"],
+        "test_recall_default_threshold": best_test_metrics_default_threshold["recall"],
+        "test_f1_default_threshold": best_test_metrics_default_threshold["f1"],
+        "test_auroc_default_threshold": best_test_metrics_default_threshold["auroc"],
+        "test_pr_auc_default_threshold": best_test_metrics_default_threshold["pr_auc"],
+        "test_fpr_default_threshold": best_test_metrics_default_threshold["fpr"],
+        "test_confusion_matrix_default_threshold": json.dumps(
+            best_test_metrics_default_threshold["confusion_matrix"]
+        ),
         "communication_cost_per_round_bytes": round_rows[-1]["communication_cost_bytes"],
         "total_communication_cost_bytes": total_communication_cost_bytes,
         "wall_clock_training_seconds": elapsed_seconds,
@@ -810,5 +950,68 @@ def run_cluster2_fedavg_mlp_ablation(
         summary_path=summary_path,
         round_metrics_path=round_metrics_path,
         metrics_csv_path=metrics_csv_path,
+        summary=summary,
+    )
+
+
+def run_cluster3_fedavg_cnn1d_ablation(
+    ablation_config_path: str | Path = "configs/ablation_cluster3_scaffold.yaml",
+    *,
+    rounds: int | None = None,
+    local_epochs: int | None = None,
+    batch_size: int | None = None,
+    seed: int | None = None,
+    smoke_test: bool = False,
+    max_train_examples_per_client: int | None = None,
+    max_eval_examples_per_client: int | None = None,
+    output_root: str | Path = "outputs",
+) -> AblationRunResult:
+    resolved_config_path, config, comparison, control = _load_custom_control_entry(
+        ablation_config_path,
+        expected_experiment_id="AB_C3_FEDAVG_CNN1D",
+        expected_run_source="custom_cluster3_fedavg_cnn1d",
+        expected_cluster_id=3,
+        expected_model_family="cnn1d",
+    )
+    configured_rounds, configured_local_epochs, configured_batch_size, configured_seed = _configured_defaults(
+        config,
+        smoke_test=smoke_test,
+        rounds=rounds,
+        local_epochs=local_epochs,
+        batch_size=batch_size,
+        seed=seed,
+    )
+    learning_rate = float(control["learning_rate"])
+    cluster_config_path = _resolve_path(resolved_config_path, str(control["cluster_config"]))
+    membership_path = _resolve_path(resolved_config_path, str(control["membership_file"]))
+
+    result = run_hierarchical_baseline_experiment(
+        experiment_id="AB_C3_FEDAVG_CNN1D",
+        cluster_config_path=cluster_config_path,
+        membership_file=membership_path,
+        expected_n_subclusters=int(control["n_subclusters"]),
+        output_root=output_root,
+        rounds=configured_rounds,
+        local_epochs=configured_local_epochs,
+        batch_size=configured_batch_size,
+        learning_rate=learning_rate,
+        seed=configured_seed,
+        max_train_examples_per_client=max_train_examples_per_client,
+        max_eval_examples_per_client=max_eval_examples_per_client,
+    )
+
+    summary = dict(result.summary)
+    summary["comparison_id"] = str(comparison["comparison_id"])
+    summary["ablation_config_path"] = str(resolved_config_path)
+    result.summary_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+
+    return AblationRunResult(
+        experiment_id="AB_C3_FEDAVG_CNN1D",
+        cluster_id=result.cluster_id,
+        dataset=result.dataset,
+        output_dir=result.output_dir,
+        summary_path=result.summary_path,
+        round_metrics_path=result.round_metrics_path,
+        metrics_csv_path=result.metrics_csv_path,
         summary=summary,
     )

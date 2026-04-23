@@ -3,9 +3,12 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-from dataclasses import dataclass
+import shutil
+import tempfile
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from statistics import mean, pstdev
 from typing import Any, Iterable, Mapping, Sequence
 
 import matplotlib
@@ -15,6 +18,11 @@ from matplotlib.ticker import MaxNLocator
 
 from src.ledger.metadata_schema import LedgerRecord, canonical_sha256, model_version_for_round
 from src.ledger.mock_ledger import JSONLMockLedger, MAIN_CLUSTER_HEAD_ROLE
+from src.train_ablation import (
+    run_cluster1_fedavg_tcn_ablation,
+    run_cluster2_fedavg_mlp_ablation,
+    run_cluster3_fedavg_cnn1d_ablation,
+)
 from src.train_cluster1_proposed import run_cluster1_proposed
 from src.train_cluster2_proposed import run_cluster2_proposed
 from src.train_cluster3_proposed import run_cluster3_proposed
@@ -25,6 +33,21 @@ matplotlib.use("Agg")
 
 
 SUPPORTED_EXPERIMENT_IDS = (
+    "A_C1",
+    "A_C2",
+    "A_C3",
+    "B_C1",
+    "B_C2",
+    "B_C3",
+    "P_C1",
+    "P_C2",
+    "P_C3",
+    "AB_C1_FEDAVG_TCN",
+    "AB_C2_FEDAVG_MLP",
+    "AB_C3_FEDAVG_CNN1D",
+)
+
+DEFAULT_RUN_ALL_EXPERIMENT_IDS = (
     "A_C1",
     "A_C2",
     "A_C3",
@@ -56,7 +79,22 @@ DEFAULT_MATRIX_PATH = "docs/EXPERIMENT_MATRIX.csv"
 DEFAULT_BASELINE_FLAT_CONFIG = "configs/baseline_flat.yaml"
 DEFAULT_BASELINE_HIERARCHICAL_CONFIG = "configs/baseline_hierarchical.yaml"
 DEFAULT_PROPOSED_CONFIG = "configs/proposed.yaml"
+DEFAULT_ABLATION_CLUSTER1_CONFIG = "configs/ablation_cluster1_fedbn.yaml"
+DEFAULT_ABLATION_CLUSTER2_CONFIG = "configs/ablation_cluster2_fedprox.yaml"
+DEFAULT_ABLATION_CLUSTER3_CONFIG = "configs/ablation_cluster3_scaffold.yaml"
 PLOT_FILE_EXTENSION = ".svg"
+
+MULTISEED_REQUIRED_METRICS = (
+    ("test_accuracy", "Accuracy"),
+    ("test_precision", "Precision"),
+    ("test_recall", "Recall"),
+    ("test_f1", "F1"),
+    ("test_auroc", "AUROC"),
+    ("test_pr_auc", "PR-AUC"),
+    ("test_fpr", "FPR"),
+    ("wall_clock_training_seconds", "Wall-clock Time"),
+    ("total_communication_cost_bytes", "Communication Cost"),
+)
 
 
 @dataclass(frozen=True)
@@ -99,13 +137,26 @@ class ExperimentRunArtifacts:
     ledger_path: Path
     convergence_plot_path: Path
     summary: Mapping[str, Any]
+    seed: int | None = None
+
+
+@dataclass(frozen=True)
+class FailedSeedRun:
+    experiment_id: str
+    seed: int
+    error: str
+    failure_marker_path: Path | None = None
 
 
 @dataclass(frozen=True)
 class ExperimentBatchResult:
     experiments: list[ExperimentRunArtifacts]
-    summary_csv_path: Path
-    comparison_plot_paths: list[Path]
+    summary_csv_path: Path | None
+    comparison_plot_paths: list[Path] = field(default_factory=list)
+    mean_std_summary_csv_path: Path | None = None
+    mean_std_results_csv_path: Path | None = None
+    mean_std_markdown_path: Path | None = None
+    failed_seed_runs: list[FailedSeedRun] = field(default_factory=list)
 
 
 def _load_yaml(path: str | Path) -> Mapping[str, Any]:
@@ -249,6 +300,9 @@ def load_config_registry(
     baseline_flat_config_path: str | Path = DEFAULT_BASELINE_FLAT_CONFIG,
     baseline_hierarchical_config_path: str | Path = DEFAULT_BASELINE_HIERARCHICAL_CONFIG,
     proposed_config_path: str | Path = DEFAULT_PROPOSED_CONFIG,
+    ablation_cluster1_config_path: str | Path = DEFAULT_ABLATION_CLUSTER1_CONFIG,
+    ablation_cluster2_config_path: str | Path = DEFAULT_ABLATION_CLUSTER2_CONFIG,
+    ablation_cluster3_config_path: str | Path = DEFAULT_ABLATION_CLUSTER3_CONFIG,
 ) -> dict[str, ConfigExperiment]:
     config_paths = (
         Path(baseline_flat_config_path).resolve(),
@@ -293,6 +347,49 @@ def load_config_registry(
                 cluster_id=int(cluster_section["id"]),
                 dataset_name=str(cluster_section["dataset_name"]),
                 entry=entry,
+            )
+
+    ablation_config_paths = (
+        Path(ablation_cluster1_config_path).resolve(),
+        Path(ablation_cluster2_config_path).resolve(),
+        Path(ablation_cluster3_config_path).resolve(),
+    )
+    for config_path in ablation_config_paths:
+        if not config_path.exists():
+            raise FileNotFoundError(f"Config file does not exist: {config_path}")
+        config = _load_yaml(config_path)
+        comparisons = config.get("comparisons")
+        if not isinstance(comparisons, list) or not comparisons:
+            raise ValueError(f"{config_path}: expected a non-empty comparisons list.")
+
+        for comparison in comparisons:
+            if not isinstance(comparison, Mapping):
+                raise ValueError(f"{config_path}: each comparison entry must be a mapping.")
+            control = comparison.get("control")
+            if not isinstance(control, Mapping):
+                raise ValueError(f"{config_path}: each comparison must define a control mapping.")
+            experiment_id = str(control.get("experiment_id", "")).strip()
+            if experiment_id not in SUPPORTED_EXPERIMENT_IDS or not experiment_id.startswith("AB_"):
+                continue
+            if experiment_id in registry:
+                raise ValueError(f"Duplicate experiment_id {experiment_id!r} across configs.")
+            cluster_config_path = _resolve_path(config_path, str(control["cluster_config"]))
+            if not cluster_config_path.exists():
+                raise FileNotFoundError(
+                    f"{config_path}: cluster_config for {experiment_id} does not exist: {cluster_config_path}"
+                )
+            cluster_yaml = _load_yaml(cluster_config_path)
+            cluster_section = cluster_yaml.get("cluster")
+            if not isinstance(cluster_section, Mapping):
+                raise ValueError(f"{cluster_config_path}: missing cluster metadata.")
+            registry[experiment_id] = ConfigExperiment(
+                experiment_id=experiment_id,
+                experiment_group="ablation_fl_method",
+                config_path=config_path,
+                cluster_config_path=cluster_config_path,
+                cluster_id=int(control["cluster_id"]),
+                dataset_name=str(cluster_section["dataset_name"]),
+                entry=control,
             )
     return registry
 
@@ -371,23 +468,150 @@ def _ensure_output_directories(output_root: str | Path) -> dict[str, Path]:
         "models": output_root / "models",
         "plots": output_root / "plots",
         "ledgers": output_root / "ledgers",
+        "predictions": output_root / "predictions",
     }
     for path in paths.values():
         path.mkdir(parents=True, exist_ok=True)
     return paths
 
 
+def _normalize_seeds(seeds: Sequence[int] | None) -> list[int]:
+    if seeds is None:
+        return []
+    normalized: list[int] = []
+    seen: set[int] = set()
+    for value in seeds:
+        seed = int(value)
+        if seed in seen:
+            continue
+        seen.add(seed)
+        normalized.append(seed)
+    if not normalized:
+        raise ValueError("At least one seed must be provided when using multiseed mode.")
+    return normalized
+
+
+def _seed_label(seed: int | None) -> str | None:
+    if seed is None:
+        return None
+    return f"seed_{int(seed)}"
+
+
+def _artifact_destination_paths(
+    *,
+    experiment_id: str,
+    output_root: Path,
+    seed: int | None = None,
+) -> dict[str, Path]:
+    seed_label = _seed_label(seed)
+    run_dir = output_root / "runs" / experiment_id
+    model_dir = output_root / "models" / experiment_id
+    if seed_label is not None:
+        run_dir = run_dir / seed_label
+        model_dir = model_dir / seed_label
+        metrics_name = f"{experiment_id}_{seed_label}_metrics.csv"
+        ledger_name = f"{experiment_id}_{seed_label}_ledger.jsonl"
+        plot_name = f"convergence_{experiment_id}_{seed_label}{PLOT_FILE_EXTENSION}"
+    else:
+        metrics_name = f"{experiment_id}_metrics.csv"
+        ledger_name = f"{experiment_id}_ledger.jsonl"
+        plot_name = f"convergence_{experiment_id}{PLOT_FILE_EXTENSION}"
+    return {
+        "output_dir": run_dir,
+        "summary_path": run_dir / "run_summary.json",
+        "round_metrics_path": run_dir / "round_metrics.csv",
+        "metrics_csv_path": output_root / "metrics" / metrics_name,
+        "ledger_path": output_root / "ledgers" / ledger_name,
+        "convergence_plot_path": output_root / "plots" / plot_name,
+        "model_manifest_path": model_dir / "model_manifest.json",
+        "failure_marker_path": run_dir / "FAILED.json",
+    }
+
+
+def _copy_file(source: Path, destination: Path) -> Path:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if source.resolve() != destination.resolve():
+        shutil.copy2(source, destination)
+    return destination
+
+
+def _copy_prediction_outputs(
+    *,
+    experiment_id: str,
+    summary: Mapping[str, Any],
+    output_root: Path,
+) -> dict[str, str] | None:
+    raw_prediction_outputs = summary.get("prediction_outputs")
+    if not isinstance(raw_prediction_outputs, Mapping):
+        return None
+
+    prediction_dir = output_root / "predictions" / experiment_id
+    prediction_dir.mkdir(parents=True, exist_ok=True)
+    copied: dict[str, str] = {"prediction_dir": str(prediction_dir)}
+    for key in (
+        "validation_predictions_path",
+        "test_predictions_path",
+        "selected_threshold_path",
+    ):
+        configured_source = raw_prediction_outputs.get(key)
+        if not configured_source:
+            continue
+        source_path = Path(str(configured_source)).resolve()
+        if not source_path.exists():
+            continue
+        destination_path = prediction_dir / source_path.name
+        copied_path = _copy_file(source_path, destination_path)
+        copied[key] = str(copied_path)
+    return copied
+
+
+def _write_json(path: Path, payload: Mapping[str, Any]) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
+def _write_single_row_csv(path: Path, row: Mapping[str, Any]) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(row.keys()))
+        writer.writeheader()
+        writer.writerow(row)
+    return path
+
+
+def _write_failed_seed_marker(
+    *,
+    experiment_id: str,
+    seed: int,
+    error: str,
+    output_root: Path,
+) -> Path:
+    failure_marker_path = _artifact_destination_paths(
+        experiment_id=experiment_id,
+        output_root=output_root,
+        seed=seed,
+    )["failure_marker_path"]
+    payload = {
+        "experiment_id": experiment_id,
+        "seed": int(seed),
+        "status": "FAILED",
+        "error": str(error),
+    }
+    return _write_json(failure_marker_path, payload)
+
+
 def _selected_experiment_ids(experiment_ids: Sequence[str] | None, *, run_all: bool) -> list[str]:
     if experiment_ids:
         selected = _dedupe_preserve_order(experiment_ids)
     else:
-        selected = list(SUPPORTED_EXPERIMENT_IDS) if run_all or experiment_ids is None else []
+        selected = list(DEFAULT_RUN_ALL_EXPERIMENT_IDS) if run_all or experiment_ids is None else []
     if not selected:
         raise ValueError("No experiment ids selected.")
     unsupported = [exp_id for exp_id in selected if exp_id not in SUPPORTED_EXPERIMENT_IDS]
     if unsupported:
         raise ValueError(
-            "This experiment runner currently supports only the required A/B/P experiments. "
+            "This experiment runner currently supports the required A/B/P experiments plus the dedicated AB_* ablations. "
             f"Unsupported selections: {unsupported}."
         )
     return selected
@@ -477,6 +701,42 @@ def _dispatch_experiment(
             max_eval_examples_per_client=max_eval_examples_per_client,
             output_root=output_root,
         )
+    if experiment_id == "AB_C1_FEDAVG_TCN":
+        return run_cluster1_fedavg_tcn_ablation(
+            ablation_config_path=config_entry.config_path,
+            smoke_test=smoke_test,
+            rounds=rounds,
+            local_epochs=local_epochs,
+            batch_size=batch_size,
+            seed=seed,
+            max_train_examples_per_client=max_train_examples_per_client,
+            max_eval_examples_per_client=max_eval_examples_per_client,
+            output_root=output_root,
+        )
+    if experiment_id == "AB_C2_FEDAVG_MLP":
+        return run_cluster2_fedavg_mlp_ablation(
+            ablation_config_path=config_entry.config_path,
+            smoke_test=smoke_test,
+            rounds=rounds,
+            local_epochs=local_epochs,
+            batch_size=batch_size,
+            seed=seed,
+            max_train_examples_per_client=max_train_examples_per_client,
+            max_eval_examples_per_client=max_eval_examples_per_client,
+            output_root=output_root,
+        )
+    if experiment_id == "AB_C3_FEDAVG_CNN1D":
+        return run_cluster3_fedavg_cnn1d_ablation(
+            ablation_config_path=config_entry.config_path,
+            smoke_test=smoke_test,
+            rounds=rounds,
+            local_epochs=local_epochs,
+            batch_size=batch_size,
+            seed=seed,
+            max_train_examples_per_client=max_train_examples_per_client,
+            max_eval_examples_per_client=max_eval_examples_per_client,
+            output_root=output_root,
+        )
 
     raise ValueError(f"{experiment_id}: unsupported experiment dispatch.")
 
@@ -555,8 +815,13 @@ def _write_ledger_for_experiment(
     summary: Mapping[str, Any],
     round_rows: Sequence[Mapping[str, Any]],
     output_root: Path,
+    seed: int | None = None,
 ) -> Path:
-    ledger_path = output_root / "ledgers" / f"{experiment_id}_ledger.jsonl"
+    ledger_path = _artifact_destination_paths(
+        experiment_id=experiment_id,
+        output_root=output_root,
+        seed=seed,
+    )["ledger_path"]
     if ledger_path.exists():
         ledger_path.unlink()
     ledger = JSONLMockLedger(ledger_path)
@@ -622,10 +887,14 @@ def _write_model_manifest(
     spec: ExperimentSpec,
     summary: Mapping[str, Any],
     output_root: Path,
+    seed: int | None = None,
 ) -> Path:
-    model_dir = output_root / "models" / experiment_id
-    model_dir.mkdir(parents=True, exist_ok=True)
-    manifest_path = model_dir / "model_manifest.json"
+    manifest_path = _artifact_destination_paths(
+        experiment_id=experiment_id,
+        output_root=output_root,
+        seed=seed,
+    )["model_manifest_path"]
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
     model_hash = canonical_sha256(
         {
             "experiment_id": experiment_id,
@@ -634,6 +903,7 @@ def _write_model_manifest(
             "best_validation_round": summary.get("best_validation_round"),
             "best_round_validation_metrics": summary.get("best_round_validation_metrics"),
             "best_round_test_metrics": summary.get("best_round_test_metrics"),
+            "seed": seed,
         }
     )
     manifest = {
@@ -648,6 +918,7 @@ def _write_model_manifest(
         "model_hash": model_hash,
         "artifact_type": "metadata_manifest",
         "weights_emitted_by_runner": False,
+        "seed": seed,
         "summary_path": str(summary.get("summary_path", "")),
         "round_metrics_path": str(summary.get("round_metrics_path", "")),
         "metrics_csv_path": str(summary.get("metrics_csv_path", "")),
@@ -720,8 +991,18 @@ def _polyline_points(
     return " ".join(points)
 
 
-def _write_convergence_plot(experiment_id: str, round_rows: Sequence[Mapping[str, Any]], output_root: Path) -> Path:
-    plot_path = output_root / "plots" / f"convergence_{experiment_id}{PLOT_FILE_EXTENSION}"
+def _write_convergence_plot(
+    experiment_id: str,
+    round_rows: Sequence[Mapping[str, Any]],
+    output_root: Path,
+    *,
+    seed: int | None = None,
+) -> Path:
+    plot_path = _artifact_destination_paths(
+        experiment_id=experiment_id,
+        output_root=output_root,
+        seed=seed,
+    )["convergence_plot_path"]
     if not round_rows:
         return _write_note_svg(
             plot_path,
@@ -888,36 +1169,326 @@ def _write_summary_csv(summary_rows: Sequence[Mapping[str, Any]], output_root: P
     return summary_path
 
 
+def _mean_std(values: Sequence[float]) -> tuple[float | None, float | None]:
+    if not values:
+        return None, None
+    numeric_values = [float(value) for value in values]
+    return mean(numeric_values), pstdev(numeric_values)
+
+
+def _comma_join(items: Sequence[int]) -> str:
+    if not items:
+        return ""
+    return ",".join(str(int(item)) for item in items)
+
+
+def _seed_artifact_state(
+    *,
+    experiment_id: str,
+    seed: int,
+    output_root: Path,
+) -> tuple[str, dict[str, Any] | None, str]:
+    artifact_paths = _artifact_destination_paths(
+        experiment_id=experiment_id,
+        output_root=output_root,
+        seed=seed,
+    )
+    failure_marker_path = artifact_paths["failure_marker_path"]
+    metrics_csv_path = artifact_paths["metrics_csv_path"]
+    if failure_marker_path.exists():
+        failure_payload = json.loads(failure_marker_path.read_text(encoding="utf-8"))
+        return "FAILED", None, str(failure_payload.get("error", "seed run failed"))
+    if metrics_csv_path.exists():
+        return "COMPLETE", _load_metrics_row(metrics_csv_path), ""
+    related_artifacts = [
+        artifact_paths["summary_path"],
+        artifact_paths["round_metrics_path"],
+        artifact_paths["ledger_path"],
+        artifact_paths["convergence_plot_path"],
+        artifact_paths["model_manifest_path"],
+    ]
+    if any(path.exists() for path in related_artifacts):
+        return "PARTIAL", None, "Seed-specific outputs are incomplete."
+    return "MISSING", None, "Seed-specific outputs were not found."
+
+
+def write_multiseed_reports(
+    *,
+    experiment_ids: Sequence[str],
+    seeds: Sequence[int],
+    matrix_path: str | Path = DEFAULT_MATRIX_PATH,
+    output_root: str | Path = "outputs",
+    markdown_output_path: str | Path | None = None,
+) -> tuple[Path, Path, Path]:
+    normalized_seeds = _normalize_seeds(seeds)
+    output_root = Path(output_root).resolve()
+    matrix = load_experiment_matrix(matrix_path)
+
+    metrics_output_path = output_root / "metrics" / "summary_all_experiments_mean_std.csv"
+    reports_output_path = output_root / "reports" / "results_mean_std_table.csv"
+    if markdown_output_path is None:
+        markdown_output_path = Path(__file__).resolve().parents[1] / "docs" / "RESULTS_SUMMARY_MEAN_STD.md"
+    else:
+        markdown_output_path = Path(markdown_output_path).resolve()
+    metrics_output_path.parent.mkdir(parents=True, exist_ok=True)
+    reports_output_path.parent.mkdir(parents=True, exist_ok=True)
+    markdown_output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    summary_rows: list[dict[str, Any]] = []
+    table_rows: list[dict[str, Any]] = []
+    markdown_lines: list[str] = ["# RESULTS SUMMARY MEAN STD", ""]
+
+    coverage_lines = [
+        "## 1. Seed coverage",
+        "| experiment_id | status | successful_seeds | missing_seeds | failed_seeds | notes |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    mean_std_lines = [
+        "",
+        "## 2. Mean ± std across seeds",
+        "| experiment_id | Accuracy | Precision | Recall | F1 | AUROC | PR-AUC | FPR | wall-clock time | communication cost | status |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    issue_lines = ["", "## 3. Missing or failed seeds"]
+    issue_count = 0
+
+    for experiment_id in _dedupe_preserve_order(experiment_ids):
+        if experiment_id not in matrix:
+            raise ValueError(f"{experiment_id}: missing from experiment matrix.")
+        spec = matrix[experiment_id]
+        successful_metrics: list[dict[str, Any]] = []
+        successful_seeds: list[int] = []
+        missing_seeds: list[int] = []
+        failed_seeds: list[int] = []
+        partial_seeds: list[int] = []
+        notes: list[str] = []
+
+        for seed in normalized_seeds:
+            seed_state, metrics_row, note = _seed_artifact_state(
+                experiment_id=experiment_id,
+                seed=seed,
+                output_root=output_root,
+            )
+            if seed_state == "COMPLETE" and metrics_row is not None:
+                successful_metrics.append(metrics_row)
+                successful_seeds.append(seed)
+            elif seed_state == "FAILED":
+                failed_seeds.append(seed)
+                notes.append(f"seed {seed} FAILED: {note}")
+            elif seed_state == "PARTIAL":
+                partial_seeds.append(seed)
+                notes.append(f"seed {seed} PARTIAL: {note}")
+            else:
+                missing_seeds.append(seed)
+                notes.append(f"seed {seed} MISSING")
+
+        if len(successful_seeds) == len(normalized_seeds):
+            status = "COMPLETE"
+        elif successful_seeds:
+            status = "PARTIAL"
+        elif failed_seeds or partial_seeds:
+            status = "FAILED"
+        else:
+            status = "MISSING"
+
+        aggregate_row: dict[str, Any] = {
+            "experiment_id": experiment_id,
+            "status": status,
+            "cluster_id": spec.cluster_id,
+            "dataset": spec.dataset,
+            "model": spec.model,
+            "fl_method": spec.fl_method,
+            "aggregation": spec.aggregation,
+            "hierarchy_type": spec.hierarchy,
+            "clustering_type": spec.clustering_method,
+            "expected_seeds": _comma_join(normalized_seeds),
+            "successful_seeds": _comma_join(successful_seeds),
+            "missing_seeds": _comma_join(missing_seeds),
+            "failed_seeds": _comma_join(failed_seeds),
+            "partial_seeds": _comma_join(partial_seeds),
+            "successful_seed_count": len(successful_seeds),
+            "notes": "; ".join(notes),
+        }
+
+        for metric_key, _ in MULTISEED_REQUIRED_METRICS:
+            values = [
+                _metric_as_float(metrics_row.get(metric_key))
+                for metrics_row in successful_metrics
+                if _metric_as_float(metrics_row.get(metric_key)) is not None
+            ]
+            metric_mean, metric_std = _mean_std(values)
+            aggregate_row[f"{metric_key}_mean"] = metric_mean
+            aggregate_row[f"{metric_key}_std"] = metric_std
+
+        summary_rows.append(aggregate_row)
+        coverage_lines.append(
+            f"| {experiment_id} | {status} | {_comma_join(successful_seeds) or 'none'} | "
+            f"{_comma_join(missing_seeds) or 'none'} | {_comma_join(failed_seeds) or 'none'} | "
+            f"{aggregate_row['notes'] or 'All requested seeds completed.'} |"
+        )
+
+        display_row = {
+            "experiment_id": experiment_id,
+            "cluster_id": spec.cluster_id,
+            "dataset": spec.dataset,
+            "model": spec.model,
+            "fl_method": spec.fl_method,
+            "aggregation": spec.aggregation,
+            "hierarchy_type": spec.hierarchy,
+            "clustering_type": spec.clustering_method,
+            "status": status,
+            "expected_seeds": aggregate_row["expected_seeds"],
+            "successful_seeds": aggregate_row["successful_seeds"],
+            "missing_seeds": aggregate_row["missing_seeds"],
+            "failed_seeds": aggregate_row["failed_seeds"],
+            "notes": aggregate_row["notes"],
+        }
+        for metric_key, label in MULTISEED_REQUIRED_METRICS:
+            metric_mean = aggregate_row[f"{metric_key}_mean"]
+            metric_std = aggregate_row[f"{metric_key}_std"]
+            display_row[label] = (
+                f"{metric_mean:.4f} ± {metric_std:.4f}"
+                if metric_mean is not None and metric_std is not None
+                else "NOT AVAILABLE"
+            )
+        table_rows.append(display_row)
+        mean_std_lines.append(
+            f"| {experiment_id} | {display_row['Accuracy']} | {display_row['Precision']} | "
+            f"{display_row['Recall']} | {display_row['F1']} | {display_row['AUROC']} | "
+            f"{display_row['PR-AUC']} | {display_row['FPR']} | {display_row['Wall-clock Time']} | "
+            f"{display_row['Communication Cost']} | {status} |"
+        )
+
+        if status != "COMPLETE":
+            issue_count += 1
+            issue_lines.append(f"- `{experiment_id}`: {aggregate_row['notes'] or 'One or more seeds are unavailable.'}")
+
+    if issue_count == 0:
+        issue_lines.append("- None. All requested seeds are present for the selected experiments.")
+
+    summary_fieldnames = [
+        "experiment_id",
+        "status",
+        "cluster_id",
+        "dataset",
+        "model",
+        "fl_method",
+        "aggregation",
+        "hierarchy_type",
+        "clustering_type",
+        "expected_seeds",
+        "successful_seeds",
+        "missing_seeds",
+        "failed_seeds",
+        "partial_seeds",
+        "successful_seed_count",
+    ]
+    for metric_key, _ in MULTISEED_REQUIRED_METRICS:
+        summary_fieldnames.extend((f"{metric_key}_mean", f"{metric_key}_std"))
+    summary_fieldnames.append("notes")
+    with metrics_output_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=summary_fieldnames)
+        writer.writeheader()
+        for row in summary_rows:
+            writer.writerow({field: row.get(field, "") for field in summary_fieldnames})
+
+    table_fieldnames = [
+        "experiment_id",
+        "cluster_id",
+        "dataset",
+        "model",
+        "fl_method",
+        "aggregation",
+        "hierarchy_type",
+        "clustering_type",
+        "status",
+        "expected_seeds",
+        "successful_seeds",
+        "missing_seeds",
+        "failed_seeds",
+    ] + [label for _, label in MULTISEED_REQUIRED_METRICS] + ["notes"]
+    with reports_output_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=table_fieldnames)
+        writer.writeheader()
+        for row in table_rows:
+            writer.writerow({field: row.get(field, "") for field in table_fieldnames})
+
+    markdown_lines.extend(coverage_lines)
+    markdown_lines.extend(mean_std_lines)
+    markdown_lines.extend(issue_lines)
+    markdown_lines.extend(
+        [
+            "",
+            "## 4. Notes",
+            f"- Expected seeds: `{_comma_join(normalized_seeds)}`.",
+            "- Means and standard deviations are computed from the available seed-specific metrics files only.",
+            "- Missing or failed seeds are reported explicitly and excluded from the aggregated statistics.",
+        ]
+    )
+    markdown_output_path.write_text("\n".join(markdown_lines) + "\n", encoding="utf-8")
+    return metrics_output_path, reports_output_path, markdown_output_path
+
+
 def _finalize_run_outputs(
     *,
     experiment_id: str,
     spec: ExperimentSpec,
     raw_result: Any,
     output_root: Path,
+    seed: int | None = None,
 ) -> ExperimentRunArtifacts:
-    output_dir = Path(raw_result.output_dir).resolve()
-    summary_path = Path(raw_result.summary_path).resolve()
-    round_metrics_path = Path(raw_result.round_metrics_path).resolve()
-    metrics_csv_path = Path(raw_result.metrics_csv_path).resolve()
-    if not output_dir.exists():
-        raise FileNotFoundError(f"{experiment_id}: missing run output directory {output_dir}")
-    if not summary_path.exists():
-        raise FileNotFoundError(f"{experiment_id}: missing summary file {summary_path}")
-    if not round_metrics_path.exists():
-        raise FileNotFoundError(f"{experiment_id}: missing round metrics file {round_metrics_path}")
-    if not metrics_csv_path.exists():
-        raise FileNotFoundError(f"{experiment_id}: missing metrics CSV file {metrics_csv_path}")
+    raw_output_dir = Path(raw_result.output_dir).resolve()
+    raw_summary_path = Path(raw_result.summary_path).resolve()
+    raw_round_metrics_path = Path(raw_result.round_metrics_path).resolve()
+    raw_metrics_csv_path = Path(raw_result.metrics_csv_path).resolve()
+    if not raw_output_dir.exists():
+        raise FileNotFoundError(f"{experiment_id}: missing run output directory {raw_output_dir}")
+    if not raw_summary_path.exists():
+        raise FileNotFoundError(f"{experiment_id}: missing summary file {raw_summary_path}")
+    if not raw_round_metrics_path.exists():
+        raise FileNotFoundError(f"{experiment_id}: missing round metrics file {raw_round_metrics_path}")
+    if not raw_metrics_csv_path.exists():
+        raise FileNotFoundError(f"{experiment_id}: missing metrics CSV file {raw_metrics_csv_path}")
+
+    destination_paths = _artifact_destination_paths(
+        experiment_id=experiment_id,
+        output_root=output_root,
+        seed=seed,
+    )
+    output_dir = destination_paths["output_dir"]
+    output_dir.mkdir(parents=True, exist_ok=True)
+    round_metrics_path = _copy_file(raw_round_metrics_path, destination_paths["round_metrics_path"])
+
+    metrics_row = _load_metrics_row(raw_metrics_csv_path)
+    if seed is not None:
+        metrics_row["seed"] = int(seed)
+    metrics_csv_path = _write_single_row_csv(destination_paths["metrics_csv_path"], metrics_row)
 
     summary = dict(raw_result.summary)
-    summary["summary_path"] = str(summary_path)
+    summary["summary_path"] = str(destination_paths["summary_path"])
     summary["round_metrics_path"] = str(round_metrics_path)
     summary["metrics_csv_path"] = str(metrics_csv_path)
+    copied_prediction_outputs = _copy_prediction_outputs(
+        experiment_id=experiment_id,
+        summary=summary,
+        output_root=output_root,
+    )
+    if copied_prediction_outputs is not None:
+        summary["prediction_outputs"] = copied_prediction_outputs
+    if seed is not None:
+        summary["seed"] = int(seed)
+    summary_path = _write_json(destination_paths["summary_path"], summary)
+    failure_marker_path = destination_paths["failure_marker_path"]
+    if failure_marker_path.exists():
+        failure_marker_path.unlink()
+
     round_rows = _load_round_metrics(round_metrics_path)
     model_manifest_path = _write_model_manifest(
         experiment_id=experiment_id,
         spec=spec,
         summary=summary,
         output_root=output_root,
+        seed=seed,
     )
     ledger_path = _write_ledger_for_experiment(
         experiment_id=experiment_id,
@@ -925,8 +1496,9 @@ def _finalize_run_outputs(
         summary=summary,
         round_rows=round_rows,
         output_root=output_root,
+        seed=seed,
     )
-    convergence_plot_path = _write_convergence_plot(experiment_id, round_rows, output_root)
+    convergence_plot_path = _write_convergence_plot(experiment_id, round_rows, output_root, seed=seed)
 
     return ExperimentRunArtifacts(
         experiment_id=experiment_id,
@@ -939,6 +1511,7 @@ def _finalize_run_outputs(
         ledger_path=ledger_path,
         convergence_plot_path=convergence_plot_path,
         summary=summary,
+        seed=seed,
     )
 
 
@@ -955,10 +1528,14 @@ def run_experiments(
     local_epochs: int | None = None,
     batch_size: int | None = None,
     seed: int | None = None,
+    seeds: Sequence[int] | None = None,
     max_train_examples_per_client: int | None = None,
     max_eval_examples_per_client: int | None = None,
     output_root: str | Path = "outputs",
 ) -> ExperimentBatchResult:
+    normalized_seeds = _normalize_seeds(seeds)
+    if seed is not None and normalized_seeds:
+        raise ValueError("Use either seed or seeds, not both.")
     selected_experiments = _selected_experiment_ids(experiment_ids, run_all=run_all)
     matrix = load_experiment_matrix(matrix_path)
     registry = load_config_registry(
@@ -975,6 +1552,66 @@ def run_experiments(
         raise ValueError(f"Selected experiments are missing from the config registry: {missing_in_registry}.")
 
     output_paths = _ensure_output_directories(output_root)
+    if normalized_seeds:
+        artifacts: list[ExperimentRunArtifacts] = []
+        failed_seed_runs: list[FailedSeedRun] = []
+        for experiment_id in selected_experiments:
+            for run_seed in normalized_seeds:
+                try:
+                    with tempfile.TemporaryDirectory(prefix=f"{experiment_id}_{run_seed}_") as staging_dir:
+                        raw_result = _dispatch_experiment(
+                            experiment_id,
+                            registry=registry,
+                            smoke_test=smoke_test,
+                            rounds=rounds,
+                            local_epochs=local_epochs,
+                            batch_size=batch_size,
+                            seed=run_seed,
+                            max_train_examples_per_client=max_train_examples_per_client,
+                            max_eval_examples_per_client=max_eval_examples_per_client,
+                            output_root=Path(staging_dir),
+                        )
+                        artifacts.append(
+                            _finalize_run_outputs(
+                                experiment_id=experiment_id,
+                                spec=matrix[experiment_id],
+                                raw_result=raw_result,
+                                output_root=output_paths["root"],
+                                seed=run_seed,
+                            )
+                        )
+                except Exception as exc:  # pragma: no cover - exercised via summary generation
+                    failure_marker_path = _write_failed_seed_marker(
+                        experiment_id=experiment_id,
+                        seed=run_seed,
+                        error=str(exc),
+                        output_root=output_paths["root"],
+                    )
+                    failed_seed_runs.append(
+                        FailedSeedRun(
+                            experiment_id=experiment_id,
+                            seed=run_seed,
+                            error=str(exc),
+                            failure_marker_path=failure_marker_path,
+                        )
+                    )
+
+        mean_std_summary_csv_path, mean_std_results_csv_path, mean_std_markdown_path = write_multiseed_reports(
+            experiment_ids=selected_experiments,
+            seeds=normalized_seeds,
+            matrix_path=matrix_path,
+            output_root=output_paths["root"],
+        )
+        return ExperimentBatchResult(
+            experiments=artifacts,
+            summary_csv_path=None,
+            comparison_plot_paths=[],
+            mean_std_summary_csv_path=mean_std_summary_csv_path,
+            mean_std_results_csv_path=mean_std_results_csv_path,
+            mean_std_markdown_path=mean_std_markdown_path,
+            failed_seed_runs=failed_seed_runs,
+        )
+
     artifacts: list[ExperimentRunArtifacts] = []
     for experiment_id in selected_experiments:
         raw_result = _dispatch_experiment(
@@ -1076,6 +1713,12 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, help="Optional override for local batch size.")
     parser.add_argument("--seed", type=int, help="Optional override for the run seed.")
     parser.add_argument(
+        "--seeds",
+        nargs="+",
+        type=int,
+        help="Run seed-specific experiments without touching legacy single-seed outputs, for example --seeds 42 123 2025.",
+    )
+    parser.add_argument(
         "--max-train-examples-per-client",
         type=int,
         help="Optional cap applied after split adaptation for smoke-sized training.",
@@ -1095,6 +1738,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 def main(argv: Sequence[str] | None = None) -> None:
     args = parse_args(argv)
+    if args.seed is not None and args.seeds:
+        raise SystemExit("Use either --seed or --seeds, not both.")
     batch = run_experiments(
         experiment_ids=args.experiment_ids,
         run_all=args.all,
@@ -1107,17 +1752,31 @@ def main(argv: Sequence[str] | None = None) -> None:
         local_epochs=args.local_epochs,
         batch_size=args.batch_size,
         seed=args.seed,
+        seeds=args.seeds,
         max_train_examples_per_client=args.max_train_examples_per_client,
         max_eval_examples_per_client=args.max_eval_examples_per_client,
         output_root=args.output_root,
     )
     for artifact in batch.experiments:
-        print(f"{artifact.experiment_id}: wrote {artifact.metrics_csv_path}")
-        print(f"{artifact.experiment_id}: wrote {artifact.ledger_path}")
-        print(f"{artifact.experiment_id}: wrote {artifact.convergence_plot_path}")
-    print(f"summary: wrote {batch.summary_csv_path}")
+        seed_suffix = f" seed={artifact.seed}" if artifact.seed is not None else ""
+        print(f"{artifact.experiment_id}{seed_suffix}: wrote {artifact.metrics_csv_path}")
+        print(f"{artifact.experiment_id}{seed_suffix}: wrote {artifact.ledger_path}")
+        print(f"{artifact.experiment_id}{seed_suffix}: wrote {artifact.convergence_plot_path}")
+    if batch.summary_csv_path is not None:
+        print(f"summary: wrote {batch.summary_csv_path}")
     for path in batch.comparison_plot_paths:
         print(f"comparison_plot: wrote {path}")
+    if batch.mean_std_summary_csv_path is not None:
+        print(f"mean_std_summary: wrote {batch.mean_std_summary_csv_path}")
+    if batch.mean_std_results_csv_path is not None:
+        print(f"mean_std_table: wrote {batch.mean_std_results_csv_path}")
+    if batch.mean_std_markdown_path is not None:
+        print(f"mean_std_markdown: wrote {batch.mean_std_markdown_path}")
+    for failed_seed_run in batch.failed_seed_runs:
+        print(
+            f"{failed_seed_run.experiment_id} seed={failed_seed_run.seed}: FAILED "
+            f"({failed_seed_run.error})"
+        )
 
 
 if __name__ == "__main__":

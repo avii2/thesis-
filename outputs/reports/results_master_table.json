@@ -33,6 +33,13 @@
       "metrics_csv_exists": true,
       "ledger_exists": true,
       "convergence_plot_exists": true,
+      "artifacts_present": [
+        "run_summary",
+        "round_metrics",
+        "metrics_csv",
+        "ledger",
+        "convergence_plot"
+      ],
       "notes": "All expected per-experiment run/metrics/ledger/plot artifacts are present under outputs/."
     },
     {
@@ -62,6 +69,13 @@
       "metrics_csv_exists": true,
       "ledger_exists": true,
       "convergence_plot_exists": true,
+      "artifacts_present": [
+        "run_summary",
+        "round_metrics",
+        "metrics_csv",
+        "ledger",
+        "convergence_plot"
+      ],
       "notes": "All expected per-experiment run/metrics/ledger/plot artifacts are present under outputs/."
     },
     {
@@ -91,6 +105,13 @@
       "metrics_csv_exists": true,
       "ledger_exists": true,
       "convergence_plot_exists": true,
+      "artifacts_present": [
+        "run_summary",
+        "round_metrics",
+        "metrics_csv",
+        "ledger",
+        "convergence_plot"
+      ],
       "notes": "All expected per-experiment run/metrics/ledger/plot artifacts are present under outputs/."
     },
     {
@@ -120,6 +141,13 @@
       "metrics_csv_exists": true,
       "ledger_exists": true,
       "convergence_plot_exists": true,
+      "artifacts_present": [
+        "run_summary",
+        "round_metrics",
+        "metrics_csv",
+        "ledger",
+        "convergence_plot"
+      ],
       "notes": "All expected per-experiment run/metrics/ledger/plot artifacts are present under outputs/."
     },
     {
@@ -149,6 +177,13 @@
       "metrics_csv_exists": true,
       "ledger_exists": true,
       "convergence_plot_exists": true,
+      "artifacts_present": [
+        "run_summary",
+        "round_metrics",
+        "metrics_csv",
+        "ledger",
+        "convergence_plot"
+      ],
       "notes": "All expected per-experiment run/metrics/ledger/plot artifacts are present under outputs/."
     },
     {
@@ -178,6 +213,13 @@
       "metrics_csv_exists": true,
       "ledger_exists": true,
       "convergence_plot_exists": true,
+      "artifacts_present": [
+        "run_summary",
+        "round_metrics",
+        "metrics_csv",
+        "ledger",
+        "convergence_plot"
+      ],
       "notes": "All expected per-experiment run/metrics/ledger/plot artifacts are present under outputs/."
     },
     {
@@ -207,6 +249,13 @@
       "metrics_csv_exists": true,
       "ledger_exists": true,
       "convergence_plot_exists": true,
+      "artifacts_present": [
+        "run_summary",
+        "round_metrics",
+        "metrics_csv",
+        "ledger",
+        "convergence_plot"
+      ],
       "notes": "All expected per-experiment run/metrics/ledger/plot artifacts are present under outputs/."
     },
     {
@@ -236,6 +285,13 @@
       "metrics_csv_exists": true,
       "ledger_exists": true,
       "convergence_plot_exists": true,
+      "artifacts_present": [
+        "run_summary",
+        "round_metrics",
+        "metrics_csv",
+        "ledger",
+        "convergence_plot"
+      ],
       "notes": "All expected per-experiment run/metrics/ledger/plot artifacts are present under outputs/."
     },
     {
@@ -265,11 +321,18 @@
       "metrics_csv_exists": true,
       "ledger_exists": true,
       "convergence_plot_exists": true,
+      "artifacts_present": [
+        "run_summary",
+        "round_metrics",
+        "metrics_csv",
+        "ledger",
+        "convergence_plot"
+      ],
       "notes": "All expected per-experiment run/metrics/ledger/plot artifacts are present under outputs/."
     },
     {
       "experiment_id": "AB_C1_FEDAVG_TCN",
-      "status": "MISSING",
+      "status": "COMPLETE",
       "cluster_id": 1,
       "dataset": "HAI_2103",
       "model": "tcn",
@@ -277,28 +340,35 @@
       "aggregation": "weighted_arithmetic_mean",
       "hierarchy_type": "hierarchical_fixed",
       "clustering_type": "agglomerative",
-      "best_validation_round": "NOT AVAILABLE",
-      "validation_f1": "NOT AVAILABLE",
-      "test_accuracy": "NOT AVAILABLE",
-      "test_precision": "NOT AVAILABLE",
-      "test_recall": "NOT AVAILABLE",
-      "test_f1": "NOT AVAILABLE",
-      "test_auroc": "NOT AVAILABLE",
-      "test_pr_auc": "NOT AVAILABLE",
-      "test_false_positive_rate": "NOT AVAILABLE",
-      "communication_cost_per_round_bytes": "NOT AVAILABLE",
-      "total_communication_cost_bytes": "NOT AVAILABLE",
-      "wall_clock_training_seconds": "NOT AVAILABLE",
-      "run_summary_exists": false,
-      "round_metrics_exists": false,
-      "metrics_csv_exists": false,
-      "ledger_exists": false,
-      "convergence_plot_exists": false,
-      "notes": "No standalone outputs found under outputs/ for this experiment id. Ablation-specific standalone output id not found under outputs/."
+      "best_validation_round": 50,
+      "validation_f1": 0.4,
+      "test_accuracy": 0.9918886198547215,
+      "test_precision": 0.9661016949152542,
+      "test_recall": 0.22265625,
+      "test_f1": 0.3619047619047619,
+      "test_auroc": 0.8394531090717257,
+      "test_pr_auc": 0.5148940905987406,
+      "test_false_positive_rate": 8.155276463872126e-05,
+      "communication_cost_per_round_bytes": 3036096,
+      "total_communication_cost_bytes": 151804800,
+      "wall_clock_training_seconds": 1139.4501849160006,
+      "run_summary_exists": true,
+      "round_metrics_exists": true,
+      "metrics_csv_exists": true,
+      "ledger_exists": true,
+      "convergence_plot_exists": true,
+      "artifacts_present": [
+        "run_summary",
+        "round_metrics",
+        "metrics_csv",
+        "ledger",
+        "convergence_plot"
+      ],
+      "notes": "All expected per-experiment run/metrics/ledger/plot artifacts are present under outputs/."
     },
     {
       "experiment_id": "AB_C2_FEDAVG_MLP",
-      "status": "MISSING",
+      "status": "COMPLETE",
       "cluster_id": 2,
       "dataset": "TON_IoT_combined_telemetry",
       "model": "compact_mlp",
@@ -306,28 +376,35 @@
       "aggregation": "weighted_arithmetic_mean",
       "hierarchy_type": "hierarchical_fixed",
       "clustering_type": "agglomerative",
-      "best_validation_round": "NOT AVAILABLE",
-      "validation_f1": "NOT AVAILABLE",
-      "test_accuracy": "NOT AVAILABLE",
-      "test_precision": "NOT AVAILABLE",
-      "test_recall": "NOT AVAILABLE",
-      "test_f1": "NOT AVAILABLE",
-      "test_auroc": "NOT AVAILABLE",
-      "test_pr_auc": "NOT AVAILABLE",
-      "test_false_positive_rate": "NOT AVAILABLE",
-      "communication_cost_per_round_bytes": "NOT AVAILABLE",
-      "total_communication_cost_bytes": "NOT AVAILABLE",
-      "wall_clock_training_seconds": "NOT AVAILABLE",
-      "run_summary_exists": false,
-      "round_metrics_exists": false,
-      "metrics_csv_exists": false,
-      "ledger_exists": false,
-      "convergence_plot_exists": false,
-      "notes": "No standalone outputs found under outputs/ for this experiment id. Ablation-specific standalone output id not found under outputs/."
+      "best_validation_round": 50,
+      "validation_f1": 0.8,
+      "test_accuracy": 0.6666666666666666,
+      "test_precision": 0.6666666666666666,
+      "test_recall": 1.0,
+      "test_f1": 0.8,
+      "test_auroc": 0.8139013477184924,
+      "test_pr_auc": 0.8609793269766998,
+      "test_false_positive_rate": 1.0,
+      "communication_cost_per_round_bytes": 442512,
+      "total_communication_cost_bytes": 22125600,
+      "wall_clock_training_seconds": 9.805582542001503,
+      "run_summary_exists": true,
+      "round_metrics_exists": true,
+      "metrics_csv_exists": true,
+      "ledger_exists": true,
+      "convergence_plot_exists": true,
+      "artifacts_present": [
+        "run_summary",
+        "round_metrics",
+        "metrics_csv",
+        "ledger",
+        "convergence_plot"
+      ],
+      "notes": "All expected per-experiment run/metrics/ledger/plot artifacts are present under outputs/."
     },
     {
       "experiment_id": "AB_C3_FEDAVG_CNN1D",
-      "status": "MISSING",
+      "status": "COMPLETE",
       "cluster_id": 3,
       "dataset": "WUSTL_IIOT_2021",
       "model": "cnn1d",
@@ -335,24 +412,31 @@
       "aggregation": "weighted_arithmetic_mean",
       "hierarchy_type": "hierarchical_fixed",
       "clustering_type": "agglomerative",
-      "best_validation_round": "NOT AVAILABLE",
-      "validation_f1": "NOT AVAILABLE",
-      "test_accuracy": "NOT AVAILABLE",
-      "test_precision": "NOT AVAILABLE",
-      "test_recall": "NOT AVAILABLE",
-      "test_f1": "NOT AVAILABLE",
-      "test_auroc": "NOT AVAILABLE",
-      "test_pr_auc": "NOT AVAILABLE",
-      "test_false_positive_rate": "NOT AVAILABLE",
-      "communication_cost_per_round_bytes": "NOT AVAILABLE",
-      "total_communication_cost_bytes": "NOT AVAILABLE",
-      "wall_clock_training_seconds": "NOT AVAILABLE",
-      "run_summary_exists": false,
-      "round_metrics_exists": false,
-      "metrics_csv_exists": false,
-      "ledger_exists": false,
-      "convergence_plot_exists": false,
-      "notes": "No standalone outputs found under outputs/ for this experiment id. Ablation-specific standalone output id not found under outputs/. docs/EXPERIMENT_MATRIX.csv notes that B_C3 may be reused as the FedAvg comparator when configuration is identical."
+      "best_validation_round": 18,
+      "validation_f1": 0.010102169670531512,
+      "test_accuracy": 0.8980996232733361,
+      "test_precision": 0.08266360505166476,
+      "test_recall": 0.004107010438651531,
+      "test_f1": 0.0078252363873492,
+      "test_auroc": 0.9827336436296281,
+      "test_pr_auc": 0.7548066709239705,
+      "test_false_positive_rate": 0.004942961074954839,
+      "communication_cost_per_round_bytes": 5904,
+      "total_communication_cost_bytes": 295200,
+      "wall_clock_training_seconds": 246.07770137499756,
+      "run_summary_exists": true,
+      "round_metrics_exists": true,
+      "metrics_csv_exists": true,
+      "ledger_exists": true,
+      "convergence_plot_exists": true,
+      "artifacts_present": [
+        "run_summary",
+        "round_metrics",
+        "metrics_csv",
+        "ledger",
+        "convergence_plot"
+      ],
+      "notes": "All expected per-experiment run/metrics/ledger/plot artifacts are present under outputs/."
     }
   ],
   "ledger_summary": [
@@ -417,6 +501,27 @@
       "record_count": 50,
       "average_logging_latency_seconds": 0.001,
       "ledger_size_bytes": 45022,
+      "illegal_raw_data_or_weights_found": false
+    },
+    {
+      "experiment_id": "AB_C1_FEDAVG_TCN",
+      "record_count": 50,
+      "average_logging_latency_seconds": 0.001,
+      "ledger_size_bytes": 44922,
+      "illegal_raw_data_or_weights_found": false
+    },
+    {
+      "experiment_id": "AB_C2_FEDAVG_MLP",
+      "record_count": 50,
+      "average_logging_latency_seconds": 0.001,
+      "ledger_size_bytes": 44872,
+      "illegal_raw_data_or_weights_found": false
+    },
+    {
+      "experiment_id": "AB_C3_FEDAVG_CNN1D",
+      "record_count": 50,
+      "average_logging_latency_seconds": 0.001,
+      "ledger_size_bytes": 44922,
       "illegal_raw_data_or_weights_found": false
     }
   ]

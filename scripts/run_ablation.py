@@ -25,6 +25,7 @@ from src.train import (  # noqa: E402
 from src.train_ablation import (  # noqa: E402
     run_cluster1_fedavg_tcn_ablation,
     run_cluster2_fedavg_mlp_ablation,
+    run_cluster3_fedavg_cnn1d_ablation,
 )
 
 
@@ -198,6 +199,7 @@ def run_ablation_configs(
     standard_experiment_ids: list[str] = []
     need_custom_cluster1 = False
     need_custom_cluster2 = False
+    need_custom_cluster3 = False
     for _, config in loaded_configs:
         comparisons = config.get("comparisons")
         if not isinstance(comparisons, list) or not comparisons:
@@ -217,6 +219,8 @@ def run_ablation_configs(
                     need_custom_cluster1 = True
                 elif run_source == "custom_cluster2_fedavg_mlp":
                     need_custom_cluster2 = True
+                elif run_source == "custom_cluster3_fedavg_cnn1d":
+                    need_custom_cluster3 = True
                 else:
                     raise ValueError(f"Unsupported ablation run_source {run_source!r} for {experiment_id}.")
 
@@ -275,6 +279,25 @@ def run_ablation_configs(
         artifact_by_experiment_id["AB_C2_FEDAVG_MLP"] = _finalize_run_outputs(
             experiment_id="AB_C2_FEDAVG_MLP",
             spec=matrix["AB_C2_FEDAVG_MLP"],
+            raw_result=raw_result,
+            output_root=output_root,
+        )
+
+    if need_custom_cluster3:
+        raw_result = run_cluster3_fedavg_cnn1d_ablation(
+            ablation_config_path=REPO_ROOT / "configs" / "ablation_cluster3_scaffold.yaml",
+            rounds=active_rounds,
+            local_epochs=active_local_epochs,
+            batch_size=active_batch_size,
+            seed=active_seed,
+            smoke_test=smoke_test,
+            max_train_examples_per_client=max_train_examples_per_client,
+            max_eval_examples_per_client=max_eval_examples_per_client,
+            output_root=output_root,
+        )
+        artifact_by_experiment_id["AB_C3_FEDAVG_CNN1D"] = _finalize_run_outputs(
+            experiment_id="AB_C3_FEDAVG_CNN1D",
+            spec=matrix["AB_C3_FEDAVG_CNN1D"],
             raw_result=raw_result,
             output_root=output_root,
         )

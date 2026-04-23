@@ -11,12 +11,16 @@ import numpy as np
 
 from src.fl.aggregators import WeightedState, aggregate_leaf_updates_to_subcluster, aggregate_subcluster_updates_to_maincluster
 from src.fl.maincluster import (
+    DEFAULT_CLASSIFICATION_THRESHOLD,
     _load_yaml,
     _round_row,
     _split_metrics,
     _write_round_metrics,
     _write_summary_metrics,
     build_flat_federated_clients,
+    compute_cluster_positive_class_weight,
+    evaluate_round_with_validation_threshold,
+    write_prediction_outputs,
 )
 from src.fl.scaffold import (
     control_variate_bytes,
@@ -154,6 +158,7 @@ def run_cluster3_proposed(
         max_train_examples_per_client=max_train_examples_per_client,
         max_eval_examples_per_client=max_eval_examples_per_client,
     )
+    positive_class_weight = compute_cluster_positive_class_weight(clients)
     if data_summary["input_adapter"] != "feature_vector_as_sequence":
         raise ValueError("Cluster 3 proposed path requires feature-vector CNN inputs.")
 
@@ -188,11 +193,18 @@ def run_cluster3_proposed(
     best_round_index = 1
     best_validation_f1 = float("-inf")
     best_test_metrics: Mapping[str, Any] | None = None
+    best_test_metrics_default_threshold: Mapping[str, Any] | None = None
     best_validation_metrics: Mapping[str, Any] | None = None
+    best_validation_metrics_default_threshold: Mapping[str, Any] | None = None
     best_train_metrics: Mapping[str, Any] | None = None
     best_subcluster_sample_counts: Mapping[str, int] | None = None
     best_subcluster_client_counts: Mapping[str, int] | None = None
     best_subcluster_forwarded_increment_norms: Mapping[str, float] | None = None
+    best_selected_threshold: float = DEFAULT_CLASSIFICATION_THRESHOLD
+    best_validation_labels: np.ndarray | None = None
+    best_validation_probabilities: np.ndarray | None = None
+    best_test_labels: np.ndarray | None = None
+    best_test_probabilities: np.ndarray | None = None
 
     for round_index in range(1, configured_rounds + 1):
         subcluster_updates: list[WeightedState] = []
@@ -219,6 +231,7 @@ def run_cluster3_proposed(
                     batch_size=configured_batch_size,
                     learning_rate=learning_rate,
                     seed=configured_seed + round_index * 1000 + subcluster_index * 100 + client_index,
+                    positive_class_weight=positive_class_weight,
                 )
                 client_control_variates[client.client_id] = {
                     key: np.asarray(value, dtype=np.float32).copy()
@@ -259,14 +272,19 @@ def run_cluster3_proposed(
             total_leaf_clients=len(clients),
         )
 
-        train_metrics = _evaluate_cluster3_split(clients, state=global_state, model_config=model_config, split_name="train")
-        validation_metrics = _evaluate_cluster3_split(
+        round_evaluation = evaluate_round_with_validation_threshold(
             clients,
-            state=global_state,
-            model_config=model_config,
-            split_name="validation",
+            predictor=lambda _client, split: predict_split_scaffold(
+                global_state,
+                model_config,
+                split,
+            )[0],
         )
-        test_metrics = _evaluate_cluster3_split(clients, state=global_state, model_config=model_config, split_name="test")
+        train_metrics = round_evaluation["train_metrics"]
+        validation_metrics = round_evaluation["validation_metrics"]
+        validation_metrics_default_threshold = round_evaluation["validation_metrics_default_threshold"]
+        test_metrics = round_evaluation["test_metrics"]
+        test_metrics_default_threshold = round_evaluation["test_metrics_default_threshold"]
 
         model_communication_cost_bytes = int(model_parameter_bytes * 2 * (len(clients) + membership.n_subclusters))
         control_variate_communication_cost_bytes = int(
@@ -283,6 +301,8 @@ def run_cluster3_proposed(
             validation_metrics,
             test_metrics,
             total_communication_cost_bytes,
+            validation_metrics_default_threshold=validation_metrics_default_threshold,
+            test_metrics_default_threshold=test_metrics_default_threshold,
         )
         round_row["control_variate_communication_cost_bytes"] = control_variate_communication_cost_bytes
         round_row["server_control_variate_l2_norm"] = state_l2_norm(server_control_variate)
@@ -294,13 +314,30 @@ def run_cluster3_proposed(
             best_round_index = round_index
             best_train_metrics = dict(train_metrics)
             best_validation_metrics = dict(validation_metrics)
+            best_validation_metrics_default_threshold = dict(validation_metrics_default_threshold)
             best_test_metrics = dict(test_metrics)
+            best_test_metrics_default_threshold = dict(test_metrics_default_threshold)
             best_subcluster_sample_counts = dict(subcluster_sample_counts)
             best_subcluster_client_counts = dict(subcluster_client_counts)
             best_subcluster_forwarded_increment_norms = dict(forwarded_increment_norms)
+            best_selected_threshold = float(round_evaluation["selected_threshold"])
+            best_validation_labels = round_evaluation["validation_labels"].copy()
+            best_validation_probabilities = round_evaluation["validation_probabilities"].copy()
+            best_test_labels = round_evaluation["test_labels"].copy()
+            best_test_probabilities = round_evaluation["test_probabilities"].copy()
 
     elapsed_seconds = float(time.perf_counter() - started_at)
-    if best_test_metrics is None or best_validation_metrics is None or best_train_metrics is None:
+    if (
+        best_test_metrics is None
+        or best_test_metrics_default_threshold is None
+        or best_validation_metrics is None
+        or best_validation_metrics_default_threshold is None
+        or best_train_metrics is None
+        or best_validation_labels is None
+        or best_validation_probabilities is None
+        or best_test_labels is None
+        or best_test_probabilities is None
+    ):
         raise ValueError("P_C3: unable to determine best validation round.")
     if best_subcluster_sample_counts is None or best_subcluster_client_counts is None:
         raise ValueError("P_C3: missing best-round subcluster statistics.")
@@ -322,6 +359,16 @@ def run_cluster3_proposed(
         sum(row["control_variate_communication_cost_bytes"] for row in round_rows)
     )
     total_communication_cost_bytes = int(sum(row["communication_cost_bytes"] for row in round_rows))
+    prediction_outputs = write_prediction_outputs(
+        output_root=output_root,
+        experiment_id="P_C3",
+        validation_labels=best_validation_labels,
+        validation_probabilities=best_validation_probabilities,
+        test_labels=best_test_labels,
+        test_probabilities=best_test_probabilities,
+        selected_threshold=best_selected_threshold,
+        seed=configured_seed,
+    )
 
     summary = {
         "experiment_id": "P_C3",
@@ -352,6 +399,7 @@ def run_cluster3_proposed(
         "learning_rate": learning_rate,
         "optimizer_style": "corrected_sgd_update",
         "seed": configured_seed,
+        "positive_class_weight": positive_class_weight,
         "model_parameter_bytes": model_parameter_bytes,
         "control_variate_bytes": control_state_bytes,
         "control_variate_communication_cost_per_round_bytes": round_rows[-1]["control_variate_communication_cost_bytes"],
@@ -362,11 +410,15 @@ def run_cluster3_proposed(
         "total_communication_cost_bytes": total_communication_cost_bytes,
         "best_validation_round": best_round_index,
         "best_validation_f1": best_validation_metrics["f1"],
+        "best_validation_f1_default_threshold": best_validation_metrics_default_threshold["f1"],
+        "threshold_used": best_selected_threshold,
         "test_f1_at_best_validation_round": best_test_metrics["f1"],
         "wall_clock_training_seconds": elapsed_seconds,
         "data_summary": data_summary,
         "best_round_train_metrics": best_train_metrics,
+        "best_round_validation_metrics_default_threshold": best_validation_metrics_default_threshold,
         "best_round_validation_metrics": best_validation_metrics,
+        "best_round_test_metrics_default_threshold": best_test_metrics_default_threshold,
         "best_round_test_metrics": best_test_metrics,
         "best_round_subcluster_train_sample_counts": best_subcluster_sample_counts,
         "best_round_subcluster_client_counts": best_subcluster_client_counts,
@@ -374,6 +426,7 @@ def run_cluster3_proposed(
         "final_server_control_variate_l2_norm": final_server_control_variate_norm,
         "num_client_control_variates": len(client_control_variates),
         "num_nonzero_client_control_variates": nonzero_client_control_variates,
+        "prediction_outputs": prediction_outputs,
         "round_metrics_path": str(round_metrics_path),
         "metrics_csv_path": str(metrics_csv_path),
     }
@@ -392,8 +445,11 @@ def run_cluster3_proposed(
         "num_leaf_clients": len(clients),
         "n_subclusters": membership.n_subclusters,
         "rounds": configured_rounds,
+        "positive_class_weight": positive_class_weight,
         "best_validation_round": best_round_index,
         "best_validation_f1": best_validation_metrics["f1"],
+        "best_validation_f1_default_threshold": best_validation_metrics_default_threshold["f1"],
+        "threshold_used": best_selected_threshold,
         "test_accuracy": best_test_metrics["accuracy"],
         "test_precision": best_test_metrics["precision"],
         "test_recall": best_test_metrics["recall"],
@@ -402,6 +458,16 @@ def run_cluster3_proposed(
         "test_pr_auc": best_test_metrics["pr_auc"],
         "test_fpr": best_test_metrics["fpr"],
         "test_confusion_matrix": json.dumps(best_test_metrics["confusion_matrix"]),
+        "test_accuracy_default_threshold": best_test_metrics_default_threshold["accuracy"],
+        "test_precision_default_threshold": best_test_metrics_default_threshold["precision"],
+        "test_recall_default_threshold": best_test_metrics_default_threshold["recall"],
+        "test_f1_default_threshold": best_test_metrics_default_threshold["f1"],
+        "test_auroc_default_threshold": best_test_metrics_default_threshold["auroc"],
+        "test_pr_auc_default_threshold": best_test_metrics_default_threshold["pr_auc"],
+        "test_fpr_default_threshold": best_test_metrics_default_threshold["fpr"],
+        "test_confusion_matrix_default_threshold": json.dumps(
+            best_test_metrics_default_threshold["confusion_matrix"]
+        ),
         "control_variate_bytes": control_state_bytes,
         "final_server_control_variate_l2_norm": final_server_control_variate_norm,
         "communication_cost_per_round_bytes": round_rows[-1]["communication_cost_bytes"],
