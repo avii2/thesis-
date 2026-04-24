@@ -1,0 +1,124 @@
+deleted path: docs/PLOTS_README.md
+reason for deletion: Post-hoc plot provenance README, not a raw experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/runs/*/round_metrics.csv
+
+deleted path: docs/RESULTS_INTEGRITY_AUDIT.md
+reason for deletion: Post-hoc integrity audit summary, not a raw experiment execution artifact.
+kept counterpart: outputs/runs/*/run_summary.json and outputs/metrics/*_metrics.csv
+
+deleted path: docs/RESULTS_SUMMARY.md
+reason for deletion: Post-hoc consolidated results summary, not a raw experiment execution artifact.
+kept counterpart: outputs/metrics/*_metrics.csv and outputs/runs/*/run_summary.json
+
+deleted path: docs/RESULTS_SUMMARY_MEAN_STD.md
+reason for deletion: Post-hoc aggregated multiseed summary, not a raw experiment execution artifact.
+kept counterpart: outputs/metrics/*_seed_*_metrics.csv
+
+deleted path: outputs/metrics/summary_all_experiments.csv
+reason for deletion: Aggregated cross-experiment summary table, not tied to a single experiment id.
+kept counterpart: outputs/metrics/*_metrics.csv
+
+deleted path: outputs/metrics/summary_all_experiments_mean_std.csv
+reason for deletion: Aggregated multiseed summary table, not tied to a single experiment id.
+kept counterpart: outputs/metrics/*_seed_*_metrics.csv
+
+deleted path: outputs/plots/comparison_best_validation_f1.svg
+reason for deletion: Derived comparison plot across experiments, not a raw per-experiment convergence artifact.
+kept counterpart: outputs/plots/convergence_*.svg
+
+deleted path: outputs/plots/comparison_test_f1.svg
+reason for deletion: Derived comparison plot across experiments, not a raw per-experiment convergence artifact.
+kept counterpart: outputs/plots/convergence_*.svg
+
+deleted path: outputs/reports/confusion_matrices.json
+reason for deletion: Post-hoc consolidated reporting artifact, not a raw experiment execution artifact.
+kept counterpart: outputs/runs/*/run_summary.json and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/reports/results_integrity_audit.json
+reason for deletion: Post-hoc consolidated audit artifact, not a raw experiment execution artifact.
+kept counterpart: outputs/runs/* and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/reports/results_master_table.csv
+reason for deletion: Post-hoc consolidated reporting table, not tied to a single experiment id.
+kept counterpart: outputs/metrics/*_metrics.csv
+
+deleted path: outputs/reports/results_master_table.json
+reason for deletion: Post-hoc consolidated reporting table, not tied to a single experiment id.
+kept counterpart: outputs/metrics/*_metrics.csv
+
+deleted path: outputs/reports/results_mean_std_table.csv
+reason for deletion: Post-hoc aggregated reporting table, not tied to a single experiment id.
+kept counterpart: outputs/metrics/*_seed_*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_ablation_delta_f1.pdf
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_ablation_delta_f1.png
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_auc_comparison.pdf
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_auc_comparison.png
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_communication_cost.pdf
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_communication_cost.png
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_convergence_cluster1.pdf
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_convergence_cluster1.png
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_convergence_cluster2.pdf
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_convergence_cluster2.png
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_convergence_cluster3.pdf
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_convergence_cluster3.png
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_f1_comparison.pdf
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_f1_comparison.png
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_fpr_comparison.pdf
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_fpr_comparison.png
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_ledger_overhead.pdf
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+
+deleted path: outputs/plots_ieee/fig_ledger_overhead.png
+reason for deletion: Derived IEEE/paper-ready summary plot, not a raw per-experiment execution artifact.
+kept counterpart: outputs/plots/convergence_*.svg and outputs/metrics/*_metrics.csv
+

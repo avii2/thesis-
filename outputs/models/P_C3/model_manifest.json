@@ -3,10 +3,11 @@
   "cluster_id": 3,
   "dataset": "WUSTL-IIOT-2021",
   "model_family": "cnn1d",
-  "model_version": "C3_R042",
-  "model_hash": "sha256:e704a9265fab700871c107d8ff42e6f337591d68a8065fad9029c8889810ee8e",
+  "model_version": "C3_R050",
+  "model_hash": "sha256:44e4029eb5951e7b678542aa5d39af391754d864233c0705e5ecb35c23f6aac4",
   "artifact_type": "metadata_manifest",
   "weights_emitted_by_runner": false,
+  "seed": null,
   "summary_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/P_C3/run_summary.json",
   "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/P_C3/round_metrics.csv",
   "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/metrics/P_C3_metrics.csv"

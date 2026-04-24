@@ -27,7 +27,7 @@
   "best_validation_f1_default_threshold": 0.8,
   "threshold_used": 0.5080185532569885,
   "test_f1_at_best_validation_round": 0.9265429910591201,
-  "wall_clock_training_seconds": 15.875895167002454,
+  "wall_clock_training_seconds": 9.062189500007662,
   "data_summary": {
     "cluster_id": 2,
     "dataset": "TON IoT combined telemetry",
@@ -122,8 +122,8 @@
     "precision": 0.6003182985495714,
     "recall": 1.0,
     "f1": 0.7502486212819818,
-    "auroc": 0.7556003242876491,
-    "pr_auc": 0.8027744129624385,
+    "auroc": 0.7556003055062772,
+    "pr_auc": 0.8027743985592397,
     "fpr": 1.0,
     "confusion_matrix": [
       [

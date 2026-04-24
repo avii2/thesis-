@@ -4,9 +4,10 @@
   "dataset": "TON IoT combined telemetry",
   "model_family": "compact_mlp",
   "model_version": "C2_R050",
-  "model_hash": "sha256:6b423ae6ded9936ea009faea55f79df50cb9489a15d0cfc2834fb1ed3c350122",
+  "model_hash": "sha256:3c606d8160f72fbd99038591c5e98e9504d685d8dd93ff40ec5a8aa935d703ad",
   "artifact_type": "metadata_manifest",
   "weights_emitted_by_runner": false,
+  "seed": null,
   "summary_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/P_C2/run_summary.json",
   "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/P_C2/round_metrics.csv",
   "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/metrics/P_C2_metrics.csv"

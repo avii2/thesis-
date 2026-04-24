@@ -28,6 +28,7 @@
   "learning_rate": 0.01,
   "optimizer_style": "corrected_sgd_update",
   "seed": 42,
+  "positive_class_weight": 14.747824612950616,
   "model_parameter_bytes": 164,
   "control_variate_bytes": 164,
   "control_variate_communication_cost_per_round_bytes": 5904,
@@ -36,10 +37,12 @@
   "total_model_communication_cost_bytes": 295200,
   "communication_cost_per_round_bytes": 11808,
   "total_communication_cost_bytes": 590400,
-  "best_validation_round": 42,
-  "best_validation_f1": 0.6889131771295853,
-  "test_f1_at_best_validation_round": 0.7581777804453514,
-  "wall_clock_training_seconds": 182.45721320900338,
+  "best_validation_round": 50,
+  "best_validation_f1": 0.8694008995821467,
+  "best_validation_f1_default_threshold": 0.7991785497353426,
+  "threshold_used": 0.13174223899841309,
+  "test_f1_at_best_validation_round": 0.8696517908255967,
+  "wall_clock_training_seconds": 131.04442791600013,
   "data_summary": {
     "cluster_id": 3,
     "dataset": "WUSTL-IIOT-2021",
@@ -191,79 +194,134 @@
     }
   },
   "best_round_train_metrics": {
-    "loss": 0.11633793264627457,
-    "accuracy": 0.9639511311243071,
-    "precision": 0.7760034631201751,
-    "recall": 0.6077334538742607,
-    "f1": 0.6816371798257196,
-    "auroc": 0.9838020953738357,
-    "pr_auc": 0.7394545559222261,
-    "fpr": 0.011894955563133044,
+    "loss": 0.11822136491537094,
+    "accuracy": 0.9712718944164379,
+    "precision": 0.7334511000481773,
+    "recall": 0.8602101932421743,
+    "f1": 0.7917894663846607,
+    "auroc": 0.9859655966445123,
+    "pr_auc": 0.6617732301582869,
+    "fpr": 0.02119738806494334,
     "confusion_matrix": [
       [
-        773707,
-        9314
+        766423,
+        16598
       ],
       [
-        20827,
-        32267
+        7422,
+        45672
       ]
     ],
     "support": 836115,
     "label_counts": {
       "0": 783021,
       "1": 53094
-    }
+    },
+    "threshold_used": 0.5
   },
-  "best_round_validation_metrics": {
-    "loss": 0.19391308724880219,
-    "accuracy": 0.9491667317802807,
-    "precision": 0.7825715837665865,
-    "recall": 0.6152766762247575,
-    "f1": 0.6889131771295853,
-    "auroc": 0.9759958684032208,
-    "pr_auc": 0.7167032677185469,
-    "fpr": 0.01721309964799764,
+  "best_round_validation_metrics_default_threshold": {
+    "loss": 0.17349205911159515,
+    "accuracy": 0.9612499581412481,
+    "precision": 0.7598174018259818,
+    "recall": 0.8428405832469038,
+    "f1": 0.7991785497353426,
+    "auroc": 0.9813003410798418,
+    "pr_auc": 0.6757635733739847,
+    "fpr": 0.026827125682657278,
     "confusion_matrix": [
       [
-        159981,
-        2802
+        158416,
+        4367
       ],
       [
-        6306,
-        10085
+        2576,
+        13815
       ]
     ],
     "support": 179174,
     "label_counts": {
       "0": 162783,
       "1": 16391
-    }
+    },
+    "threshold_used": 0.5
   },
-  "best_round_test_metrics": {
-    "loss": 0.17252422869205475,
-    "accuracy": 0.9550272080368355,
-    "precision": 0.7999493382306377,
-    "recall": 0.720552164736752,
-    "f1": 0.7581777804453514,
-    "auroc": 0.9836592721567876,
-    "pr_auc": 0.7487750378199967,
-    "fpr": 0.01954294622751231,
+  "best_round_validation_metrics": {
+    "loss": 0.17349205911159515,
+    "accuracy": 0.972613213970777,
+    "precision": 0.7710792182041356,
+    "recall": 0.9964614727594412,
+    "f1": 0.8694008995821467,
+    "auroc": 0.9813003410798418,
+    "pr_auc": 0.6757635733739847,
+    "fpr": 0.029788122838379928,
     "confusion_matrix": [
       [
-        158485,
-        3159
+        157934,
+        4849
       ],
       [
-        4899,
-        12632
+        58,
+        16333
+      ]
+    ],
+    "support": 179174,
+    "label_counts": {
+      "0": 162783,
+      "1": 16391
+    },
+    "threshold_used": 0.13174223899841309
+  },
+  "best_round_test_metrics_default_threshold": {
+    "loss": 0.16386312246322632,
+    "accuracy": 0.9626454583507744,
+    "precision": 0.7685864393338621,
+    "recall": 0.8845473732245737,
+    "f1": 0.8224998010979394,
+    "auroc": 0.9812904781020331,
+    "pr_auc": 0.6900707099878111,
+    "fpr": 0.02888446215139442,
+    "confusion_matrix": [
+      [
+        156975,
+        4669
+      ],
+      [
+        2024,
+        15507
       ]
     ],
     "support": 179175,
     "label_counts": {
       "0": 161644,
       "1": 17531
-    }
+    },
+    "threshold_used": 0.5
+  },
+  "best_round_test_metrics": {
+    "loss": 0.16386312246322632,
+    "accuracy": 0.9707715920189759,
+    "precision": 0.7714386646648415,
+    "recall": 0.9965204494894758,
+    "f1": 0.8696517908255967,
+    "auroc": 0.9812904781020331,
+    "pr_auc": 0.6900707099878111,
+    "fpr": 0.032020984385439606,
+    "confusion_matrix": [
+      [
+        156468,
+        5176
+      ],
+      [
+        61,
+        17470
+      ]
+    ],
+    "support": 179175,
+    "label_counts": {
+      "0": 161644,
+      "1": 17531
+    },
+    "threshold_used": 0.13174223899841309
   },
   "best_round_subcluster_train_sample_counts": {
     "W1": 724633,
@@ -276,13 +334,20 @@
     "W3": 1
   },
   "best_round_subcluster_forwarded_increment_l2_norms": {
-    "W1": 0.08847914159190194,
-    "W2": 0.00468917664078725,
-    "W3": 0.2512249009599097
+    "W1": 0.24182971069430048,
+    "W2": 0.20190006190976328,
+    "W3": 0.35094295253834035
   },
-  "final_server_control_variate_l2_norm": 0.011838157625910112,
+  "final_server_control_variate_l2_norm": 0.01778540968985691,
   "num_client_control_variates": 15,
   "num_nonzero_client_control_variates": 15,
+  "prediction_outputs": {
+    "prediction_dir": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/predictions/P_C3",
+    "validation_predictions_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/predictions/P_C3/validation_predictions_seed_42.npz",
+    "test_predictions_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/predictions/P_C3/test_predictions_seed_42.npz",
+    "selected_threshold_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/predictions/P_C3/selected_threshold_seed_42.json"
+  },
   "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/P_C3/round_metrics.csv",
-  "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/metrics/P_C3_metrics.csv"
+  "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/metrics/P_C3_metrics.csv",
+  "summary_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/P_C3/run_summary.json"
 }
