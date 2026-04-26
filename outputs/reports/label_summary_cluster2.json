@@ -1,9 +1,0 @@
-{
-  "cluster_id": 2,
-  "dataset": "TON IoT combined telemetry",
-  "label_column": "label",
-  "label_counts": {
-    "0": 45000,
-    "1": 73491
-  }
-}

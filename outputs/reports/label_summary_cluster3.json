@@ -1,9 +1,0 @@
-{
-  "cluster_id": 3,
-  "dataset": "WUSTL-IIOT-2021",
-  "label_column": "Target",
-  "label_counts": {
-    "0": 1107448,
-    "1": 87016
-  }
-}

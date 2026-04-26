@@ -40,7 +40,7 @@
   "best_validation_f1_default_threshold": 0.8648688099843083,
   "threshold_used": 0.637915849685669,
   "test_f1_at_best_validation_round": 0.9292659974905897,
-  "wall_clock_training_seconds": 11.259618333002436,
+  "wall_clock_training_seconds": 12.087693458001013,
   "data_summary": {
     "cluster_id": 2,
     "dataset": "TON IoT combined telemetry",

@@ -1,9 +1,0 @@
-{
-  "cluster_id": 1,
-  "dataset": "HAI 21.03",
-  "label_column": "attack",
-  "label_counts": {
-    "0": 1314661,
-    "1": 8947
-  }
-}

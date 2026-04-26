@@ -36,7 +36,7 @@
   "best_validation_f1_default_threshold": 0.00648169206277007,
   "threshold_used": 0.009300285018980503,
   "test_f1_at_best_validation_round": 0.8709847024360933,
-  "wall_clock_training_seconds": 128.56122287499602,
+  "wall_clock_training_seconds": 132.3391445410016,
   "data_summary": {
     "cluster_id": 3,
     "dataset": "WUSTL-IIOT-2021",

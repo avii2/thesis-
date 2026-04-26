@@ -58,6 +58,7 @@ Each sub-cluster must contain:
 
 Each leaf client must belong to exactly one sub-cluster.
 
+
 ## 4.3 Leaf-client level
 
 Each leaf client:
