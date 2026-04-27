@@ -1,0 +1,53 @@
+---
+config_version: 1
+experiment_group: proposed_specialized_hierarchical
+description: Proposed specialized hierarchical FCFL configuration from docs/EXPERIMENT_MATRIX.csv
+source_of_truth:
+  architecture_contract: docs/ARCHITECTURE_CONTRACT.md
+  data_contract: docs/DATA_CONTRACT.md
+  experiment_matrix: docs/EXPERIMENT_MATRIX.csv
+ledger:
+  metadata_only: true
+training_defaults:
+  rounds: 50
+  local_epochs: 1
+  batch_size: 128
+  seeds:
+  - 42
+  - 123
+  - 2025
+smoke_test_defaults:
+  rounds: 2
+  local_epochs: 1
+  batch_size: 64
+  seed: 42
+clustering_defaults:
+  method: AgglomerativeClustering
+  linkage: ward
+  metric: euclidean
+  descriptor: feature_mean_std
+  reuse_frozen_memberships: true
+clusters:
+- experiment_id: P_C1
+  cluster_config: "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/tuning/cluster1/trial_configs/trial_0002/cluster1_hai.yaml"
+  hierarchy: hierarchical_fixed
+  clustering_method: agglomerative
+  n_subclusters: 2
+  descriptor: feature_mean_std
+  membership_file: "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/clustering/cluster1_memberships.json"
+  model_family: tcn
+  fl_method: FedBN
+  aggregation: weighted_non_bn_mean
+  model_hyperparameters:
+    block_channels:
+    - 32
+    - 64
+    - 64
+    hidden_dim: 32
+    dropout: 0.1
+  training_hyperparameters:
+    positive_class_weight_scale: 0.5
+runtime_validation:
+  require_cluster_configs_to_exist: true
+  require_frozen_membership_files_before_training: true
+  require_ledger_metadata_only: true

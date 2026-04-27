@@ -182,6 +182,14 @@ class Cluster1ProposedSmokeTests(unittest.TestCase):
                                 "model_family": "tcn",
                                 "fl_method": "FedBN",
                                 "aggregation": "weighted_non_bn_mean",
+                                "model_hyperparameters": {
+                                    "block_channels": [64, 64, 64],
+                                    "hidden_dim": 64,
+                                    "dropout": 0.2,
+                                },
+                                "training_hyperparameters": {
+                                    "positive_class_weight_scale": 0.5,
+                                },
                             }
                         ],
                     },
@@ -220,6 +228,14 @@ class Cluster1ProposedSmokeTests(unittest.TestCase):
             self.assertEqual(summary["model_family"], "tcn")
             self.assertEqual(summary["fl_method"], "FedBN")
             self.assertEqual(summary["aggregation"], "weighted_non_bn_mean")
+            self.assertEqual(summary["tcn_block_channels"], [64, 64, 64])
+            self.assertEqual(summary["tcn_hidden_dim"], 64)
+            self.assertEqual(summary["tcn_dropout"], 0.2)
+            self.assertEqual(summary["positive_class_weight_scale"], 0.5)
+            self.assertAlmostEqual(
+                summary["positive_class_weight"],
+                summary["computed_positive_class_weight"] * 0.5,
+            )
             self.assertEqual(summary["input_adapter"], "sliding_window_feature_channels")
             self.assertTrue(summary["subcluster_layer_used"])
             self.assertFalse(summary["membership_file_changed"])

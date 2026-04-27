@@ -1,0 +1,76 @@
+config_version: 1
+tuning_id: cluster1_proposed_hyperparameter_search
+description: Targeted hyperparameter search for P_C1 only; architecture remains TCN + FedBN + weighted non-BN aggregation.
+source_of_truth:
+  agents: AGENTS.md
+  architecture_contract: docs/ARCHITECTURE_CONTRACT.md
+  implementation_spec: docs/FCFL_IMPLEMENTATION_SPEC.md
+  data_contract: docs/DATA_CONTRACT.md
+  algorithms: docs/ALGORITHMS.md
+  validation_checks: docs/VALIDATION_CHECKS.md
+  experiment_matrix: docs/EXPERIMENT_MATRIX.csv
+fixed_experiment:
+  experiment_id: P_C1
+  cluster_id: 1
+  dataset: HAI_2103
+  base_proposed_config: configs/proposed.yaml
+  base_cluster_config: configs/cluster1_hai.yaml
+  membership_file: outputs/clustering/cluster1_memberships.json
+  model_family: tcn
+  fl_method: FedBN
+  aggregation: weighted_non_bn_mean
+  hierarchy: hierarchical_fixed
+  clustering_method: agglomerative
+  reuse_frozen_memberships: true
+output:
+  root: outputs/tuning/cluster1
+selection_rule:
+  primary: highest_validation_f1
+  tie_breaker_1: highest_test_f1
+  tie_breaker_2: lower_test_fpr
+  tie_breaker_3: lower_wall_clock_time
+search_space:
+  learning_rate:
+    - 0.001
+    - 0.003
+    - 0.005
+    - 0.01
+  batch_size:
+    - 64
+    - 128
+  local_epochs:
+    - 1
+    - 2
+  window_length:
+    - 32
+    - 64
+  stride:
+    - 4
+    - 8
+  block_channels:
+    - [32, 64, 64]
+    - [64, 64, 64]
+    - [32, 64, 128]
+  hidden_dim:
+    - 32
+    - 64
+  dropout:
+    - 0.0
+    - 0.1
+    - 0.2
+    - 0.3
+  positive_class_weight_scale:
+    - 0.25
+    - 0.5
+    - 0.75
+    - 1.0
+execution_defaults:
+  seed: 42
+  rounds: 50
+  smoke_rounds: 2
+  max_train_examples_per_client: null
+  max_eval_examples_per_client: null
+runtime_validation:
+  do_not_overwrite_main_p_c1_outputs: true
+  require_same_frozen_memberships: true
+  forbid_dataset_subsampling_unless_explicit_smoke_budget: true

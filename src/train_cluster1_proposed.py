@@ -112,6 +112,65 @@ def _load_cluster1_proposed_entry(config_path: str | Path) -> tuple[Path, Mappin
     raise ValueError(f"{config_path}: could not find P_C1 entry in proposed config.")
 
 
+def _optional_mapping(parent: Mapping[str, Any], key: str) -> Mapping[str, Any]:
+    value = parent.get(key, {})
+    if value is None:
+        return {}
+    if not isinstance(value, Mapping):
+        raise ValueError(f"P_C1 {key} must be a mapping when provided.")
+    return value
+
+
+def _resolve_block_channels(value: Sequence[int] | None) -> tuple[int, int, int] | None:
+    if value is None:
+        return None
+    channels = tuple(int(channel) for channel in value)
+    if len(channels) != 3:
+        raise ValueError("P_C1 TCN block_channels must contain exactly three integers.")
+    if any(channel <= 0 for channel in channels):
+        raise ValueError("P_C1 TCN block_channels must be positive.")
+    return channels
+
+
+def _resolve_tcn_hyperparameters(
+    cluster_entry: Mapping[str, Any],
+    *,
+    tcn_block_channels: Sequence[int] | None,
+    tcn_hidden_dim: int | None,
+    tcn_dropout: float | None,
+) -> dict[str, Any]:
+    model_hyperparameters = _optional_mapping(cluster_entry, "model_hyperparameters")
+    block_channels = (
+        _resolve_block_channels(tcn_block_channels)
+        if tcn_block_channels is not None
+        else _resolve_block_channels(model_hyperparameters.get("block_channels"))
+    )
+    hidden_dim_value = tcn_hidden_dim if tcn_hidden_dim is not None else model_hyperparameters.get("hidden_dim")
+    dropout_value = tcn_dropout if tcn_dropout is not None else model_hyperparameters.get("dropout")
+
+    return {
+        "block_channels": block_channels if block_channels is not None else (32, 64, 64),
+        "hidden_dim": int(hidden_dim_value) if hidden_dim_value is not None else 32,
+        "dropout": float(dropout_value) if dropout_value is not None else 0.1,
+    }
+
+
+def _resolve_positive_class_weight_scale(
+    cluster_entry: Mapping[str, Any],
+    positive_class_weight_scale: float | None,
+) -> float:
+    training_hyperparameters = _optional_mapping(cluster_entry, "training_hyperparameters")
+    configured_scale = (
+        positive_class_weight_scale
+        if positive_class_weight_scale is not None
+        else training_hyperparameters.get("positive_class_weight_scale", 1.0)
+    )
+    scale = float(configured_scale)
+    if scale <= 0.0:
+        raise ValueError("P_C1 positive_class_weight_scale must be positive.")
+    return scale
+
+
 def run_cluster1_proposed(
     proposed_config_path: str | Path = "configs/proposed.yaml",
     *,
@@ -124,6 +183,10 @@ def run_cluster1_proposed(
     max_train_examples_per_client: int | None = None,
     max_eval_examples_per_client: int | None = None,
     output_root: str | Path = "outputs",
+    tcn_block_channels: Sequence[int] | None = None,
+    tcn_hidden_dim: int | None = None,
+    tcn_dropout: float | None = None,
+    positive_class_weight_scale: float | None = None,
 ) -> Cluster1ProposedRunResult:
     resolved_proposed_config_path, proposed_config, cluster_entry = _load_cluster1_proposed_entry(proposed_config_path)
 
@@ -160,7 +223,12 @@ def run_cluster1_proposed(
         max_train_examples_per_client=max_train_examples_per_client,
         max_eval_examples_per_client=max_eval_examples_per_client,
     )
-    positive_class_weight = compute_cluster_positive_class_weight(clients)
+    computed_positive_class_weight = compute_cluster_positive_class_weight(clients)
+    resolved_positive_class_weight_scale = _resolve_positive_class_weight_scale(
+        cluster_entry,
+        positive_class_weight_scale,
+    )
+    positive_class_weight = computed_positive_class_weight * resolved_positive_class_weight_scale
     if data_summary["input_adapter"] != "sliding_window_feature_channels":
         raise ValueError("Cluster 1 proposed path requires sliding-window inputs.")
 
@@ -172,9 +240,18 @@ def run_cluster1_proposed(
     )
     clients_by_subcluster = group_clients_by_subcluster(clients, membership)
 
+    resolved_tcn_hyperparameters = _resolve_tcn_hyperparameters(
+        cluster_entry,
+        tcn_block_channels=tcn_block_channels,
+        tcn_hidden_dim=tcn_hidden_dim,
+        tcn_dropout=tcn_dropout,
+    )
     model_config = TCNConfig(
         input_channels=int(data_summary["input_channels"]),
         input_length=int(data_summary["input_length"]),
+        block_channels=resolved_tcn_hyperparameters["block_channels"],
+        hidden_dim=resolved_tcn_hyperparameters["hidden_dim"],
+        dropout=resolved_tcn_hyperparameters["dropout"],
     )
     global_model = TCNClassifier(model_config, seed=configured_seed)
     global_state = global_model.state_dict()
@@ -376,6 +453,11 @@ def run_cluster1_proposed(
         "batch_size": configured_batch_size,
         "learning_rate": learning_rate,
         "seed": configured_seed,
+        "tcn_block_channels": list(model_config.block_channels),
+        "tcn_hidden_dim": model_config.hidden_dim,
+        "tcn_dropout": model_config.dropout,
+        "computed_positive_class_weight": computed_positive_class_weight,
+        "positive_class_weight_scale": resolved_positive_class_weight_scale,
         "positive_class_weight": positive_class_weight,
         "communicated_non_bn_parameter_bytes": communicated_parameter_bytes,
         "communication_cost_per_round_bytes": round_rows[-1]["communication_cost_bytes"],
@@ -413,6 +495,11 @@ def run_cluster1_proposed(
         "num_leaf_clients": len(clients),
         "n_subclusters": membership.n_subclusters,
         "rounds": configured_rounds,
+        "tcn_block_channels": json.dumps(list(model_config.block_channels)),
+        "tcn_hidden_dim": model_config.hidden_dim,
+        "tcn_dropout": model_config.dropout,
+        "computed_positive_class_weight": computed_positive_class_weight,
+        "positive_class_weight_scale": resolved_positive_class_weight_scale,
         "positive_class_weight": positive_class_weight,
         "best_validation_round": best_round_index,
         "best_validation_f1": best_validation_metrics["f1"],
@@ -469,6 +556,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--local-epochs", type=int, help="Optional override for local epochs.")
     parser.add_argument("--batch-size", type=int, help="Optional override for local batch size.")
     parser.add_argument("--learning-rate", type=float, default=0.01, help="Local SGD learning rate.")
+    parser.add_argument(
+        "--tcn-block-channels",
+        nargs=3,
+        type=int,
+        metavar=("C1", "C2", "C3"),
+        help="Optional TCN block channel override for P_C1.",
+    )
+    parser.add_argument("--tcn-hidden-dim", type=int, help="Optional TCN hidden dimension override for P_C1.")
+    parser.add_argument("--tcn-dropout", type=float, help="Optional TCN dropout override for P_C1.")
+    parser.add_argument(
+        "--positive-class-weight-scale",
+        type=float,
+        help="Scale applied to the Cluster 1 training-label positive-class weight.",
+    )
     parser.add_argument("--seed", type=int, help="Optional override for the run seed.")
     parser.add_argument(
         "--max-train-examples-per-client",
@@ -501,6 +602,10 @@ def main() -> None:
         max_train_examples_per_client=args.max_train_examples_per_client,
         max_eval_examples_per_client=args.max_eval_examples_per_client,
         output_root=args.output_root,
+        tcn_block_channels=args.tcn_block_channels,
+        tcn_hidden_dim=args.tcn_hidden_dim,
+        tcn_dropout=args.tcn_dropout,
+        positive_class_weight_scale=args.positive_class_weight_scale,
     )
     print(f"{result.experiment_id}: wrote {result.metrics_csv_path}")
 

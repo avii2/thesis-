@@ -1,0 +1,45 @@
+{
+  "status": "COMPLETE",
+  "search_mode": "smoke",
+  "total_trials_in_space": 6144,
+  "completed_trials": 1,
+  "trial_id": "trial_0001",
+  "selection_rule": [
+    "highest validation F1",
+    "highest test F1",
+    "lower test FPR",
+    "lower wall-clock time"
+  ],
+  "config": {
+    "learning_rate": 0.003,
+    "batch_size": 128,
+    "local_epochs": 1,
+    "window_length": 32,
+    "stride": 8,
+    "block_channels": [
+      32,
+      64,
+      64
+    ],
+    "hidden_dim": 32,
+    "dropout": 0.1,
+    "positive_class_weight_scale": 0.75
+  },
+  "metrics": {
+    "best_validation_f1": 0.4578313253012048,
+    "test_f1": 0.34271099744245526,
+    "test_fpr": 0.0027727939977165226,
+    "wall_clock_training_seconds": 33.53764237499854
+  },
+  "fair_comparison_to_current": false,
+  "beats_current_p_c1": false,
+  "beats_current_a_c1": false,
+  "beats_current_b_c1": false,
+  "current_reference_test_f1": {
+    "A_C1": 0.5621621621621622,
+    "B_C1": 0.5621621621621622,
+    "P_C1": 0.4931506849315068
+  },
+  "source_metrics_csv": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/tuning/cluster1/trials/trial_0001/outputs/metrics/P_C1_metrics.csv",
+  "failed_or_interrupted_trials": 1
+}
