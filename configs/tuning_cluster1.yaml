@@ -26,15 +26,14 @@ output:
   root: outputs/tuning/cluster1
 selection_rule:
   primary: highest_validation_f1
-  tie_breaker_1: highest_test_f1
-  tie_breaker_2: lower_test_fpr
+  tie_breaker_1: higher_validation_recall
+  tie_breaker_2: lower_validation_fpr
   tie_breaker_3: lower_wall_clock_time
 search_space:
   learning_rate:
     - 0.001
     - 0.003
     - 0.005
-    - 0.01
   batch_size:
     - 64
     - 128
@@ -48,22 +47,18 @@ search_space:
     - 4
     - 8
   block_channels:
-    - [32, 64, 64]
     - [64, 64, 64]
     - [32, 64, 128]
   hidden_dim:
-    - 32
     - 64
   dropout:
     - 0.0
+    - 0.05
     - 0.1
-    - 0.2
-    - 0.3
   positive_class_weight_scale:
-    - 0.25
-    - 0.5
-    - 0.75
     - 1.0
+    - 1.25
+    - 1.5
 execution_defaults:
   seed: 42
   rounds: 50

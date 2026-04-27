@@ -40,13 +40,13 @@ clusters:
   aggregation: weighted_non_bn_mean
   model_hyperparameters:
     block_channels:
-    - 32
     - 64
     - 64
-    hidden_dim: 32
-    dropout: 0.1
+    - 64
+    hidden_dim: 64
+    dropout: 0.05
   training_hyperparameters:
-    positive_class_weight_scale: 0.75
+    positive_class_weight_scale: 1.25
 runtime_validation:
   require_cluster_configs_to_exist: true
   require_frozen_membership_files_before_training: true

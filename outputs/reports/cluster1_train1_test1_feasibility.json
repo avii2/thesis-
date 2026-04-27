@@ -1,0 +1,146 @@
+{
+  "generated_on": "2026-04-27",
+  "task": "Audit whether Cluster 1 can be restricted to HAI train1.csv for training/validation and test1.csv for held-out testing.",
+  "scope": {
+    "cluster_id": 1,
+    "dataset": "HAI 21.03",
+    "label_column": "attack",
+    "normal_label": 0,
+    "attack_label": 1,
+    "proposed_training_validation_source_files": [
+      "data/raw/hai_2103/hai-21.03/train1.csv"
+    ],
+    "proposed_heldout_test_source_files": [
+      "data/raw/hai_2103/hai-21.03/test1.csv"
+    ],
+    "configs_modified": false,
+    "code_modified": false,
+    "training_rerun": false,
+    "files_moved_or_deleted": false
+  },
+  "source_of_truth": {
+    "implementation_docs_precedence_over_report_pdf": true,
+    "docs_read_in_order": [
+      "AGENTS.md",
+      "docs/ARCHITECTURE_CONTRACT.md",
+      "docs/FCFL_IMPLEMENTATION_SPEC.md",
+      "docs/DATA_CONTRACT.md",
+      "docs/ALGORITHMS.md",
+      "docs/VALIDATION_CHECKS.md",
+      "docs/EXPERIMENT_MATRIX.csv",
+      "Report.pdf"
+    ],
+    "report_pdf_context": "Present and partially extractable with pypdf; used as academic context only."
+  },
+  "file_level_class_counts": {
+    "train1.csv": {
+      "path": "data/raw/hai_2103/hai-21.03/train1.csv",
+      "row_count": 216001,
+      "label_column": "attack",
+      "counts": {
+        "0": 216001,
+        "1": 0
+      },
+      "contains_both_binary_labels": false,
+      "only_binary_0_1_values": true
+    },
+    "train2.csv": {
+      "path": "data/raw/hai_2103/hai-21.03/train2.csv",
+      "row_count": 226801,
+      "label_column": "attack",
+      "counts": {
+        "0": 226801,
+        "1": 0
+      },
+      "contains_both_binary_labels": false,
+      "only_binary_0_1_values": true
+    },
+    "train3.csv": {
+      "path": "data/raw/hai_2103/hai-21.03/train3.csv",
+      "row_count": 478801,
+      "label_column": "attack",
+      "counts": {
+        "0": 478801,
+        "1": 0
+      },
+      "contains_both_binary_labels": false,
+      "only_binary_0_1_values": true
+    },
+    "test1.csv": {
+      "path": "data/raw/hai_2103/hai-21.03/test1.csv",
+      "row_count": 43201,
+      "label_column": "attack",
+      "counts": {
+        "0": 42572,
+        "1": 629
+      },
+      "contains_both_binary_labels": true,
+      "only_binary_0_1_values": true
+    },
+    "test2.csv": {
+      "path": "data/raw/hai_2103/hai-21.03/test2.csv",
+      "row_count": 118801,
+      "label_column": "attack",
+      "counts": {
+        "0": 115352,
+        "1": 3449
+      },
+      "contains_both_binary_labels": true,
+      "only_binary_0_1_values": true
+    },
+    "test3.csv": {
+      "path": "data/raw/hai_2103/hai-21.03/test3.csv",
+      "row_count": 108001,
+      "label_column": "attack",
+      "counts": {
+        "0": 106466,
+        "1": 1535
+      },
+      "contains_both_binary_labels": true,
+      "only_binary_0_1_values": true
+    },
+    "test4.csv": {
+      "path": "data/raw/hai_2103/hai-21.03/test4.csv",
+      "row_count": 39601,
+      "label_column": "attack",
+      "counts": {
+        "0": 38444,
+        "1": 1157
+      },
+      "contains_both_binary_labels": true,
+      "only_binary_0_1_values": true
+    },
+    "test5.csv": {
+      "path": "data/raw/hai_2103/hai-21.03/test5.csv",
+      "row_count": 92401,
+      "label_column": "attack",
+      "counts": {
+        "0": 90224,
+        "1": 2177
+      },
+      "contains_both_binary_labels": true,
+      "only_binary_0_1_values": true
+    }
+  },
+  "feasibility": {
+    "train1_only_feasible_for_supervised_binary_classification": false,
+    "test1_only_feasible_for_heldout_evaluation": true,
+    "overall_train1_test1_variant_feasible": false,
+    "primary_blocker": "train1.csv is single-class: 216001 normal rows and 0 attack rows.",
+    "recommendation": "Do not restrict Cluster 1 training/validation to train1.csv only."
+  },
+  "expected_breakage_if_forced": [
+    "Binary supervised training source would not contain both labels.",
+    "Positive-class weighting cannot be computed from training labels when positive count is zero.",
+    "Validation-threshold tuning cannot be meaningful if validation has no attack samples.",
+    "The model would receive no supervised attack examples during training.",
+    "Cluster 1-specific regenerated descriptors/memberships from train1-only data would be based only on normal data."
+  ],
+  "required_changes_if_feasible": [
+    "Add explicit Cluster 1 config support for separate training/validation source files and held-out test source files.",
+    "Restrict Cluster 1 training/validation source to train1.csv and held-out evaluation source to test1.csv.",
+    "Regenerate only Cluster 1 preprocessing/client/clustering artifacts for the restricted-data variant because client partitions and descriptors would change.",
+    "Keep Cluster 2, Cluster 3, FL methods, aggregation rules, and ledger logic unchanged."
+  ],
+  "audit_decision": "STOP_DO_NOT_APPLY_RESTRICTED_VARIANT"
+}

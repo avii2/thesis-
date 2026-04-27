@@ -4,5 +4,5 @@
   "threshold_selected_on": "validation",
   "selection_metric": "f1",
   "default_threshold": 0.5,
-  "selected_threshold": 0.5511125326156616
+  "selected_threshold": 0.9840496778488159
 }

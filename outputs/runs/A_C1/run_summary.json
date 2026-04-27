@@ -27,7 +27,7 @@
   "best_validation_f1_default_threshold": 0.2908366533864542,
   "threshold_used": 0.9642142653465271,
   "test_f1_at_best_validation_round": 0.5621621621621622,
-  "wall_clock_training_seconds": 100.38927170800162,
+  "wall_clock_training_seconds": 106.07355058300891,
   "data_summary": {
     "cluster_id": 1,
     "dataset": "HAI 21.03",
