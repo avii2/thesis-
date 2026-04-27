@@ -1,0 +1,45 @@
+config_version: 1
+experiment_group: baseline_uniform_hierarchical
+description: Exploratory hierarchical Cluster 1 baseline on the repaired HAI supervised split.
+source_of_truth:
+  architecture_contract: docs/ARCHITECTURE_CONTRACT.md
+  data_contract: docs/DATA_CONTRACT.md
+  repaired_dataset_note: docs/EXPLORATORY_CLUSTER1_REPAIRED_DATASET_NOTE.md
+ledger:
+  metadata_only: true
+training_defaults:
+  rounds: 50
+  local_epochs: 1
+  batch_size: 128
+  seeds:
+    - 42
+    - 123
+    - 2025
+smoke_test_defaults:
+  rounds: 2
+  local_epochs: 1
+  batch_size: 64
+  seed: 42
+clustering_defaults:
+  method: AgglomerativeClustering
+  linkage: ward
+  metric: euclidean
+  descriptor: feature_mean_std_window_flattened
+  reuse_frozen_memberships: true
+clusters:
+  - experiment_id: B_C1_REPAIRED
+    cluster_config: configs/cluster1_hai_repaired.yaml
+    hierarchy: hierarchical_fixed
+    clustering_method: agglomerative
+    n_subclusters: 2
+    descriptor: feature_mean_std_window_flattened
+    membership_file: outputs_c1_repaired/clustering/cluster1_memberships.json
+    model_family: cnn1d
+    fl_method: FedAvg
+    aggregation: weighted_arithmetic_mean
+    output_root: outputs_c1_repaired
+runtime_validation:
+  require_cluster_configs_to_exist: true
+  require_frozen_membership_files_before_training: true
+  require_ledger_metadata_only: true
+  require_repaired_cluster1_outputs: true

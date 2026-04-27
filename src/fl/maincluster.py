@@ -18,8 +18,10 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
+from src.data import cluster1_repaired as c1_repaired
 from src.data.partitions import PartitionBuildResult, build_candidate_leaf_clients
 from src.data.preprocess import RawPreparedDataset, prepare_training_dataset
+from src.data.schema_validation import load_cluster_config, resolve_configured_path
 from src.data.transforms import CategoricalTransformArtifacts, NumericTransformArtifacts
 from src.fl.aggregators import WeightedState, aggregate_subcluster_updates_to_maincluster
 from src.fl.client import ClientSplit, FlatClientDataset, predict_split, train_flat_client
@@ -217,6 +219,253 @@ def _cluster_input_adapter(
     return _feature_vector_split(rows, labels), "feature_vector_as_sequence"
 
 
+def _repaired_window_split(
+    *,
+    transformed_by_file: Mapping[str, np.ndarray],
+    windows: Sequence[c1_repaired.WindowRef],
+    input_channels: int,
+    window_length: int,
+    limit: int | None,
+) -> ClientSplit:
+    selected_windows = list(windows)
+    if limit is not None:
+        selected_windows = selected_windows[:limit]
+    if not selected_windows:
+        return ClientSplit(
+            inputs=np.empty((0, input_channels, window_length), dtype=np.float32),
+            labels=np.empty(0, dtype=np.int8),
+        )
+
+    inputs = np.empty((len(selected_windows), input_channels, window_length), dtype=np.float32)
+    labels = np.empty(len(selected_windows), dtype=np.int8)
+    for index, window in enumerate(selected_windows):
+        transformed_rows = transformed_by_file[window.file_name][window.start : window.stop]
+        inputs[index] = transformed_rows.T
+        labels[index] = int(window.label)
+    return ClientSplit(inputs=inputs, labels=labels)
+
+
+def _build_repaired_cluster1_federated_clients(
+    cluster_config_path: str | Path,
+    cluster_yaml: Mapping[str, Any],
+    *,
+    max_train_examples_per_client: int | None = None,
+    max_eval_examples_per_client: int | None = None,
+) -> tuple[list[FlatClientDataset], CNN1DConfig, Mapping[str, Any]]:
+    dataset_config = load_cluster_config(cluster_config_path)
+    if dataset_config.cluster_id != 1:
+        raise ValueError("window_first_attack_aware partitioning is restricted to Cluster 1.")
+
+    data_config = cluster_yaml.get("data")
+    partitioning = cluster_yaml.get("partitioning")
+    preprocessing = cluster_yaml.get("preprocessing")
+    if not isinstance(data_config, Mapping) or not isinstance(partitioning, Mapping):
+        raise ValueError("Cluster 1 repaired config must define data and partitioning sections.")
+    if not isinstance(preprocessing, Mapping):
+        raise ValueError("Cluster 1 repaired config must define preprocessing window settings.")
+
+    train_validation_files = c1_repaired._require_string_list(data_config, "train_validation_files")
+    heldout_test_files = c1_repaired._require_string_list(data_config, "heldout_test_files")
+    num_clients = int(partitioning.get("candidate_leaf_clients", 0))
+    validation_ratio = float(partitioning.get("validation_ratio", 0.15))
+    window_length = int(preprocessing.get("window_length", 0))
+    stride = int(preprocessing.get("stride", 0))
+    if num_clients <= 0:
+        raise ValueError("Cluster 1 repaired partitioning.candidate_leaf_clients must be positive.")
+    if not 0.0 < validation_ratio < 1.0:
+        raise ValueError("Cluster 1 repaired partitioning.validation_ratio must be in (0, 1).")
+    if window_length <= 0 or stride <= 0:
+        raise ValueError("Cluster 1 repaired window_length and stride must be positive.")
+    if str(preprocessing.get("window_label_rule")) != "any_positive_row":
+        raise ValueError("Cluster 1 repaired only supports any_positive_row window labels.")
+
+    raw_dir = resolve_configured_path(dataset_config, dataset_config.current_raw_input_dir)
+    all_files = train_validation_files + heldout_test_files
+    file_paths = {file_name: raw_dir / file_name for file_name in all_files}
+    missing_paths = [str(path) for path in file_paths.values() if not path.exists()]
+    if missing_paths:
+        raise FileNotFoundError(f"Cluster 1 repaired missing raw file(s): {missing_paths}")
+
+    first_header = c1_repaired._read_header(file_paths[train_validation_files[0]])
+    label_column = dataset_config.label_column
+    if label_column not in first_header:
+        raise ValueError(f"Cluster 1 repaired missing label column {label_column!r}.")
+    exclusion_lookup = set(dataset_config.excluded_columns) | set(dataset_config.exclude_if_present)
+    feature_names = tuple(column for column in first_header if column not in exclusion_lookup)
+    feature_indices = [first_header.index(column) for column in feature_names]
+    label_index = first_header.index(label_column)
+
+    for file_name, path in file_paths.items():
+        header = c1_repaired._read_header(path)
+        if header != first_header:
+            raise ValueError(f"Cluster 1 repaired requires consistent HAI schema. Mismatch in {path}.")
+
+    def load_file(file_name: str) -> c1_repaired.LoadedFile:
+        path = file_paths[file_name]
+        labels = c1_repaired._mapped_label_array(path, label_index)
+        features = c1_repaired._load_feature_matrix(path, feature_indices)
+        if features.shape[0] != labels.shape[0]:
+            raise ValueError(f"Cluster 1 repaired feature/label row mismatch in {path}.")
+        return c1_repaired.LoadedFile(file_name=file_name, path=path, feature_matrix=features, labels=labels)
+
+    train_validation_loaded = [load_file(file_name) for file_name in train_validation_files]
+    heldout_loaded = [load_file(file_name) for file_name in heldout_test_files]
+    train_validation_windows = c1_repaired._build_windows(
+        train_validation_loaded,
+        window_length=window_length,
+        stride=stride,
+    )
+    heldout_windows = c1_repaired._build_windows(
+        heldout_loaded,
+        window_length=window_length,
+        stride=stride,
+    )
+    c1_repaired._validate_both_classes("Cluster 1 repaired train/validation windows", train_validation_windows)
+    c1_repaired._validate_both_classes("Cluster 1 repaired held-out windows", heldout_windows)
+
+    assigned_clients = c1_repaired.attack_aware_client_assignment(
+        train_validation_windows,
+        num_clients=num_clients,
+    )
+    heldout_clients = c1_repaired._contiguous_client_assignment(
+        heldout_windows,
+        num_clients=num_clients,
+    )
+
+    train_by_client: list[list[c1_repaired.WindowRef]] = []
+    validation_by_client: list[list[c1_repaired.WindowRef]] = []
+    for client_windows in assigned_clients:
+        train_windows, validation_windows = c1_repaired.split_client_train_validation(
+            client_windows,
+            validation_ratio=validation_ratio,
+        )
+        train_by_client.append(train_windows)
+        validation_by_client.append(validation_windows)
+
+    cluster_train_counts = Counter()
+    cluster_validation_counts = Counter()
+    cluster_test_counts = Counter()
+    for index in range(num_clients):
+        cluster_train_counts.update(c1_repaired._window_counts(train_by_client[index]))
+        cluster_validation_counts.update(c1_repaired._window_counts(validation_by_client[index]))
+        cluster_test_counts.update(c1_repaired._window_counts(heldout_clients[index]))
+    for split_name, counts in (
+        ("train", cluster_train_counts),
+        ("validation", cluster_validation_counts),
+        ("held-out test", cluster_test_counts),
+    ):
+        if set(counts) != {"0", "1"}:
+            raise ValueError(
+                f"Cluster 1 repaired cluster-level {split_name} split lacks both classes: {dict(counts)}"
+            )
+
+    train_masks = c1_repaired._mark_training_rows(
+        train_by_client,
+        {loaded.file_name: loaded for loaded in train_validation_loaded},
+    )
+    training_feature_rows = np.vstack(
+        [
+            loaded.feature_matrix[train_masks[loaded.file_name]]
+            for loaded in train_validation_loaded
+            if train_masks[loaded.file_name].any()
+        ]
+    )
+    numeric_artifacts = NumericTransformArtifacts.fit(feature_names, training_feature_rows)
+    if not numeric_artifacts.kept_features:
+        raise ValueError("Cluster 1 repaired preprocessing dropped all feature columns.")
+
+    transformed_by_file = {
+        loaded.file_name: numeric_artifacts.transform(loaded.feature_matrix)
+        for loaded in train_validation_loaded + heldout_loaded
+    }
+    input_channels = len(numeric_artifacts.kept_features)
+    model_config = CNN1DConfig(input_channels=input_channels, input_length=window_length)
+
+    clients: list[FlatClientDataset] = []
+    client_train_label_counts: dict[str, dict[str, int]] = {}
+    client_validation_label_counts: dict[str, dict[str, int]] = {}
+    client_test_label_counts: dict[str, dict[str, int]] = {}
+    for index in range(num_clients):
+        client_id = f"C1_L{index + 1:03d}"
+        train_split = _repaired_window_split(
+            transformed_by_file=transformed_by_file,
+            windows=train_by_client[index],
+            input_channels=input_channels,
+            window_length=window_length,
+            limit=max_train_examples_per_client,
+        )
+        validation_split = _repaired_window_split(
+            transformed_by_file=transformed_by_file,
+            windows=validation_by_client[index],
+            input_channels=input_channels,
+            window_length=window_length,
+            limit=max_eval_examples_per_client,
+        )
+        test_split = _repaired_window_split(
+            transformed_by_file=transformed_by_file,
+            windows=heldout_clients[index],
+            input_channels=input_channels,
+            window_length=window_length,
+            limit=max_eval_examples_per_client,
+        )
+        if train_split.num_samples <= 0:
+            raise ValueError(f"{client_id}: repaired Cluster 1 requires at least one train window.")
+
+        clients.append(
+            FlatClientDataset(
+                cluster_id=1,
+                client_id=client_id,
+                train=train_split,
+                validation=validation_split,
+                test=test_split,
+                input_adapter="sliding_window_feature_channels",
+            )
+        )
+        client_train_label_counts[client_id] = c1_repaired._label_counts(train_split.labels)
+        client_validation_label_counts[client_id] = c1_repaired._label_counts(validation_split.labels)
+        client_test_label_counts[client_id] = c1_repaired._label_counts(test_split.labels)
+
+    data_summary = {
+        "cluster_id": 1,
+        "dataset": str(dataset_config.dataset_name),
+        "variant": "cluster1_repaired",
+        "num_clients": len(clients),
+        "input_adapter": "sliding_window_feature_channels",
+        "input_channels": model_config.input_channels,
+        "input_length": model_config.input_length,
+        "retained_input_feature_columns": list(feature_names),
+        "model_feature_columns": list(numeric_artifacts.kept_features),
+        "dropped_all_missing_feature_columns": list(numeric_artifacts.dropped_all_missing_features),
+        "dropped_constant_feature_columns": list(numeric_artifacts.dropped_constant_features),
+        "dropped_high_cardinality_categorical_columns": [],
+        "max_train_examples_per_client": max_train_examples_per_client,
+        "max_eval_examples_per_client": max_eval_examples_per_client,
+        "train_validation_source_files": list(train_validation_files),
+        "heldout_test_source_files": list(heldout_test_files),
+        "heldout_test_files_used_for_training": False,
+        "heldout_test_files_used_for_validation": False,
+        "heldout_test_files_used_for_preprocessing_fit": False,
+        "client_train_sample_counts": {
+            client.client_id: client.train.num_samples for client in clients
+        },
+        "client_validation_sample_counts": {
+            client.client_id: client.validation.num_samples for client in clients
+        },
+        "client_test_sample_counts": {
+            client.client_id: client.test.num_samples for client in clients
+        },
+        "client_train_label_counts": client_train_label_counts,
+        "client_validation_label_counts": client_validation_label_counts,
+        "client_test_label_counts": client_test_label_counts,
+        "cluster_split_label_counts": {
+            "train": {key: cluster_train_counts[key] for key in sorted(cluster_train_counts)},
+            "validation": {key: cluster_validation_counts[key] for key in sorted(cluster_validation_counts)},
+            "test": {key: cluster_test_counts[key] for key in sorted(cluster_test_counts)},
+        },
+    }
+    return clients, model_config, data_summary
+
+
 def build_flat_federated_clients(
     cluster_config_path: str | Path,
     *,
@@ -224,6 +473,15 @@ def build_flat_federated_clients(
     max_eval_examples_per_client: int | None = None,
 ) -> tuple[list[FlatClientDataset], CNN1DConfig, Mapping[str, Any]]:
     cluster_yaml = _load_yaml(cluster_config_path)
+    partitioning = cluster_yaml.get("partitioning")
+    if isinstance(partitioning, Mapping) and str(partitioning.get("strategy")) == "window_first_attack_aware":
+        return _build_repaired_cluster1_federated_clients(
+            cluster_config_path,
+            cluster_yaml,
+            max_train_examples_per_client=max_train_examples_per_client,
+            max_eval_examples_per_client=max_eval_examples_per_client,
+        )
+
     prepared = prepare_training_dataset(cluster_config_path)
     partition_result = build_candidate_leaf_clients(cluster_config_path)
     numeric_artifacts, categorical_artifacts = _fit_feature_artifacts(prepared, partition_result)

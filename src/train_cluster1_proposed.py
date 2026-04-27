@@ -99,17 +99,18 @@ def _load_cluster1_proposed_entry(config_path: str | Path) -> tuple[Path, Mappin
     for cluster_entry in clusters:
         if not isinstance(cluster_entry, Mapping):
             continue
-        if str(cluster_entry.get("experiment_id")) != "P_C1":
+        experiment_id = str(cluster_entry.get("experiment_id", "")).strip()
+        if experiment_id not in {"P_C1", "P_C1_REPAIRED"}:
             continue
         if str(cluster_entry.get("model_family")) != "tcn":
-            raise ValueError("P_C1 must use model_family=tcn.")
+            raise ValueError(f"{experiment_id} must use model_family=tcn.")
         if str(cluster_entry.get("fl_method")) != "FedBN":
-            raise ValueError("P_C1 must use fl_method=FedBN.")
+            raise ValueError(f"{experiment_id} must use fl_method=FedBN.")
         if str(cluster_entry.get("aggregation")) != "weighted_non_bn_mean":
-            raise ValueError("P_C1 must use aggregation=weighted_non_bn_mean.")
+            raise ValueError(f"{experiment_id} must use aggregation=weighted_non_bn_mean.")
         return config_path, config, cluster_entry
 
-    raise ValueError(f"{config_path}: could not find P_C1 entry in proposed config.")
+    raise ValueError(f"{config_path}: could not find a P_C1 or P_C1_REPAIRED entry in proposed config.")
 
 
 def _optional_mapping(parent: Mapping[str, Any], key: str) -> Mapping[str, Any]:
@@ -117,7 +118,7 @@ def _optional_mapping(parent: Mapping[str, Any], key: str) -> Mapping[str, Any]:
     if value is None:
         return {}
     if not isinstance(value, Mapping):
-        raise ValueError(f"P_C1 {key} must be a mapping when provided.")
+        raise ValueError(f"{key} must be a mapping when provided.")
     return value
 
 
@@ -126,9 +127,9 @@ def _resolve_block_channels(value: Sequence[int] | None) -> tuple[int, int, int]
         return None
     channels = tuple(int(channel) for channel in value)
     if len(channels) != 3:
-        raise ValueError("P_C1 TCN block_channels must contain exactly three integers.")
+        raise ValueError("TCN block_channels must contain exactly three integers.")
     if any(channel <= 0 for channel in channels):
-        raise ValueError("P_C1 TCN block_channels must be positive.")
+        raise ValueError("TCN block_channels must be positive.")
     return channels
 
 
@@ -167,7 +168,7 @@ def _resolve_positive_class_weight_scale(
     )
     scale = float(configured_scale)
     if scale <= 0.0:
-        raise ValueError("P_C1 positive_class_weight_scale must be positive.")
+        raise ValueError("positive_class_weight_scale must be positive.")
     return scale
 
 
@@ -189,6 +190,7 @@ def run_cluster1_proposed(
     positive_class_weight_scale: float | None = None,
 ) -> Cluster1ProposedRunResult:
     resolved_proposed_config_path, proposed_config, cluster_entry = _load_cluster1_proposed_entry(proposed_config_path)
+    experiment_id = str(cluster_entry["experiment_id"]).strip()
 
     defaults_key = "smoke_test_defaults" if smoke_test else "training_defaults"
     defaults = proposed_config.get(defaults_key)
@@ -266,9 +268,9 @@ def run_cluster1_proposed(
     communicated_parameter_bytes = non_bn_parameter_bytes(global_state)
 
     output_root = Path(output_root)
-    run_dir = output_root / "runs" / "P_C1"
+    run_dir = output_root / "runs" / experiment_id
     run_dir.mkdir(parents=True, exist_ok=True)
-    metrics_csv_path = output_root / "metrics" / "P_C1_metrics.csv"
+    metrics_csv_path = output_root / "metrics" / f"{experiment_id}_metrics.csv"
     round_metrics_path = run_dir / "round_metrics.csv"
     summary_path = run_dir / "run_summary.json"
     membership_contents_before = membership.membership_file.read_text(encoding="utf-8")
@@ -406,18 +408,18 @@ def run_cluster1_proposed(
         or best_test_labels is None
         or best_test_probabilities is None
     ):
-        raise ValueError("P_C1: unable to determine best validation round.")
+        raise ValueError(f"{experiment_id}: unable to determine best validation round.")
     if best_subcluster_sample_counts is None or best_subcluster_client_counts is None:
-        raise ValueError("P_C1: missing best-round subcluster statistics.")
+        raise ValueError(f"{experiment_id}: missing best-round subcluster statistics.")
 
     membership_contents_after = membership.membership_file.read_text(encoding="utf-8")
     if membership_contents_before != membership_contents_after:
-        raise ValueError("P_C1: frozen membership file changed during proposed Cluster 1 execution.")
+        raise ValueError(f"{experiment_id}: frozen membership file changed during proposed Cluster 1 execution.")
 
     total_communication_cost_bytes = int(sum(row["communication_cost_bytes"] for row in round_rows))
     prediction_outputs = write_prediction_outputs(
         output_root=output_root,
-        experiment_id="P_C1",
+        experiment_id=experiment_id,
         validation_labels=best_validation_labels,
         validation_probabilities=best_validation_probabilities,
         test_labels=best_test_labels,
@@ -426,7 +428,7 @@ def run_cluster1_proposed(
         seed=configured_seed,
     )
     summary = {
-        "experiment_id": "P_C1",
+        "experiment_id": experiment_id,
         "cluster_id": cluster_id,
         "dataset": str(cluster_section["dataset_name"]),
         "cluster_config_path": str(cluster_config_path),
@@ -482,7 +484,7 @@ def run_cluster1_proposed(
     }
 
     summary_row = {
-        "experiment_id": "P_C1",
+        "experiment_id": experiment_id,
         "cluster_id": cluster_id,
         "dataset": str(cluster_section["dataset_name"]),
         "hierarchy": "hierarchical_fixed",
@@ -533,7 +535,7 @@ def run_cluster1_proposed(
     summary_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
 
     return Cluster1ProposedRunResult(
-        experiment_id="P_C1",
+        experiment_id=experiment_id,
         cluster_id=cluster_id,
         dataset=str(cluster_section["dataset_name"]),
         output_dir=run_dir,
