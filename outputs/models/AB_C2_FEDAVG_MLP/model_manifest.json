@@ -1,0 +1,14 @@
+{
+  "experiment_id": "AB_C2_FEDAVG_MLP",
+  "cluster_id": 2,
+  "dataset": "TON IoT combined telemetry",
+  "model_family": "compact_mlp",
+  "model_version": "C2_R050",
+  "model_hash": "sha256:40fbf2c626a7af565798b168b4036a7cef29a159208f4bfa1b3fa91586bdd2a8",
+  "artifact_type": "metadata_manifest",
+  "weights_emitted_by_runner": false,
+  "seed": null,
+  "summary_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/AB_C2_FEDAVG_MLP/run_summary.json",
+  "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/runs/AB_C2_FEDAVG_MLP/round_metrics.csv",
+  "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs/metrics/AB_C2_FEDAVG_MLP_metrics.csv"
+}

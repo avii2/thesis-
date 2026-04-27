@@ -1,0 +1,320 @@
+{
+  "experiment_id": "A_C3",
+  "cluster_id": 3,
+  "dataset": "WUSTL-IIOT-2021",
+  "cluster_config_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/configs/cluster3_wustl.yaml",
+  "hierarchy": "flat",
+  "subcluster_layer_used": false,
+  "membership_file_used": null,
+  "model_family": "cnn1d",
+  "fl_method": "FedAvg",
+  "aggregation": "weighted_arithmetic_mean",
+  "input_adapter": "feature_vector_as_sequence",
+  "input_channels": 1,
+  "input_length": 41,
+  "num_leaf_clients": 15,
+  "rounds": 50,
+  "local_epochs": 1,
+  "batch_size": 128,
+  "learning_rate": 0.05,
+  "seed": 42,
+  "positive_class_weight": 14.747824612950616,
+  "model_parameter_bytes": 164,
+  "communication_cost_per_round_bytes": 4920,
+  "total_communication_cost_bytes": 246000,
+  "best_validation_round": 50,
+  "best_validation_f1": 0.8737417005782823,
+  "best_validation_f1_default_threshold": 0.009452226397904566,
+  "threshold_used": 0.007514748256653547,
+  "test_f1_at_best_validation_round": 0.8701708673648344,
+  "wall_clock_training_seconds": 229.38141787499626,
+  "data_summary": {
+    "cluster_id": 3,
+    "dataset": "WUSTL-IIOT-2021",
+    "num_clients": 15,
+    "input_adapter": "feature_vector_as_sequence",
+    "input_channels": 1,
+    "input_length": 41,
+    "retained_input_feature_columns": [
+      "Mean",
+      "Sport",
+      "Dport",
+      "SrcPkts",
+      "DstPkts",
+      "TotPkts",
+      "DstBytes",
+      "SrcBytes",
+      "TotBytes",
+      "SrcLoad",
+      "DstLoad",
+      "Load",
+      "SrcRate",
+      "DstRate",
+      "Rate",
+      "SrcLoss",
+      "DstLoss",
+      "Loss",
+      "pLoss",
+      "SrcJitter",
+      "DstJitter",
+      "SIntPkt",
+      "DIntPkt",
+      "Proto",
+      "Dur",
+      "TcpRtt",
+      "IdleTime",
+      "Sum",
+      "Min",
+      "Max",
+      "sDSb",
+      "sTtl",
+      "dTtl",
+      "SAppBytes",
+      "DAppBytes",
+      "TotAppByte",
+      "SynAck",
+      "RunTime",
+      "sTos",
+      "SrcJitAct",
+      "DstJitAct"
+    ],
+    "model_feature_columns": [
+      "Mean",
+      "Sport",
+      "Dport",
+      "SrcPkts",
+      "DstPkts",
+      "TotPkts",
+      "DstBytes",
+      "SrcBytes",
+      "TotBytes",
+      "SrcLoad",
+      "DstLoad",
+      "Load",
+      "SrcRate",
+      "DstRate",
+      "Rate",
+      "SrcLoss",
+      "DstLoss",
+      "Loss",
+      "pLoss",
+      "SrcJitter",
+      "DstJitter",
+      "SIntPkt",
+      "DIntPkt",
+      "Proto",
+      "Dur",
+      "TcpRtt",
+      "IdleTime",
+      "Sum",
+      "Min",
+      "Max",
+      "sDSb",
+      "sTtl",
+      "dTtl",
+      "SAppBytes",
+      "DAppBytes",
+      "TotAppByte",
+      "SynAck",
+      "RunTime",
+      "sTos",
+      "SrcJitAct",
+      "DstJitAct"
+    ],
+    "dropped_all_missing_feature_columns": [],
+    "dropped_constant_feature_columns": [],
+    "dropped_high_cardinality_categorical_columns": [],
+    "max_train_examples_per_client": null,
+    "max_eval_examples_per_client": null,
+    "client_train_sample_counts": {
+      "C3_L001": 55741,
+      "C3_L002": 55741,
+      "C3_L003": 55741,
+      "C3_L004": 55741,
+      "C3_L005": 55741,
+      "C3_L006": 55741,
+      "C3_L007": 55741,
+      "C3_L008": 55741,
+      "C3_L009": 55741,
+      "C3_L010": 55741,
+      "C3_L011": 55741,
+      "C3_L012": 55741,
+      "C3_L013": 55741,
+      "C3_L014": 55741,
+      "C3_L015": 55741
+    },
+    "client_validation_sample_counts": {
+      "C3_L001": 11944,
+      "C3_L002": 11945,
+      "C3_L003": 11945,
+      "C3_L004": 11945,
+      "C3_L005": 11945,
+      "C3_L006": 11945,
+      "C3_L007": 11945,
+      "C3_L008": 11945,
+      "C3_L009": 11945,
+      "C3_L010": 11945,
+      "C3_L011": 11945,
+      "C3_L012": 11945,
+      "C3_L013": 11945,
+      "C3_L014": 11945,
+      "C3_L015": 11945
+    },
+    "client_test_sample_counts": {
+      "C3_L001": 11945,
+      "C3_L002": 11945,
+      "C3_L003": 11945,
+      "C3_L004": 11945,
+      "C3_L005": 11945,
+      "C3_L006": 11945,
+      "C3_L007": 11945,
+      "C3_L008": 11945,
+      "C3_L009": 11945,
+      "C3_L010": 11945,
+      "C3_L011": 11945,
+      "C3_L012": 11945,
+      "C3_L013": 11945,
+      "C3_L014": 11945,
+      "C3_L015": 11945
+    }
+  },
+  "best_round_train_metrics": {
+    "loss": 0.18729320168495178,
+    "accuracy": 0.9330343314017808,
+    "precision": 0.07904678872420808,
+    "recall": 0.005122989414999812,
+    "f1": 0.009622357831431857,
+    "auroc": 0.9825664243600525,
+    "pr_auc": 0.5967920526782577,
+    "fpr": 0.004047145606567384,
+    "confusion_matrix": [
+      [
+        779852,
+        3169
+      ],
+      [
+        52822,
+        272
+      ]
+    ],
+    "support": 836115,
+    "label_counts": {
+      "0": 783021,
+      "1": 53094
+    },
+    "threshold_used": 0.5
+  },
+  "best_round_validation_metrics_default_threshold": {
+    "loss": 0.28415825963020325,
+    "accuracy": 0.9029100204270709,
+    "precision": 0.07087959009393681,
+    "recall": 0.005063754499420414,
+    "f1": 0.009452226397904566,
+    "auroc": 0.9783772366621553,
+    "pr_auc": 0.6345354398660218,
+    "fpr": 0.0066837446170668925,
+    "confusion_matrix": [
+      [
+        161695,
+        1088
+      ],
+      [
+        16308,
+        83
+      ]
+    ],
+    "support": 179174,
+    "label_counts": {
+      "0": 162783,
+      "1": 16391
+    },
+    "threshold_used": 0.5
+  },
+  "best_round_validation_metrics": {
+    "loss": 0.28415825963020325,
+    "accuracy": 0.9736792168506592,
+    "precision": 0.7784933924908163,
+    "recall": 0.9955463364041243,
+    "f1": 0.8737417005782823,
+    "auroc": 0.9783772366621553,
+    "pr_auc": 0.6345354398660218,
+    "fpr": 0.028522634427427924,
+    "confusion_matrix": [
+      [
+        158140,
+        4643
+      ],
+      [
+        73,
+        16318
+      ]
+    ],
+    "support": 179174,
+    "label_counts": {
+      "0": 162783,
+      "1": 16391
+    },
+    "threshold_used": 0.007514748256653547
+  },
+  "best_round_test_metrics_default_threshold": {
+    "loss": 0.3016396760940552,
+    "accuracy": 0.8970224640714385,
+    "precision": 0.0551257253384913,
+    "recall": 0.0032513832639324623,
+    "f1": 0.006140587126312954,
+    "auroc": 0.9783569332707255,
+    "pr_auc": 0.6480886611275047,
+    "fpr": 0.0060441463957833265,
+    "confusion_matrix": [
+      [
+        160667,
+        977
+      ],
+      [
+        17474,
+        57
+      ]
+    ],
+    "support": 179175,
+    "label_counts": {
+      "0": 161644,
+      "1": 17531
+    },
+    "threshold_used": 0.5
+  },
+  "best_round_test_metrics": {
+    "loss": 0.3016396760940552,
+    "accuracy": 0.9710785544858379,
+    "precision": 0.7758566769423223,
+    "recall": 0.9905881010780903,
+    "f1": 0.8701708673648344,
+    "auroc": 0.9783569332707255,
+    "pr_auc": 0.6480886611275047,
+    "fpr": 0.031037341317957982,
+    "confusion_matrix": [
+      [
+        156627,
+        5017
+      ],
+      [
+        165,
+        17366
+      ]
+    ],
+    "support": 179175,
+    "label_counts": {
+      "0": 161644,
+      "1": 17531
+    },
+    "threshold_used": 0.007514748256653547
+  },
+  "prediction_outputs": {
+    "prediction_dir": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_v2/predictions/A_C3",
+    "validation_predictions_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_v2/predictions/A_C3/validation_predictions_seed_42.npz",
+    "test_predictions_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_v2/predictions/A_C3/test_predictions_seed_42.npz",
+    "selected_threshold_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_v2/predictions/A_C3/selected_threshold_seed_42.json"
+  },
+  "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_v2/runs/A_C3/round_metrics.csv",
+  "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_v2/metrics/A_C3_metrics.csv",
+  "summary_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_v2/runs/A_C3/run_summary.json"
+}

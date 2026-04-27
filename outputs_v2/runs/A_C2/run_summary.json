@@ -1,0 +1,258 @@
+{
+  "experiment_id": "A_C2",
+  "cluster_id": 2,
+  "dataset": "TON IoT combined telemetry",
+  "cluster_config_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/configs/cluster2_ton_iot.yaml",
+  "hierarchy": "flat",
+  "subcluster_layer_used": false,
+  "membership_file_used": null,
+  "model_family": "cnn1d",
+  "fl_method": "FedAvg",
+  "aggregation": "weighted_arithmetic_mean",
+  "input_adapter": "feature_vector_as_sequence",
+  "input_channels": 1,
+  "input_length": 14,
+  "num_leaf_clients": 15,
+  "rounds": 50,
+  "local_epochs": 1,
+  "batch_size": 128,
+  "learning_rate": 0.05,
+  "seed": 42,
+  "positive_class_weight": 0.6657829728264144,
+  "model_parameter_bytes": 164,
+  "communication_cost_per_round_bytes": 4920,
+  "total_communication_cost_bytes": 246000,
+  "best_validation_round": 1,
+  "best_validation_f1": 0.9115505510683165,
+  "best_validation_f1_default_threshold": 0.8,
+  "threshold_used": 0.5080185532569885,
+  "test_f1_at_best_validation_round": 0.9265429910591201,
+  "wall_clock_training_seconds": 9.347569792000286,
+  "data_summary": {
+    "cluster_id": 2,
+    "dataset": "TON IoT combined telemetry",
+    "num_clients": 15,
+    "input_adapter": "feature_vector_as_sequence",
+    "input_channels": 1,
+    "input_length": 14,
+    "retained_input_feature_columns": [
+      "fridge_temperature",
+      "temp_condition",
+      "latitude",
+      "longitude",
+      "door_state",
+      "sphone_signal"
+    ],
+    "model_feature_columns": [
+      "fridge_temperature",
+      "latitude",
+      "longitude",
+      "temp_condition=UNKNOWN",
+      "temp_condition=high",
+      "temp_condition=low",
+      "door_state=UNKNOWN",
+      "door_state=closed",
+      "door_state=open",
+      "sphone_signal=0",
+      "sphone_signal=1",
+      "sphone_signal=UNKNOWN",
+      "sphone_signal=false",
+      "sphone_signal=true"
+    ],
+    "dropped_all_missing_feature_columns": [],
+    "dropped_constant_feature_columns": [],
+    "dropped_high_cardinality_categorical_columns": [],
+    "max_train_examples_per_client": null,
+    "max_eval_examples_per_client": null,
+    "client_train_sample_counts": {
+      "C2_L001": 5529,
+      "C2_L002": 5529,
+      "C2_L003": 5530,
+      "C2_L004": 5529,
+      "C2_L005": 5530,
+      "C2_L006": 5529,
+      "C2_L007": 5529,
+      "C2_L008": 5530,
+      "C2_L009": 5529,
+      "C2_L010": 5530,
+      "C2_L011": 5529,
+      "C2_L012": 5529,
+      "C2_L013": 5530,
+      "C2_L014": 5529,
+      "C2_L015": 5530
+    },
+    "client_validation_sample_counts": {
+      "C2_L001": 1185,
+      "C2_L002": 1185,
+      "C2_L003": 1185,
+      "C2_L004": 1185,
+      "C2_L005": 1185,
+      "C2_L006": 1185,
+      "C2_L007": 1185,
+      "C2_L008": 1185,
+      "C2_L009": 1185,
+      "C2_L010": 1185,
+      "C2_L011": 1185,
+      "C2_L012": 1185,
+      "C2_L013": 1185,
+      "C2_L014": 1185,
+      "C2_L015": 1185
+    },
+    "client_test_sample_counts": {
+      "C2_L001": 1185,
+      "C2_L002": 1185,
+      "C2_L003": 1185,
+      "C2_L004": 1185,
+      "C2_L005": 1185,
+      "C2_L006": 1185,
+      "C2_L007": 1185,
+      "C2_L008": 1185,
+      "C2_L009": 1185,
+      "C2_L010": 1185,
+      "C2_L011": 1185,
+      "C2_L012": 1185,
+      "C2_L013": 1185,
+      "C2_L014": 1185,
+      "C2_L015": 1185
+    }
+  },
+  "best_round_train_metrics": {
+    "loss": 0.6898165941238403,
+    "accuracy": 0.6003182985495714,
+    "precision": 0.6003182985495714,
+    "recall": 1.0,
+    "f1": 0.7502486212819818,
+    "auroc": 0.7556003055062772,
+    "pr_auc": 0.8027743985592397,
+    "fpr": 1.0,
+    "confusion_matrix": [
+      [
+        0,
+        33150
+      ],
+      [
+        0,
+        49791
+      ]
+    ],
+    "support": 82941,
+    "label_counts": {
+      "0": 33150,
+      "1": 49791
+    },
+    "threshold_used": 0.5
+  },
+  "best_round_validation_metrics_default_threshold": {
+    "loss": 0.6875662207603455,
+    "accuracy": 0.6666666666666666,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "f1": 0.8,
+    "auroc": 0.7805919849027043,
+    "pr_auc": 0.8514553726077991,
+    "fpr": 1.0,
+    "confusion_matrix": [
+      [
+        0,
+        5925
+      ],
+      [
+        0,
+        11850
+      ]
+    ],
+    "support": 17775,
+    "label_counts": {
+      "0": 5925,
+      "1": 11850
+    },
+    "threshold_used": 0.5
+  },
+  "best_round_validation_metrics": {
+    "loss": 0.6875662207603455,
+    "accuracy": 0.8749367088607595,
+    "precision": 0.8623804863359181,
+    "recall": 0.9666666666666667,
+    "f1": 0.9115505510683165,
+    "auroc": 0.7805919849027043,
+    "pr_auc": 0.8514553726077991,
+    "fpr": 0.3085232067510549,
+    "confusion_matrix": [
+      [
+        4097,
+        1828
+      ],
+      [
+        395,
+        11455
+      ]
+    ],
+    "support": 17775,
+    "label_counts": {
+      "0": 5925,
+      "1": 11850
+    },
+    "threshold_used": 0.5080185532569885
+  },
+  "best_round_test_metrics_default_threshold": {
+    "loss": 0.6876254677772522,
+    "accuracy": 0.6666666666666666,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "f1": 0.8,
+    "auroc": 0.7873180508821593,
+    "pr_auc": 0.8337321641663626,
+    "fpr": 1.0,
+    "confusion_matrix": [
+      [
+        0,
+        5925
+      ],
+      [
+        0,
+        11850
+      ]
+    ],
+    "support": 17775,
+    "label_counts": {
+      "0": 5925,
+      "1": 11850
+    },
+    "threshold_used": 0.5
+  },
+  "best_round_test_metrics": {
+    "loss": 0.6876254677772522,
+    "accuracy": 0.8950773558368496,
+    "precision": 0.868749538370633,
+    "recall": 0.9925738396624473,
+    "f1": 0.9265429910591201,
+    "auroc": 0.7873180508821593,
+    "pr_auc": 0.8337321641663626,
+    "fpr": 0.299915611814346,
+    "confusion_matrix": [
+      [
+        4148,
+        1777
+      ],
+      [
+        88,
+        11762
+      ]
+    ],
+    "support": 17775,
+    "label_counts": {
+      "0": 5925,
+      "1": 11850
+    },
+    "threshold_used": 0.5080185532569885
+  },
+  "prediction_outputs": {
+    "prediction_dir": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_v2/predictions/A_C2",
+    "validation_predictions_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_v2/predictions/A_C2/validation_predictions_seed_42.npz",
+    "test_predictions_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_v2/predictions/A_C2/test_predictions_seed_42.npz",
+    "selected_threshold_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_v2/predictions/A_C2/selected_threshold_seed_42.json"
+  },
+  "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_v2/runs/A_C2/round_metrics.csv",
+  "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_v2/metrics/A_C2_metrics.csv",
+  "summary_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_v2/runs/A_C2/run_summary.json"
+}

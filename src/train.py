@@ -12,6 +12,7 @@ from statistics import mean, pstdev
 from typing import Any, Iterable, Mapping, Sequence
 
 import matplotlib
+import numpy as np
 import yaml
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -58,6 +59,8 @@ DEFAULT_RUN_ALL_EXPERIMENT_IDS = (
     "P_C2",
     "P_C3",
 )
+DEFAULT_PAPER_SUITE_EXPERIMENT_IDS = SUPPORTED_EXPERIMENT_IDS
+DEFAULT_MULTI_SEED_VALUES = (42, 123, 2025)
 
 MATRIX_REQUIRED_FIELDS = (
     "experiment_id",
@@ -153,6 +156,7 @@ class ExperimentBatchResult:
     experiments: list[ExperimentRunArtifacts]
     summary_csv_path: Path | None
     comparison_plot_paths: list[Path] = field(default_factory=list)
+    confusion_matrix_report_path: Path | None = None
     mean_std_summary_csv_path: Path | None = None
     mean_std_results_csv_path: Path | None = None
     mean_std_markdown_path: Path | None = None
@@ -601,9 +605,20 @@ def _write_failed_seed_marker(
     return _write_json(failure_marker_path, payload)
 
 
-def _selected_experiment_ids(experiment_ids: Sequence[str] | None, *, run_all: bool) -> list[str]:
+def _selected_experiment_ids(
+    experiment_ids: Sequence[str] | None,
+    *,
+    run_all: bool,
+    paper_suite: bool = False,
+) -> list[str]:
+    if experiment_ids and paper_suite:
+        raise ValueError("Use either explicit --experiment-id selections or --paper-suite, not both.")
+    if run_all and paper_suite:
+        raise ValueError("Use either --all or --paper-suite, not both.")
     if experiment_ids:
         selected = _dedupe_preserve_order(experiment_ids)
+    elif paper_suite:
+        selected = list(DEFAULT_PAPER_SUITE_EXPERIMENT_IDS)
     else:
         selected = list(DEFAULT_RUN_ALL_EXPERIMENT_IDS) if run_all or experiment_ids is None else []
     if not selected:
@@ -1169,6 +1184,98 @@ def _write_summary_csv(summary_rows: Sequence[Mapping[str, Any]], output_root: P
     return summary_path
 
 
+def _decode_confusion_matrix(value: Any, *, experiment_id: str, field_name: str) -> list[list[int]]:
+    if value is None or value == "":
+        raise ValueError(f"{experiment_id}: {field_name} is required.")
+    if isinstance(value, str):
+        try:
+            decoded = json.loads(value)
+        except json.JSONDecodeError as exc:
+            raise ValueError(
+                f"{experiment_id}: {field_name} must be a JSON confusion matrix string."
+            ) from exc
+    else:
+        decoded = value
+
+    matrix = np.asarray(decoded, dtype=np.int64)
+    if matrix.shape != (2, 2):
+        raise ValueError(
+            f"{experiment_id}: {field_name} must have shape [2, 2], observed {matrix.shape}."
+        )
+    return matrix.astype(int).tolist()
+
+
+def _confusion_counts(matrix: Sequence[Sequence[int]]) -> dict[str, int | list[list[int]]]:
+    values = np.asarray(matrix, dtype=np.int64)
+    tn, fp, fn, tp = values.ravel()
+    return {
+        "tn": int(tn),
+        "fp": int(fp),
+        "fn": int(fn),
+        "tp": int(tp),
+        "matrix": values.astype(int).tolist(),
+    }
+
+
+def _write_confusion_matrices_report(
+    summary_rows: Sequence[Mapping[str, Any]],
+    output_root: Path,
+) -> Path:
+    report_path = output_root / "reports" / "confusion_matrices.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+
+    experiments: dict[str, Any] = {}
+    for row in summary_rows:
+        experiment_id = str(row["experiment_id"])
+        seed = row.get("seed")
+        experiment_key = f"{experiment_id}_seed_{int(seed)}" if seed is not None else experiment_id
+        entry = {
+            "experiment_id": experiment_id,
+            "seed": int(seed) if seed is not None else None,
+            "cluster_id": row.get("cluster_id"),
+            "dataset": row.get("dataset"),
+            "run_category": row.get("run_category"),
+            "model_family": row.get("model_family"),
+            "fl_method": row.get("fl_method"),
+            "aggregation": row.get("aggregation"),
+            "threshold_selected_on": "validation",
+            "selected_threshold": row.get("threshold_used"),
+            "default_threshold": 0.5,
+        }
+        tuned_matrix_value = row.get("test_confusion_matrix")
+        if tuned_matrix_value is None or tuned_matrix_value == "":
+            entry["status"] = "missing_confusion_matrix"
+            entry["reason"] = "test_confusion_matrix absent from metrics row"
+            experiments[experiment_key] = entry
+            continue
+
+        tuned_matrix = _decode_confusion_matrix(
+            tuned_matrix_value,
+            experiment_id=experiment_key,
+            field_name="test_confusion_matrix",
+        )
+        entry["status"] = "complete"
+        entry["tuned_threshold"] = _confusion_counts(tuned_matrix)
+        default_matrix_value = row.get("test_confusion_matrix_default_threshold")
+        if default_matrix_value is not None and default_matrix_value != "":
+            default_matrix = _decode_confusion_matrix(
+                default_matrix_value,
+                experiment_id=experiment_key,
+                field_name="test_confusion_matrix_default_threshold",
+            )
+            entry["default_threshold_metrics"] = _confusion_counts(default_matrix)
+        experiments[experiment_key] = entry
+
+    payload = {
+        "source": "experiment-runner metrics rows",
+        "confusion_matrix_layout": "[[TN, FP], [FN, TP]]",
+        "selection_rule": "selected_threshold maximizes validation F1 and is then applied to test data",
+        "experiments": experiments,
+    }
+    report_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return report_path
+
+
 def _mean_std(values: Sequence[float]) -> tuple[float | None, float | None]:
     if not values:
         return None, None
@@ -1519,6 +1626,7 @@ def run_experiments(
     *,
     experiment_ids: Sequence[str] | None = None,
     run_all: bool = False,
+    paper_suite: bool = False,
     matrix_path: str | Path = DEFAULT_MATRIX_PATH,
     baseline_flat_config_path: str | Path = DEFAULT_BASELINE_FLAT_CONFIG,
     baseline_hierarchical_config_path: str | Path = DEFAULT_BASELINE_HIERARCHICAL_CONFIG,
@@ -1536,7 +1644,11 @@ def run_experiments(
     normalized_seeds = _normalize_seeds(seeds)
     if seed is not None and normalized_seeds:
         raise ValueError("Use either seed or seeds, not both.")
-    selected_experiments = _selected_experiment_ids(experiment_ids, run_all=run_all)
+    selected_experiments = _selected_experiment_ids(
+        experiment_ids,
+        run_all=run_all,
+        paper_suite=paper_suite,
+    )
     matrix = load_experiment_matrix(matrix_path)
     registry = load_config_registry(
         baseline_flat_config_path=baseline_flat_config_path,
@@ -1602,10 +1714,23 @@ def run_experiments(
             matrix_path=matrix_path,
             output_root=output_paths["root"],
         )
+        seed_summary_rows: list[dict[str, Any]] = []
+        for artifact in artifacts:
+            spec = matrix[artifact.experiment_id]
+            metrics_row = _load_metrics_row(artifact.metrics_csv_path)
+            metrics_row["run_category"] = spec.run_category
+            metrics_row["seed"] = artifact.seed
+            seed_summary_rows.append(metrics_row)
+        confusion_matrix_report_path = (
+            _write_confusion_matrices_report(seed_summary_rows, output_paths["root"])
+            if seed_summary_rows
+            else None
+        )
         return ExperimentBatchResult(
             experiments=artifacts,
             summary_csv_path=None,
             comparison_plot_paths=[],
+            confusion_matrix_report_path=confusion_matrix_report_path,
             mean_std_summary_csv_path=mean_std_summary_csv_path,
             mean_std_results_csv_path=mean_std_results_csv_path,
             mean_std_markdown_path=mean_std_markdown_path,
@@ -1665,10 +1790,12 @@ def run_experiments(
             output_root=output_paths["root"],
         ),
     ]
+    confusion_matrix_report_path = _write_confusion_matrices_report(summary_rows, output_paths["root"])
     return ExperimentBatchResult(
         experiments=artifacts,
         summary_csv_path=summary_csv_path,
         comparison_plot_paths=comparison_plot_paths,
+        confusion_matrix_report_path=confusion_matrix_report_path,
     )
 
 
@@ -1686,6 +1813,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--all",
         action="store_true",
         help="Run all supported A/B/P experiments from docs/EXPERIMENT_MATRIX.csv.",
+    )
+    parser.add_argument(
+        "--paper-suite",
+        action="store_true",
+        help="Run all paper-reporting experiments, including A/B/P and AB_* ablations.",
     )
     parser.add_argument(
         "--matrix",
@@ -1719,6 +1851,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Run seed-specific experiments without touching legacy single-seed outputs, for example --seeds 42 123 2025.",
     )
     parser.add_argument(
+        "--paper-multiseed",
+        action="store_true",
+        help="Run the required paper seeds: 42, 123, and 2025.",
+    )
+    parser.add_argument(
         "--max-train-examples-per-client",
         type=int,
         help="Optional cap applied after split adaptation for smoke-sized training.",
@@ -1738,11 +1875,15 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 def main(argv: Sequence[str] | None = None) -> None:
     args = parse_args(argv)
-    if args.seed is not None and args.seeds:
-        raise SystemExit("Use either --seed or --seeds, not both.")
+    if args.seed is not None and (args.seeds or args.paper_multiseed):
+        raise SystemExit("Use only one of --seed, --seeds, or --paper-multiseed.")
+    if args.seeds and args.paper_multiseed:
+        raise SystemExit("Use either --seeds or --paper-multiseed, not both.")
+    selected_seeds = list(DEFAULT_MULTI_SEED_VALUES) if args.paper_multiseed else args.seeds
     batch = run_experiments(
         experiment_ids=args.experiment_ids,
         run_all=args.all,
+        paper_suite=args.paper_suite,
         matrix_path=args.matrix,
         baseline_flat_config_path=args.baseline_flat_config,
         baseline_hierarchical_config_path=args.baseline_hierarchical_config,
@@ -1752,7 +1893,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         local_epochs=args.local_epochs,
         batch_size=args.batch_size,
         seed=args.seed,
-        seeds=args.seeds,
+        seeds=selected_seeds,
         max_train_examples_per_client=args.max_train_examples_per_client,
         max_eval_examples_per_client=args.max_eval_examples_per_client,
         output_root=args.output_root,
@@ -1766,6 +1907,8 @@ def main(argv: Sequence[str] | None = None) -> None:
         print(f"summary: wrote {batch.summary_csv_path}")
     for path in batch.comparison_plot_paths:
         print(f"comparison_plot: wrote {path}")
+    if batch.confusion_matrix_report_path is not None:
+        print(f"confusion_matrices: wrote {batch.confusion_matrix_report_path}")
     if batch.mean_std_summary_csv_path is not None:
         print(f"mean_std_summary: wrote {batch.mean_std_summary_csv_path}")
     if batch.mean_std_results_csv_path is not None:

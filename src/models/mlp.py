@@ -5,6 +5,12 @@ from typing import Any, Mapping
 
 import numpy as np
 
+from src.models.losses import (
+    binary_cross_entropy_with_logits,
+    binary_cross_entropy_with_logits_loss_and_gradient,
+    sigmoid_from_logits,
+)
+
 
 STATE_KEYS = (
     "linear1_weight",
@@ -121,8 +127,7 @@ class CompactMLPClassifier:
 
     def predict_proba(self, inputs: np.ndarray) -> np.ndarray:
         logits = self.predict_logits(inputs)
-        probabilities = 1.0 / (1.0 + np.exp(-np.clip(logits, -30.0, 30.0)))
-        return np.clip(probabilities, 1e-6, 1.0 - 1e-6).astype(np.float32, copy=False)
+        return sigmoid_from_logits(logits)
 
     def predict(self, inputs: np.ndarray, *, threshold: float = 0.5) -> np.ndarray:
         return (self.predict_proba(inputs) >= threshold).astype(np.int8, copy=False)
@@ -134,13 +139,11 @@ class CompactMLPClassifier:
         *,
         positive_class_weight: float = 1.0,
     ) -> float:
-        labels = labels.astype(np.float32, copy=False)
-        probabilities = self.predict_proba(inputs)
-        return float(
-            -np.mean(
-                positive_class_weight * labels * np.log(probabilities)
-                + (1.0 - labels) * np.log(1.0 - probabilities)
-            )
+        logits = self.predict_logits(inputs)
+        return binary_cross_entropy_with_logits(
+            logits,
+            labels,
+            positive_class_weight=positive_class_weight,
         )
 
     def loss_and_gradients(
@@ -152,24 +155,11 @@ class CompactMLPClassifier:
         positive_class_weight: float = 1.0,
     ) -> tuple[float, dict[str, np.ndarray]]:
         cache = self._forward(inputs, training=True, rng=rng)
-        logits = cache["logits"]
-        probabilities = 1.0 / (1.0 + np.exp(-np.clip(logits, -30.0, 30.0)))
-        probabilities = np.clip(probabilities, 1e-6, 1.0 - 1e-6).astype(np.float32, copy=False)
-        batch_size = max(1, inputs.shape[0])
-        loss = float(
-            -np.mean(
-                positive_class_weight * labels * np.log(probabilities)
-                + (1.0 - labels) * np.log(1.0 - probabilities)
-            )
+        loss, dlogits = binary_cross_entropy_with_logits_loss_and_gradient(
+            cache["logits"],
+            labels,
+            positive_class_weight=positive_class_weight,
         )
-
-        dlogits = (
-            (
-                probabilities * (1.0 - labels)
-                - positive_class_weight * labels * (1.0 - probabilities)
-            )
-            / batch_size
-        ).astype(np.float32, copy=False)
         gradients: dict[str, np.ndarray] = {}
         gradients["linear3_weight"] = (cache["hidden2_dropout"].T @ dlogits).astype(np.float32, copy=False)
         gradients["linear3_bias"] = np.asarray(dlogits.sum(), dtype=np.float32)

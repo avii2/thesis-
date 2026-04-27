@@ -5,6 +5,12 @@ from typing import Any, Mapping
 
 import numpy as np
 
+from src.models.losses import (
+    binary_cross_entropy_with_logits,
+    binary_cross_entropy_with_logits_loss_and_gradient,
+    sigmoid_from_logits,
+)
+
 
 STATE_KEYS = ("conv_weight", "conv_bias", "dense_weight", "dense_bias")
 
@@ -111,9 +117,11 @@ class CNN1DClassifier:
     def parameter_bytes(self) -> int:
         return int(sum(np.asarray(value).nbytes for value in self._state.values()))
 
+    def predict_logits(self, inputs: np.ndarray) -> np.ndarray:
+        return self._forward(inputs.astype(np.float32, copy=False))["logits"]
+
     def predict_proba(self, inputs: np.ndarray) -> np.ndarray:
-        cache = self._forward(inputs.astype(np.float32, copy=False))
-        return cache["probs"]
+        return sigmoid_from_logits(self.predict_logits(inputs))
 
     def predict(self, inputs: np.ndarray, *, threshold: float = 0.5) -> np.ndarray:
         return (self.predict_proba(inputs) >= threshold).astype(np.int8, copy=False)
@@ -125,13 +133,11 @@ class CNN1DClassifier:
         *,
         positive_class_weight: float = 1.0,
     ) -> float:
-        labels = labels.astype(np.float32, copy=False)
-        probs = self.predict_proba(inputs)
-        return float(
-            -np.mean(
-                positive_class_weight * labels * np.log(probs)
-                + (1.0 - labels) * np.log(1.0 - probs)
-            )
+        logits = self.predict_logits(inputs)
+        return binary_cross_entropy_with_logits(
+            logits,
+            labels,
+            positive_class_weight=positive_class_weight,
         )
 
     def train_epoch(
@@ -189,15 +195,12 @@ class CNN1DClassifier:
         conv_activated = np.maximum(conv_linear, 0.0)
         pooled = conv_activated.mean(axis=2)
         logits = pooled @ self._state["dense_weight"] + float(self._state["dense_bias"])
-        probs = 1.0 / (1.0 + np.exp(-np.clip(logits, -30.0, 30.0)))
-        probs = np.clip(probs, 1e-6, 1.0 - 1e-6).astype(np.float32, copy=False)
         return {
             "windows": windows,
             "conv_linear": conv_linear,
             "conv_activated": conv_activated,
             "pooled": pooled,
             "logits": logits,
-            "probs": probs,
         }
 
     def _loss_and_gradients(
@@ -208,22 +211,11 @@ class CNN1DClassifier:
         positive_class_weight: float = 1.0,
     ) -> tuple[float, dict[str, np.ndarray]]:
         cache = self._forward(inputs)
-        probs = cache["probs"]
-        batch_size = max(1, inputs.shape[0])
-        loss = float(
-            -np.mean(
-                positive_class_weight * labels * np.log(probs)
-                + (1.0 - labels) * np.log(1.0 - probs)
-            )
+        loss, dlogits = binary_cross_entropy_with_logits_loss_and_gradient(
+            cache["logits"],
+            labels,
+            positive_class_weight=positive_class_weight,
         )
-
-        dlogits = (
-            (
-                probs * (1.0 - labels)
-                - positive_class_weight * labels * (1.0 - probs)
-            )
-            / batch_size
-        ).astype(np.float32, copy=False)
         grad_dense_weight = cache["pooled"].T @ dlogits
         grad_dense_bias = np.asarray(dlogits.sum(), dtype=np.float32)
 

@@ -671,6 +671,7 @@ def run_cluster2_fedavg_mlp_ablation(
         max_train_examples_per_client=max_train_examples_per_client,
         max_eval_examples_per_client=max_eval_examples_per_client,
     )
+    positive_class_weight = compute_cluster_positive_class_weight(clients)
     if data_summary["input_adapter"] != "feature_vector_as_sequence":
         raise ValueError("AB_C2_FEDAVG_MLP requires feature-vector sequence inputs before MLP flattening.")
     if int(data_summary["input_channels"]) != 1:

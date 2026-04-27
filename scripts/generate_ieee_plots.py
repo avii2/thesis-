@@ -43,10 +43,24 @@ METHOD_LABELS = {
 }
 
 METHOD_COLORS = {
-    "A": "#4B5563",
-    "B": "#4C78A8",
-    "P": "#F58518",
-    "AB": "#6B7280",
+    "A": "#1F1F1F",
+    "B": "#7A7A7A",
+    "P": "#D9D9D9",
+    "AB": "#B3B3B3",
+}
+
+METHOD_HATCHES = {
+    "A": "",
+    "B": "///",
+    "P": "\\\\\\",
+    "AB": "xx",
+}
+
+METHOD_LINESTYLES = {
+    "A": "-",
+    "B": "--",
+    "P": "-.",
+    "AB": ":",
 }
 
 
@@ -58,6 +72,7 @@ class MetricAggregate:
     successful_seeds: tuple[str, ...]
     missing_seeds: tuple[str, ...]
     notes: str
+    source_path: str
     metrics: dict[str, float]
     stds: dict[str, float]
 
@@ -138,11 +153,14 @@ def _build_metric_aggregates() -> dict[str, MetricAggregate]:
                 successful_seeds=_comma_split(row.get("successful_seeds", "")),
                 missing_seeds=_comma_split(row.get("missing_seeds", "")),
                 notes=row.get("notes", "").strip(),
+                source_path=str(SUMMARY_MEAN_STD_PATH),
                 metrics=metrics,
                 stds=stds,
             )
-    if not aggregates and SUMMARY_SINGLE_PATH.exists():
+    if SUMMARY_SINGLE_PATH.exists():
         for row in _read_csv_rows(SUMMARY_SINGLE_PATH):
+            if row["experiment_id"] in aggregates:
+                continue
             aggregates[row["experiment_id"]] = MetricAggregate(
                 experiment_id=row["experiment_id"],
                 status="COMPLETE",
@@ -150,6 +168,7 @@ def _build_metric_aggregates() -> dict[str, MetricAggregate]:
                 successful_seeds=tuple(),
                 missing_seeds=tuple(),
                 notes="No multiseed summary file found; using single generated metrics row.",
+                source_path=str(SUMMARY_SINGLE_PATH),
                 metrics={
                     "test_accuracy": _parse_float(row.get("test_accuracy")) or math.nan,
                     "test_precision": _parse_float(row.get("test_precision")) or math.nan,
@@ -173,6 +192,46 @@ def _build_metric_aggregates() -> dict[str, MetricAggregate]:
                     "total_communication_cost_bytes",
                 )},
             )
+    metrics_dir = OUTPUT_ROOT / "metrics"
+    for path in sorted(metrics_dir.glob("*_metrics.csv")):
+        experiment_id = path.name.removesuffix("_metrics.csv")
+        if experiment_id in aggregates or "_seed_" in experiment_id:
+            continue
+        rows = _read_csv_rows(path)
+        if not rows:
+            continue
+        row = rows[0]
+        aggregates[experiment_id] = MetricAggregate(
+            experiment_id=experiment_id,
+            status="COMPLETE",
+            successful_seed_count=1,
+            successful_seeds=tuple(),
+            missing_seeds=tuple(),
+            notes="Using single generated per-experiment metrics CSV.",
+            source_path=str(path),
+            metrics={
+                "test_accuracy": _parse_float(row.get("test_accuracy")) or math.nan,
+                "test_precision": _parse_float(row.get("test_precision")) or math.nan,
+                "test_recall": _parse_float(row.get("test_recall")) or math.nan,
+                "test_f1": _parse_float(row.get("test_f1")) or math.nan,
+                "test_auroc": _parse_float(row.get("test_auroc")) or math.nan,
+                "test_pr_auc": _parse_float(row.get("test_pr_auc")) or math.nan,
+                "test_fpr": _parse_float(row.get("test_fpr")) or math.nan,
+                "wall_clock_training_seconds": _parse_float(row.get("wall_clock_training_seconds")) or math.nan,
+                "total_communication_cost_bytes": _parse_float(row.get("total_communication_cost_bytes")) or math.nan,
+            },
+            stds={key: 0.0 for key in (
+                "test_accuracy",
+                "test_precision",
+                "test_recall",
+                "test_f1",
+                "test_auroc",
+                "test_pr_auc",
+                "test_fpr",
+                "wall_clock_training_seconds",
+                "total_communication_cost_bytes",
+            )},
+        )
     return aggregates
 
 
@@ -338,7 +397,8 @@ def _bar_panel(
     x_positions = list(range(len(cluster_labels)))
     width = 0.22
     offsets = (-width, 0.0, width)
-    all_sources = [str(SUMMARY_MEAN_STD_PATH)] if SUMMARY_MEAN_STD_PATH.exists() else [str(SUMMARY_SINGLE_PATH)]
+    all_sources: list[str] = []
+    plotted_values: list[float] = []
 
     for method_index, method_id in enumerate(("A", "B", "P")):
         xs: list[float] = []
@@ -351,6 +411,7 @@ def _bar_panel(
             value = math.nan
             std = 0.0
             if aggregate is not None:
+                all_sources.append(aggregate.source_path)
                 raw_value = aggregate.metrics.get(metric_key, math.nan)
                 value = scale_transform(raw_value) if not math.isnan(raw_value) else math.nan
                 raw_std = aggregate.stds.get(metric_key, 0.0)
@@ -359,6 +420,8 @@ def _bar_panel(
             xs.append(x_positions[cluster_index] + offsets[method_index])
             ys.append(value)
             yerrs.append(std)
+            if not math.isnan(value):
+                plotted_values.append(value)
 
         if any_error:
             bars = ax.bar(
@@ -368,6 +431,7 @@ def _bar_panel(
                 label=METHOD_LABELS[method_id],
                 color=METHOD_COLORS[method_id],
                 edgecolor="#111827",
+                hatch=METHOD_HATCHES[method_id],
                 linewidth=0.6,
                 yerr=yerrs,
                 capsize=3,
@@ -380,6 +444,7 @@ def _bar_panel(
                 label=METHOD_LABELS[method_id],
                 color=METHOD_COLORS[method_id],
                 edgecolor="#111827",
+                hatch=METHOD_HATCHES[method_id],
                 linewidth=0.6,
             )
         for bar, value in zip(bars, ys):
@@ -390,7 +455,8 @@ def _bar_panel(
     if title:
         ax.set_title(title)
     if y_log:
-        ax.set_yscale("log")
+        if any(value > 0 for value in plotted_values):
+            ax.set_yscale("log")
     ax.legend(frameon=False, ncol=3, loc="best")
     ax.yaxis.set_major_locator(MaxNLocator(nbins=6))
     return all_sources
@@ -411,34 +477,34 @@ def _plot_f1_comparison(aggregates: dict[str, MetricAggregate]) -> tuple[list[Pa
     return [pdf_path, png_path], sources, note
 
 
-def _plot_auc_comparison(aggregates: dict[str, MetricAggregate]) -> tuple[list[Path], list[str], str]:
-    fig, axes = plt.subplots(1, 2, figsize=(7.1, 3.4), sharey=False)
-    sources_left = _bar_panel(
-        axes[0],
+def _plot_auroc_comparison(aggregates: dict[str, MetricAggregate]) -> tuple[list[Path], list[str], str]:
+    fig, ax = plt.subplots(figsize=(7.0, 3.3))
+    sources = _bar_panel(
+        ax,
         cluster_groups=A_B_P_GROUPS,
         aggregates=aggregates,
         metric_key="test_auroc",
         ylabel="AUROC",
-        title="AUROC",
     )
-    sources_right = _bar_panel(
-        axes[1],
+    ax.set_ylim(bottom=0.0)
+    note = _metric_note(aggregates[exp_id] for group in A_B_P_GROUPS.values() for exp_id in group if exp_id in aggregates)
+    pdf_path, png_path = _save_figure(fig, "fig_auroc_comparison", metadata_note=note, sources=sources)
+    return [pdf_path, png_path], sources, note
+
+
+def _plot_pr_auc_comparison(aggregates: dict[str, MetricAggregate]) -> tuple[list[Path], list[str], str]:
+    fig, ax = plt.subplots(figsize=(7.0, 3.3))
+    sources = _bar_panel(
+        ax,
         cluster_groups=A_B_P_GROUPS,
         aggregates=aggregates,
         metric_key="test_pr_auc",
         ylabel="PR-AUC",
-        title="PR-AUC",
     )
-    axes[0].set_ylim(bottom=0.0)
-    axes[1].set_ylim(bottom=0.0)
+    ax.set_ylim(bottom=0.0)
     note = _metric_note(aggregates[exp_id] for group in A_B_P_GROUPS.values() for exp_id in group if exp_id in aggregates)
-    pdf_path, png_path = _save_figure(
-        fig,
-        "fig_auc_comparison",
-        metadata_note=note,
-        sources=sources_left + sources_right,
-    )
-    return [pdf_path, png_path], sources_left + sources_right, note
+    pdf_path, png_path = _save_figure(fig, "fig_pr_auc_comparison", metadata_note=note, sources=sources)
+    return [pdf_path, png_path], sources, note
 
 
 def _plot_fpr_comparison(aggregates: dict[str, MetricAggregate]) -> tuple[list[Path], list[str], str]:
@@ -462,7 +528,7 @@ def _plot_ablation_delta_f1(aggregates: dict[str, MetricAggregate]) -> tuple[lis
     xs = list(range(len(cluster_labels)))
     heights: list[float] = []
     errors: list[float] = []
-    sources = [str(SUMMARY_MEAN_STD_PATH)] if SUMMARY_MEAN_STD_PATH.exists() else [str(SUMMARY_SINGLE_PATH)]
+    sources: list[str] = []
     any_error = False
 
     for cluster_label in cluster_labels:
@@ -473,6 +539,7 @@ def _plot_ablation_delta_f1(aggregates: dict[str, MetricAggregate]) -> tuple[lis
             heights.append(math.nan)
             errors.append(0.0)
             continue
+        sources.extend([control.source_path, proposed.source_path])
         delta = proposed.metrics["test_f1"] - control.metrics["test_f1"]
         heights.append(delta)
         if control.successful_seed_count > 1 and proposed.successful_seed_count > 1:
@@ -482,9 +549,25 @@ def _plot_ablation_delta_f1(aggregates: dict[str, MetricAggregate]) -> tuple[lis
             errors.append(0.0)
 
     if any_error:
-        bars = ax.bar(xs, heights, color=METHOD_COLORS["P"], edgecolor="#111827", linewidth=0.6, yerr=errors, capsize=3)
+        bars = ax.bar(
+            xs,
+            heights,
+            color=METHOD_COLORS["P"],
+            edgecolor="#111827",
+            hatch=METHOD_HATCHES["P"],
+            linewidth=0.6,
+            yerr=errors,
+            capsize=3,
+        )
     else:
-        bars = ax.bar(xs, heights, color=METHOD_COLORS["P"], edgecolor="#111827", linewidth=0.6)
+        bars = ax.bar(
+            xs,
+            heights,
+            color=METHOD_COLORS["P"],
+            edgecolor="#111827",
+            hatch=METHOD_HATCHES["P"],
+            linewidth=0.6,
+        )
     ax.axhline(0.0, color="#111827", linewidth=0.8)
     ax.set_xticks(xs, cluster_labels)
     ax.set_ylabel(r"$\Delta$ Test F1 (Proposed - Ablation Control)")
@@ -516,6 +599,7 @@ def _plot_convergence(cluster_label: str, experiment_ids: tuple[str, str, str]) 
             series.mean_values,
             label=METHOD_LABELS[method_id],
             color=METHOD_COLORS[method_id],
+            linestyle=METHOD_LINESTYLES[method_id],
             linewidth=1.6,
         )
         if series.successful_seed_count > 1:
@@ -570,13 +654,17 @@ def _plot_ledger_overhead() -> tuple[list[Path], list[str], str]:
     colors = [METHOD_COLORS[_method_key(experiment_id)] for experiment_id in experiment_ids]
 
     fig, axes = plt.subplots(2, 1, figsize=(7.2, 4.8), sharex=True)
-    axes[0].bar(range(len(experiment_ids)), sizes_kib, color=colors, edgecolor="#111827", linewidth=0.6)
+    bars_top = axes[0].bar(range(len(experiment_ids)), sizes_kib, color=colors, edgecolor="#111827", linewidth=0.6)
+    for bar, experiment_id in zip(bars_top, experiment_ids):
+        bar.set_hatch(METHOD_HATCHES[_method_key(experiment_id)])
     axes[0].set_ylabel("Ledger Size (KiB)")
     axes[0].yaxis.set_major_locator(MaxNLocator(nbins=6))
     for x, value in enumerate(sizes_kib):
         _add_bar_label(axes[0], x, value)
 
-    axes[1].bar(range(len(experiment_ids)), latencies_ms, color=colors, edgecolor="#111827", linewidth=0.6)
+    bars_bottom = axes[1].bar(range(len(experiment_ids)), latencies_ms, color=colors, edgecolor="#111827", linewidth=0.6)
+    for bar, experiment_id in zip(bars_bottom, experiment_ids):
+        bar.set_hatch(METHOD_HATCHES[_method_key(experiment_id)])
     axes[1].set_ylabel("Avg. Logging Latency (ms)")
     axes[1].set_xticks(range(len(experiment_ids)), experiment_ids, rotation=45, ha="right")
     axes[1].yaxis.set_major_locator(MaxNLocator(nbins=6))
@@ -586,6 +674,14 @@ def _plot_ledger_overhead() -> tuple[list[Path], list[str], str]:
     note = "Ledger overhead computed from real JSONL metadata ledgers only; size from file bytes and latency from timestamp_end - timestamp_start."
     pdf_path, png_path = _save_figure(fig, "fig_ledger_overhead", metadata_note=note, sources=sources)
     return [pdf_path, png_path], sources, note
+
+
+def _display_path(path_text: str) -> str:
+    path = Path(path_text)
+    try:
+        return f"`{path.resolve().relative_to(REPO_ROOT.resolve())}`"
+    except ValueError:
+        return f"`{path_text}`"
 
 
 def _write_readme(
@@ -605,6 +701,8 @@ def _write_readme(
         "## Plot Inputs",
         "",
         "- The plots use only already-generated files under `outputs/`.",
+        "- Screenshots are not used as data.",
+        "- Metric comparison plots use generated metrics CSVs; convergence plots use `round_metrics.csv`; ledger overhead uses JSONL ledgers.",
         f"- `outputs/predictions/` present: `{'YES' if predictions_present else 'NO'}`.",
     ]
     if not predictions_present:
@@ -616,7 +714,7 @@ def _write_readme(
             [
                 "",
                 f"### {plot_name}",
-                f"- Data files used: {', '.join(sorted(set(sources))) if sources else 'NONE'}",
+                f"- Data files used: {', '.join(_display_path(source) for source in sorted(set(sources))) if sources else 'NONE'}",
                 f"- Seed mode: {plot_notes[plot_name]}",
             ]
         )
@@ -666,10 +764,15 @@ def generate_plots() -> dict[str, Any]:
     plot_sources["fig_f1_comparison"] = sources
     plot_notes["fig_f1_comparison"] = note
 
-    files, sources, note = _plot_auc_comparison(aggregates)
+    files, sources, note = _plot_auroc_comparison(aggregates)
     generated_files.extend(files)
-    plot_sources["fig_auc_comparison"] = sources
-    plot_notes["fig_auc_comparison"] = note
+    plot_sources["fig_auroc_comparison"] = sources
+    plot_notes["fig_auroc_comparison"] = note
+
+    files, sources, note = _plot_pr_auc_comparison(aggregates)
+    generated_files.extend(files)
+    plot_sources["fig_pr_auc_comparison"] = sources
+    plot_notes["fig_pr_auc_comparison"] = note
 
     files, sources, note = _plot_fpr_comparison(aggregates)
     generated_files.extend(files)
