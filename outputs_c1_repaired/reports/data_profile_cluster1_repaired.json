@@ -1,0 +1,307 @@
+{
+  "cluster_id": 1,
+  "dataset": "HAI 21.03",
+  "variant": "cluster1_repaired",
+  "status": "ok",
+  "config_path": "configs/cluster1_hai_repaired.yaml",
+  "output_root": "outputs_c1_repaired",
+  "label_column": "attack",
+  "train_validation_source_files": [
+    "train1.csv",
+    "train2.csv",
+    "train3.csv",
+    "test1.csv",
+    "test2.csv",
+    "test3.csv"
+  ],
+  "heldout_test_source_files": [
+    "test4.csv",
+    "test5.csv"
+  ],
+  "train_validation_files": [
+    {
+      "path": "data/raw/hai_2103/hai-21.03/train1.csv",
+      "row_count": 216001,
+      "label_counts": {
+        "0": 216001
+      },
+      "contains_both_classes": false,
+      "file_name": "train1.csv"
+    },
+    {
+      "path": "data/raw/hai_2103/hai-21.03/train2.csv",
+      "row_count": 226801,
+      "label_counts": {
+        "0": 226801
+      },
+      "contains_both_classes": false,
+      "file_name": "train2.csv"
+    },
+    {
+      "path": "data/raw/hai_2103/hai-21.03/train3.csv",
+      "row_count": 478801,
+      "label_counts": {
+        "0": 478801
+      },
+      "contains_both_classes": false,
+      "file_name": "train3.csv"
+    },
+    {
+      "path": "data/raw/hai_2103/hai-21.03/test1.csv",
+      "row_count": 43201,
+      "label_counts": {
+        "0": 42572,
+        "1": 629
+      },
+      "contains_both_classes": true,
+      "file_name": "test1.csv"
+    },
+    {
+      "path": "data/raw/hai_2103/hai-21.03/test2.csv",
+      "row_count": 118801,
+      "label_counts": {
+        "0": 115352,
+        "1": 3449
+      },
+      "contains_both_classes": true,
+      "file_name": "test2.csv"
+    },
+    {
+      "path": "data/raw/hai_2103/hai-21.03/test3.csv",
+      "row_count": 108001,
+      "label_counts": {
+        "0": 106466,
+        "1": 1535
+      },
+      "contains_both_classes": true,
+      "file_name": "test3.csv"
+    }
+  ],
+  "heldout_test_files": [
+    {
+      "path": "data/raw/hai_2103/hai-21.03/test4.csv",
+      "row_count": 39601,
+      "label_counts": {
+        "0": 38444,
+        "1": 1157
+      },
+      "contains_both_classes": true,
+      "file_name": "test4.csv"
+    },
+    {
+      "path": "data/raw/hai_2103/hai-21.03/test5.csv",
+      "row_count": 92401,
+      "label_counts": {
+        "0": 90224,
+        "1": 2177
+      },
+      "contains_both_classes": true,
+      "file_name": "test5.csv"
+    }
+  ],
+  "feature_columns_before_preprocessing": [
+    "P1_B2004",
+    "P1_B2016",
+    "P1_B3004",
+    "P1_B3005",
+    "P1_B4002",
+    "P1_B4005",
+    "P1_B400B",
+    "P1_B4022",
+    "P1_FCV01D",
+    "P1_FCV01Z",
+    "P1_FCV02D",
+    "P1_FCV02Z",
+    "P1_FCV03D",
+    "P1_FCV03Z",
+    "P1_FT01",
+    "P1_FT01Z",
+    "P1_FT02",
+    "P1_FT02Z",
+    "P1_FT03",
+    "P1_FT03Z",
+    "P1_LCV01D",
+    "P1_LCV01Z",
+    "P1_LIT01",
+    "P1_PCV01D",
+    "P1_PCV01Z",
+    "P1_PCV02D",
+    "P1_PCV02Z",
+    "P1_PIT01",
+    "P1_PIT02",
+    "P1_PP01AD",
+    "P1_PP01AR",
+    "P1_PP01BD",
+    "P1_PP01BR",
+    "P1_PP02D",
+    "P1_PP02R",
+    "P1_STSP",
+    "P1_TIT01",
+    "P1_TIT02",
+    "P2_24Vdc",
+    "P2_ASD",
+    "P2_AutoGO",
+    "P2_CO_rpm",
+    "P2_Emerg",
+    "P2_HILout",
+    "P2_MSD",
+    "P2_ManualGO",
+    "P2_OnOff",
+    "P2_RTR",
+    "P2_SIT01",
+    "P2_SIT02",
+    "P2_TripEx",
+    "P2_VT01",
+    "P2_VTR01",
+    "P2_VTR02",
+    "P2_VTR03",
+    "P2_VTR04",
+    "P2_VXT02",
+    "P2_VXT03",
+    "P2_VYT02",
+    "P2_VYT03",
+    "P3_FIT01",
+    "P3_LCP01D",
+    "P3_LCV01D",
+    "P3_LH",
+    "P3_LIT01",
+    "P3_LL",
+    "P3_PIT01",
+    "P4_HT_FD",
+    "P4_HT_LD",
+    "P4_HT_PO",
+    "P4_HT_PS",
+    "P4_LD",
+    "P4_ST_FD",
+    "P4_ST_GOV",
+    "P4_ST_LD",
+    "P4_ST_PO",
+    "P4_ST_PS",
+    "P4_ST_PT01",
+    "P4_ST_TT01"
+  ],
+  "feature_columns_after_preprocessing": [
+    "P1_B2004",
+    "P1_B2016",
+    "P1_B3004",
+    "P1_B3005",
+    "P1_B4002",
+    "P1_B4005",
+    "P1_B400B",
+    "P1_B4022",
+    "P1_FCV01D",
+    "P1_FCV01Z",
+    "P1_FCV02D",
+    "P1_FCV02Z",
+    "P1_FCV03D",
+    "P1_FCV03Z",
+    "P1_FT01",
+    "P1_FT01Z",
+    "P1_FT02",
+    "P1_FT02Z",
+    "P1_FT03",
+    "P1_FT03Z",
+    "P1_LCV01D",
+    "P1_LCV01Z",
+    "P1_LIT01",
+    "P1_PCV01D",
+    "P1_PCV01Z",
+    "P1_PCV02D",
+    "P1_PCV02Z",
+    "P1_PIT01",
+    "P1_PIT02",
+    "P1_TIT01",
+    "P1_TIT02",
+    "P2_24Vdc",
+    "P2_CO_rpm",
+    "P2_Emerg",
+    "P2_HILout",
+    "P2_OnOff",
+    "P2_SIT01",
+    "P2_SIT02",
+    "P2_VT01",
+    "P2_VXT02",
+    "P2_VXT03",
+    "P2_VYT02",
+    "P2_VYT03",
+    "P3_FIT01",
+    "P3_LCP01D",
+    "P3_LCV01D",
+    "P3_LIT01",
+    "P3_PIT01",
+    "P4_HT_FD",
+    "P4_HT_LD",
+    "P4_HT_PO",
+    "P4_HT_PS",
+    "P4_LD",
+    "P4_ST_FD",
+    "P4_ST_GOV",
+    "P4_ST_LD",
+    "P4_ST_PO",
+    "P4_ST_PS",
+    "P4_ST_PT01",
+    "P4_ST_TT01"
+  ],
+  "dropped_all_missing_feature_columns": [],
+  "dropped_constant_feature_columns": [
+    "P1_PP01AD",
+    "P1_PP01AR",
+    "P1_PP01BD",
+    "P1_PP01BR",
+    "P1_PP02D",
+    "P1_PP02R",
+    "P1_STSP",
+    "P2_ASD",
+    "P2_AutoGO",
+    "P2_MSD",
+    "P2_ManualGO",
+    "P2_RTR",
+    "P2_TripEx",
+    "P2_VTR01",
+    "P2_VTR02",
+    "P2_VTR03",
+    "P2_VTR04",
+    "P3_LH",
+    "P3_LL"
+  ],
+  "window_length": 32,
+  "stride": 8,
+  "window_label_rule": "any_positive_row",
+  "train_validation_window_counts": {
+    "0": 148103,
+    "1": 829
+  },
+  "heldout_test_window_counts": {
+    "0": 16013,
+    "1": 481
+  },
+  "cluster_split_label_counts": {
+    "train": {
+      "0": 125891,
+      "1": 709
+    },
+    "validation": {
+      "0": 22212,
+      "1": 120
+    },
+    "test": {
+      "0": 16013,
+      "1": 481
+    }
+  },
+  "clients_with_positive_train_or_validation": 12,
+  "num_leaf_clients": 12,
+  "membership_path": "outputs_c1_repaired/clustering/cluster1_memberships.json",
+  "client_metadata_path": "outputs_c1_repaired/clients/cluster1_leaf_clients.json",
+  "preprocessing_artifact_paths": {
+    "imputer": "outputs_c1_repaired/preprocessing/cluster1_hai_repaired_imputer.pkl",
+    "scaler": "outputs_c1_repaired/preprocessing/cluster1_hai_repaired_scaler.pkl",
+    "preprocessor": "outputs_c1_repaired/preprocessing/cluster1_hai_repaired_preprocessor.pkl"
+  },
+  "test_leakage_prevention": {
+    "heldout_test_files_used_for_training": false,
+    "heldout_test_files_used_for_validation": false,
+    "heldout_test_files_used_for_preprocessing_fit": false,
+    "heldout_test_files_used_for_descriptors": false
+  }
+}

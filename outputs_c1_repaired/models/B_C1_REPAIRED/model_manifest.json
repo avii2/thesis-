@@ -1,0 +1,14 @@
+{
+  "experiment_id": "B_C1_REPAIRED",
+  "cluster_id": 1,
+  "dataset": "HAI 21.03 repaired supervised variant",
+  "model_family": "cnn1d",
+  "model_version": "C1_R002",
+  "model_hash": "sha256:0f9bf17c78fb06ab2b5b83092deaec86e5f7333d4dbbe22193487aa636a6c9c2",
+  "artifact_type": "metadata_manifest",
+  "weights_emitted_by_runner": false,
+  "seed": null,
+  "summary_path": "outputs_c1_repaired/runs/B_C1_REPAIRED/run_summary.json",
+  "round_metrics_path": "outputs_c1_repaired/runs/B_C1_REPAIRED/round_metrics.csv",
+  "metrics_csv_path": "outputs_c1_repaired/metrics/B_C1_REPAIRED_metrics.csv"
+}

@@ -1,0 +1,145 @@
+{
+  "source": "experiment-runner metrics rows",
+  "confusion_matrix_layout": "[[TN, FP], [FN, TP]]",
+  "selection_rule": "selected_threshold maximizes validation F1 and is then applied to test data",
+  "experiments": {
+    "A_C1_REPAIRED": {
+      "experiment_id": "A_C1_REPAIRED",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03 repaired supervised variant",
+      "run_category": null,
+      "model_family": "cnn1d",
+      "fl_method": "FedAvg",
+      "aggregation": "weighted_arithmetic_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.9999959468841553,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 14877,
+        "fp": 1136,
+        "fn": 189,
+        "tp": 292,
+        "matrix": [
+          [
+            14877,
+            1136
+          ],
+          [
+            189,
+            292
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 9631,
+        "fp": 6382,
+        "fn": 90,
+        "tp": 391,
+        "matrix": [
+          [
+            9631,
+            6382
+          ],
+          [
+            90,
+            391
+          ]
+        ]
+      }
+    },
+    "B_C1_REPAIRED": {
+      "experiment_id": "B_C1_REPAIRED",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03 repaired supervised variant",
+      "run_category": null,
+      "model_family": "cnn1d",
+      "fl_method": "FedAvg",
+      "aggregation": "weighted_arithmetic_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.9986045956611633,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 15995,
+        "fp": 18,
+        "fn": 269,
+        "tp": 212,
+        "matrix": [
+          [
+            15995,
+            18
+          ],
+          [
+            269,
+            212
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 8998,
+        "fp": 7015,
+        "fn": 61,
+        "tp": 420,
+        "matrix": [
+          [
+            8998,
+            7015
+          ],
+          [
+            61,
+            420
+          ]
+        ]
+      }
+    },
+    "P_C1_REPAIRED": {
+      "experiment_id": "P_C1_REPAIRED",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03 repaired supervised variant",
+      "run_category": null,
+      "model_family": "tcn",
+      "fl_method": "FedBN",
+      "aggregation": "weighted_non_bn_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.9978277087211609,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 12507,
+        "fp": 3506,
+        "fn": 144,
+        "tp": 337,
+        "matrix": [
+          [
+            12507,
+            3506
+          ],
+          [
+            144,
+            337
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 7424,
+        "fp": 8589,
+        "fn": 43,
+        "tp": 438,
+        "matrix": [
+          [
+            7424,
+            8589
+          ],
+          [
+            43,
+            438
+          ]
+        ]
+      }
+    }
+  }
+}

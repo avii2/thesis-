@@ -3,140 +3,140 @@
   "confusion_matrix_layout": "[[TN, FP], [FN, TP]]",
   "selection_rule": "selected_threshold maximizes validation F1 and is then applied to test data",
   "experiments": {
-    "AB_C1_FEDAVG_TCN": {
-      "experiment_id": "AB_C1_FEDAVG_TCN",
+    "A_C1": {
+      "experiment_id": "A_C1",
       "seed": null,
       "cluster_id": 1,
       "dataset": "HAI 21.03",
-      "run_category": "ablation_fl_method",
-      "model_family": "tcn",
-      "fl_method": "FedAvg",
-      "aggregation": "weighted_arithmetic_mean",
-      "threshold_selected_on": "validation",
-      "selected_threshold": 0.8067960739135742,
-      "default_threshold": 0.5,
-      "status": "complete",
-      "tuned_threshold": {
-        "tn": 24503,
-        "fp": 21,
-        "fn": 150,
-        "tp": 106,
-        "matrix": [
-          [
-            24503,
-            21
-          ],
-          [
-            150,
-            106
-          ]
-        ]
-      },
-      "default_threshold_metrics": {
-        "tn": 24483,
-        "fp": 41,
-        "fn": 134,
-        "tp": 122,
-        "matrix": [
-          [
-            24483,
-            41
-          ],
-          [
-            134,
-            122
-          ]
-        ]
-      }
-    },
-    "AB_C2_FEDAVG_MLP": {
-      "experiment_id": "AB_C2_FEDAVG_MLP",
-      "seed": null,
-      "cluster_id": 2,
-      "dataset": "TON IoT combined telemetry",
-      "run_category": "ablation_fl_method",
-      "model_family": "compact_mlp",
-      "fl_method": "FedAvg",
-      "aggregation": "weighted_arithmetic_mean",
-      "threshold_selected_on": "validation",
-      "selected_threshold": 0.8570539951324463,
-      "default_threshold": 0.5,
-      "status": "complete",
-      "tuned_threshold": {
-        "tn": 4119,
-        "fp": 1806,
-        "fn": 0,
-        "tp": 11850,
-        "matrix": [
-          [
-            4119,
-            1806
-          ],
-          [
-            0,
-            11850
-          ]
-        ]
-      },
-      "default_threshold_metrics": {
-        "tn": 0,
-        "fp": 5925,
-        "fn": 0,
-        "tp": 11850,
-        "matrix": [
-          [
-            0,
-            5925
-          ],
-          [
-            0,
-            11850
-          ]
-        ]
-      }
-    },
-    "AB_C3_FEDAVG_CNN1D": {
-      "experiment_id": "AB_C3_FEDAVG_CNN1D",
-      "seed": null,
-      "cluster_id": 3,
-      "dataset": "WUSTL-IIOT-2021",
-      "run_category": "ablation_fl_method",
+      "run_category": "baseline_flat",
       "model_family": "cnn1d",
       "fl_method": "FedAvg",
       "aggregation": "weighted_arithmetic_mean",
       "threshold_selected_on": "validation",
-      "selected_threshold": 0.009300285018980503,
+      "selected_threshold": 0.9642142653465271,
       "default_threshold": 0.5,
       "status": "complete",
       "tuned_threshold": {
-        "tn": 156628,
-        "fp": 5016,
-        "fn": 137,
-        "tp": 17394,
+        "tn": 24514,
+        "fp": 10,
+        "fn": 152,
+        "tp": 104,
         "matrix": [
           [
-            156628,
-            5016
+            24514,
+            10
           ],
           [
-            137,
-            17394
+            152,
+            104
           ]
         ]
       },
       "default_threshold_metrics": {
-        "tn": 160627,
-        "fp": 1017,
-        "fn": 17502,
-        "tp": 29,
+        "tn": 24459,
+        "fp": 65,
+        "fn": 132,
+        "tp": 124,
         "matrix": [
           [
-            160627,
-            1017
+            24459,
+            65
           ],
           [
-            17502,
-            29
+            132,
+            124
+          ]
+        ]
+      }
+    },
+    "B_C1": {
+      "experiment_id": "B_C1",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03",
+      "run_category": "baseline_uniform_hierarchical",
+      "model_family": "cnn1d",
+      "fl_method": "FedAvg",
+      "aggregation": "weighted_arithmetic_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.9632313847541809,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 24514,
+        "fp": 10,
+        "fn": 152,
+        "tp": 104,
+        "matrix": [
+          [
+            24514,
+            10
+          ],
+          [
+            152,
+            104
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 24460,
+        "fp": 64,
+        "fn": 131,
+        "tp": 125,
+        "matrix": [
+          [
+            24460,
+            64
+          ],
+          [
+            131,
+            125
+          ]
+        ]
+      }
+    },
+    "P_C1": {
+      "experiment_id": "P_C1",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03",
+      "run_category": "proposed_specialized_hierarchical",
+      "model_family": "tcn",
+      "fl_method": "FedBN",
+      "aggregation": "weighted_non_bn_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.9929866194725037,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 24505,
+        "fp": 19,
+        "fn": 166,
+        "tp": 90,
+        "matrix": [
+          [
+            24505,
+            19
+          ],
+          [
+            166,
+            90
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 22919,
+        "fp": 1605,
+        "fn": 114,
+        "tp": 142,
+        "matrix": [
+          [
+            22919,
+            1605
+          ],
+          [
+            114,
+            142
           ]
         ]
       }

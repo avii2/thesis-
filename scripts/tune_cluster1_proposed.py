@@ -22,15 +22,15 @@ from src.train_cluster1_proposed import run_cluster1_proposed  # noqa: E402
 
 
 EXPECTED_SEARCH_SPACE = {
-    "learning_rate": [0.001, 0.003, 0.005, 0.01],
+    "learning_rate": [0.001, 0.003, 0.005],
     "batch_size": [64, 128],
     "local_epochs": [1, 2],
     "window_length": [32, 64],
     "stride": [4, 8],
-    "block_channels": [[32, 64, 64], [64, 64, 64], [32, 64, 128]],
-    "hidden_dim": [32, 64],
-    "dropout": [0.0, 0.1, 0.2, 0.3],
-    "positive_class_weight_scale": [0.25, 0.5, 0.75, 1.0],
+    "block_channels": [[64, 64, 64], [32, 64, 128]],
+    "hidden_dim": [64],
+    "dropout": [0.0, 0.05, 0.1],
+    "positive_class_weight_scale": [1.0, 1.25, 1.5],
 }
 
 RESULT_COLUMNS = [
@@ -54,6 +54,8 @@ RESULT_COLUMNS = [
     "max_eval_examples_per_client",
     "best_validation_round",
     "best_validation_f1",
+    "best_validation_recall",
+    "best_validation_fpr",
     "test_accuracy",
     "test_precision",
     "test_recall",
@@ -157,13 +159,13 @@ def build_trials(search_space: Mapping[str, Any], *, heuristic_order: bool = Tru
             "stride": _priority_order(space["stride"], [8, 4]),
             "block_channels": _priority_order(
                 space["block_channels"],
-                [[32, 64, 64], [64, 64, 64], [32, 64, 128]],
+                [[64, 64, 64], [32, 64, 128]],
             ),
-            "hidden_dim": _priority_order(space["hidden_dim"], [32, 64]),
-            "dropout": _priority_order(space["dropout"], [0.1, 0.2, 0.0, 0.3]),
+            "hidden_dim": _priority_order(space["hidden_dim"], [64]),
+            "dropout": _priority_order(space["dropout"], [0.05, 0.1, 0.0]),
             "positive_class_weight_scale": _priority_order(
                 space["positive_class_weight_scale"],
-                [0.75, 0.5, 1.0, 0.25],
+                [1.25, 1.0, 1.5],
             ),
         }
 
@@ -303,8 +305,8 @@ def _write_trial_configs(
 def _selection_key(row: Mapping[str, Any]) -> tuple[float, float, float, float]:
     return (
         _float_or_nan(row.get("best_validation_f1")),
-        _float_or_nan(row.get("test_f1")),
-        -_float_or_nan(row.get("test_fpr")),
+        _float_or_nan(row.get("best_validation_recall")),
+        -_float_or_nan(row.get("best_validation_fpr")),
         -_float_or_nan(row.get("wall_clock_training_seconds")),
     )
 
@@ -314,6 +316,50 @@ def _best_completed_row(rows: Iterable[Mapping[str, Any]]) -> Mapping[str, Any] 
     if not complete_rows:
         return None
     return max(complete_rows, key=_selection_key)
+
+
+def _highest_test_f1_row(rows: Iterable[Mapping[str, Any]]) -> Mapping[str, Any] | None:
+    complete_rows = [row for row in rows if row.get("status") == "COMPLETE"]
+    if not complete_rows:
+        return None
+    return max(
+        complete_rows,
+        key=lambda row: (
+            _float_or_nan(row.get("test_f1")),
+            _float_or_nan(row.get("best_validation_f1")),
+            -_float_or_nan(row.get("test_fpr")),
+        ),
+    )
+
+
+def _row_matches_trial(
+    row: Mapping[str, Any],
+    trial: Trial,
+    *,
+    rounds: int,
+    seed: int,
+    max_train_examples_per_client: int | None,
+    max_eval_examples_per_client: int | None,
+) -> bool:
+    expected = trial.as_result_fields()
+    for key, value in expected.items():
+        if str(row.get(key, "")) != str(value):
+            return False
+    return (
+        row.get("status") == "COMPLETE"
+        and str(row.get("search_mode")) == "full"
+        and str(row.get("fair_comparison_to_current")) == "True"
+        and str(row.get("rounds")) == str(rounds)
+        and str(row.get("seed")) == str(seed)
+        and str(row.get("max_train_examples_per_client", "")) == (
+            "" if max_train_examples_per_client is None else str(max_train_examples_per_client)
+        )
+        and str(row.get("max_eval_examples_per_client", "")) == (
+            "" if max_eval_examples_per_client is None else str(max_eval_examples_per_client)
+        )
+        and row.get("best_validation_recall", "") != ""
+        and row.get("best_validation_fpr", "") != ""
+    )
 
 
 def _write_results_csv(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
@@ -333,6 +379,7 @@ def _write_best_config(
     total_trials_in_space: int,
     completed_trials: int,
     search_mode: str,
+    highest_test_f1_row: Mapping[str, Any] | None = None,
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     if best_row is None:
@@ -352,8 +399,8 @@ def _write_best_config(
             "trial_id": best_row["trial_id"],
             "selection_rule": [
                 "highest validation F1",
-                "highest test F1",
-                "lower test FPR",
+                "higher validation recall",
+                "lower validation FPR",
                 "lower wall-clock time",
             ],
             "config": {
@@ -369,6 +416,8 @@ def _write_best_config(
             },
             "metrics": {
                 "best_validation_f1": _float_or_nan(best_row["best_validation_f1"]),
+                "best_validation_recall": _float_or_nan(best_row["best_validation_recall"]),
+                "best_validation_fpr": _float_or_nan(best_row["best_validation_fpr"]),
                 "test_f1": _float_or_nan(best_row["test_f1"]),
                 "test_fpr": _float_or_nan(best_row["test_fpr"]),
                 "wall_clock_training_seconds": _float_or_nan(best_row["wall_clock_training_seconds"]),
@@ -380,6 +429,35 @@ def _write_best_config(
             "current_reference_test_f1": comparison,
             "source_metrics_csv": best_row.get("metrics_csv_path"),
         }
+        if highest_test_f1_row is not None:
+            payload["highest_test_f1_observation"] = {
+                "trial_id": highest_test_f1_row.get("trial_id"),
+                "note": "Reporting only; not used for selection.",
+                "config": {
+                    "learning_rate": _float_or_nan(highest_test_f1_row["learning_rate"]),
+                    "batch_size": int(highest_test_f1_row["batch_size"]),
+                    "local_epochs": int(highest_test_f1_row["local_epochs"]),
+                    "window_length": int(highest_test_f1_row["window_length"]),
+                    "stride": int(highest_test_f1_row["stride"]),
+                    "block_channels": json.loads(str(highest_test_f1_row["block_channels"])),
+                    "hidden_dim": int(highest_test_f1_row["hidden_dim"]),
+                    "dropout": _float_or_nan(highest_test_f1_row["dropout"]),
+                    "positive_class_weight_scale": _float_or_nan(
+                        highest_test_f1_row["positive_class_weight_scale"]
+                    ),
+                },
+                "metrics": {
+                    "best_validation_f1": _float_or_nan(highest_test_f1_row["best_validation_f1"]),
+                    "best_validation_recall": _float_or_nan(highest_test_f1_row["best_validation_recall"]),
+                    "best_validation_fpr": _float_or_nan(highest_test_f1_row["best_validation_fpr"]),
+                    "test_f1": _float_or_nan(highest_test_f1_row["test_f1"]),
+                    "test_fpr": _float_or_nan(highest_test_f1_row["test_fpr"]),
+                },
+                "beats_current_p_c1": highest_test_f1_row.get("beats_current_p_c1"),
+                "beats_current_a_c1": highest_test_f1_row.get("beats_current_a_c1"),
+                "beats_current_b_c1": highest_test_f1_row.get("beats_current_b_c1"),
+                "source_metrics_csv": highest_test_f1_row.get("metrics_csv_path"),
+            }
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
@@ -393,6 +471,7 @@ def _write_summary_markdown(
     completed_trials: int,
     search_mode: str,
     fair_comparison_to_current: bool,
+    highest_test_f1_row: Mapping[str, Any] | None = None,
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = [
@@ -404,8 +483,8 @@ def _write_summary_markdown(
         "",
         f"- Search mode: `{search_mode}`",
         f"- Total configurations in exact search space: `{total_trials_in_space}`",
-        f"- Trials attempted in this invocation: `{attempted_trials}`",
-        f"- Completed trials recorded: `{completed_trials}`",
+        f"- New trials attempted in this invocation: `{attempted_trials}`",
+        f"- Completed full-budget trials recorded: `{completed_trials}`",
         f"- Fair full-budget comparison to current results: `{'YES' if fair_comparison_to_current else 'NO'}`",
         "",
         "## Current References",
@@ -424,6 +503,8 @@ def _write_summary_markdown(
             [
                 f"- Trial: `{best_row['trial_id']}`",
                 f"- Best validation F1: `{_float_or_nan(best_row['best_validation_f1']):.4f}`",
+                f"- Best validation recall: `{_float_or_nan(best_row['best_validation_recall']):.4f}`",
+                f"- Best validation FPR: `{_float_or_nan(best_row['best_validation_fpr']):.4f}`",
                 f"- Test F1: `{_float_or_nan(best_row['test_f1']):.4f}`",
                 f"- Test FPR: `{_float_or_nan(best_row['test_fpr']):.4f}`",
                 f"- Wall-clock seconds: `{_float_or_nan(best_row['wall_clock_training_seconds']):.3f}`",
@@ -444,12 +525,32 @@ def _write_summary_markdown(
                 f"- positive_class_weight_scale: `{best_row['positive_class_weight_scale']}`",
             ]
         )
+    lines.extend(["", "## Highest Test-F1 Observation", ""])
+    if highest_test_f1_row is None:
+        lines.append("No completed tuning trial is available yet.")
+    else:
+        lines.extend(
+            [
+                "This is reported for diagnosis only. It is not used for tuning selection.",
+                "",
+                f"- Trial: `{highest_test_f1_row['trial_id']}`",
+                f"- Best validation F1: `{_float_or_nan(highest_test_f1_row['best_validation_f1']):.4f}`",
+                f"- Best validation recall: `{_float_or_nan(highest_test_f1_row['best_validation_recall']):.4f}`",
+                f"- Best validation FPR: `{_float_or_nan(highest_test_f1_row['best_validation_fpr']):.4f}`",
+                f"- Test F1: `{_float_or_nan(highest_test_f1_row['test_f1']):.4f}`",
+                f"- Test FPR: `{_float_or_nan(highest_test_f1_row['test_fpr']):.4f}`",
+                f"- Beats current P_C1: `{highest_test_f1_row.get('beats_current_p_c1')}`",
+                f"- Beats A_C1: `{highest_test_f1_row.get('beats_current_a_c1')}`",
+                f"- Beats B_C1: `{highest_test_f1_row.get('beats_current_b_c1')}`",
+                f"- Config: lr=`{highest_test_f1_row['learning_rate']}`, batch_size=`{highest_test_f1_row['batch_size']}`, local_epochs=`{highest_test_f1_row['local_epochs']}`, window_length=`{highest_test_f1_row['window_length']}`, stride=`{highest_test_f1_row['stride']}`, block_channels=`{highest_test_f1_row['block_channels']}`, hidden_dim=`{highest_test_f1_row['hidden_dim']}`, dropout=`{highest_test_f1_row['dropout']}`, positive_class_weight_scale=`{highest_test_f1_row['positive_class_weight_scale']}`",
+            ]
+        )
     lines.extend(
         [
             "",
             "## Notes",
             "",
-            "- The primary selection rule is validation F1; test F1, test FPR, and wall-clock time are tie-breakers only.",
+            "- Current selection uses validation F1, then validation recall, validation FPR, and wall-clock time. Test metrics are reported only after selection.",
             "- Main `outputs/runs/P_C1/` and `outputs/metrics/P_C1_metrics.csv` are not overwritten by this script.",
         ]
     )
@@ -521,7 +622,21 @@ def run_tuning(args: argparse.Namespace) -> dict[str, Any]:
     if args.max_trials is not None:
         selected_trials = selected_trials[: int(args.max_trials)]
 
-    existing_rows = [] if args.force else _load_existing_results(results_csv_path)
+    raw_existing_rows = [] if args.force else _load_existing_results(results_csv_path)
+    trials_by_id = {trial.trial_id: trial for trial in trials}
+    existing_rows = [
+        row
+        for row in raw_existing_rows
+        if row.get("trial_id") in trials_by_id
+        and _row_matches_trial(
+            row,
+            trials_by_id[str(row["trial_id"])],
+            rounds=rounds,
+            seed=seed,
+            max_train_examples_per_client=max_train,
+            max_eval_examples_per_client=max_eval,
+        )
+    ]
     existing_by_trial = {row["trial_id"]: row for row in existing_rows}
     rows_by_trial: dict[str, dict[str, Any]] = {row["trial_id"]: dict(row) for row in existing_rows}
 
@@ -542,6 +657,7 @@ def run_tuning(args: argparse.Namespace) -> dict[str, Any]:
             completed_trials=0,
             search_mode="dry_run",
             fair_comparison_to_current=False,
+            highest_test_f1_row=None,
         )
         return payload
 
@@ -553,7 +669,7 @@ def run_tuning(args: argparse.Namespace) -> dict[str, Any]:
 
     attempted = 0
     for trial in selected_trials:
-        if trial.trial_id in existing_by_trial and existing_by_trial[trial.trial_id].get("status") == "COMPLETE":
+        if trial.trial_id in existing_by_trial:
             continue
         attempted += 1
         trial_cluster_config_path, trial_proposed_config_path = _write_trial_configs(
@@ -599,11 +715,16 @@ def run_tuning(args: argparse.Namespace) -> dict[str, Any]:
             metrics_row = _read_single_row_csv(result.metrics_csv_path)
             if metrics_row is None:
                 raise ValueError(f"{result.metrics_csv_path}: metrics row was not written.")
+            validation_metrics = result.summary.get("best_round_validation_metrics", {})
+            if not isinstance(validation_metrics, Mapping):
+                raise ValueError(f"{result.summary_path}: best_round_validation_metrics missing or invalid.")
             row.update(
                 {
                     "status": "COMPLETE",
                     "best_validation_round": metrics_row.get("best_validation_round", ""),
                     "best_validation_f1": metrics_row.get("best_validation_f1", ""),
+                    "best_validation_recall": validation_metrics.get("recall", ""),
+                    "best_validation_fpr": validation_metrics.get("fpr", ""),
                     "test_accuracy": metrics_row.get("test_accuracy", ""),
                     "test_precision": metrics_row.get("test_precision", ""),
                     "test_recall": metrics_row.get("test_recall", ""),
@@ -635,6 +756,7 @@ def run_tuning(args: argparse.Namespace) -> dict[str, Any]:
             ordered_rows = [rows_by_trial[key] for key in sorted(rows_by_trial)]
             _write_results_csv(results_csv_path, ordered_rows)
             best_row = _best_completed_row(ordered_rows)
+            highest_test_f1 = _highest_test_f1_row(ordered_rows)
             completed = sum(1 for result_row in ordered_rows if result_row.get("status") == "COMPLETE")
             _write_best_config(
                 path=best_config_path,
@@ -643,6 +765,7 @@ def run_tuning(args: argparse.Namespace) -> dict[str, Any]:
                 total_trials_in_space=len(trials),
                 completed_trials=completed,
                 search_mode=search_mode,
+                highest_test_f1_row=highest_test_f1,
             )
             _write_summary_markdown(
                 path=summary_path,
@@ -653,18 +776,42 @@ def run_tuning(args: argparse.Namespace) -> dict[str, Any]:
                 completed_trials=completed,
                 search_mode=search_mode,
                 fair_comparison_to_current=fair_comparison,
+                highest_test_f1_row=highest_test_f1,
             )
 
     ordered_rows = [rows_by_trial[key] for key in sorted(rows_by_trial)]
     best_row = _best_completed_row(ordered_rows)
+    highest_test_f1 = _highest_test_f1_row(ordered_rows)
+    completed = sum(1 for row in ordered_rows if row.get("status") == "COMPLETE")
+    _write_best_config(
+        path=best_config_path,
+        best_row=best_row,
+        comparison=comparison,
+        total_trials_in_space=len(trials),
+        completed_trials=completed,
+        search_mode=search_mode,
+        highest_test_f1_row=highest_test_f1,
+    )
+    _write_summary_markdown(
+        path=summary_path,
+        best_row=best_row,
+        comparison=comparison,
+        total_trials_in_space=len(trials),
+        attempted_trials=attempted,
+        completed_trials=completed,
+        search_mode=search_mode,
+        fair_comparison_to_current=fair_comparison,
+        highest_test_f1_row=highest_test_f1,
+    )
     return {
         "status": "COMPLETE" if best_row is not None else "NO_COMPLETED_TRIALS",
         "search_mode": search_mode,
         "fair_comparison_to_current": fair_comparison,
         "total_trials_in_space": len(trials),
         "attempted_trials": attempted,
-        "completed_trials": sum(1 for row in ordered_rows if row.get("status") == "COMPLETE"),
+        "completed_trials": completed,
         "best_trial": dict(best_row) if best_row is not None else None,
+        "highest_test_f1_trial": dict(highest_test_f1) if highest_test_f1 is not None else None,
         "results_csv": str(results_csv_path),
         "best_config": str(best_config_path),
         "summary": str(summary_path),

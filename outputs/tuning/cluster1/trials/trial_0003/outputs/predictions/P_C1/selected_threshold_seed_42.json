@@ -1,0 +1,8 @@
+{
+  "experiment_id": "P_C1",
+  "seed": 42,
+  "threshold_selected_on": "validation",
+  "selection_metric": "f1",
+  "default_threshold": 0.5,
+  "selected_threshold": 0.9807333946228027
+}

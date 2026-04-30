@@ -1,0 +1,724 @@
+{
+  "cluster_id": 1,
+  "dataset": "HAI 21.03 repaired supervised variant",
+  "variant": "cluster1_repaired",
+  "num_leaf_clients": 12,
+  "total_ordered_samples": 148932,
+  "split_ratios": {
+    "train": 0.85,
+    "validation": 0.15,
+    "test": 0.0
+  },
+  "ordering_mode": "window_first_file_order_then_attack_aware_round_robin",
+  "ordering_columns_used": [],
+  "source_paths": [
+    "data/raw/hai_2103/hai-21.03/train1.csv",
+    "data/raw/hai_2103/hai-21.03/train2.csv",
+    "data/raw/hai_2103/hai-21.03/train3.csv",
+    "data/raw/hai_2103/hai-21.03/test1.csv",
+    "data/raw/hai_2103/hai-21.03/test2.csv",
+    "data/raw/hai_2103/hai-21.03/test3.csv"
+  ],
+  "heldout_test_source_paths": [
+    "data/raw/hai_2103/hai-21.03/test4.csv",
+    "data/raw/hai_2103/hai-21.03/test5.csv"
+  ],
+  "cluster_label_counts": {
+    "0": 148103,
+    "1": 829
+  },
+  "cluster_split_label_counts": {
+    "train": {
+      "0": 125891,
+      "1": 709
+    },
+    "validation": {
+      "0": 22212,
+      "1": 120
+    },
+    "test": {
+      "0": 16013,
+      "1": 481
+    }
+  },
+  "single_class_local_partitions": [
+    {
+      "client_id": "C1_L010",
+      "split": "test",
+      "label_counts": {
+        "0": 1374
+      }
+    },
+    {
+      "client_id": "C1_L011",
+      "split": "test",
+      "label_counts": {
+        "0": 1374
+      }
+    }
+  ],
+  "descriptor_source_split": "train",
+  "partitioning_strategy": "window_first_attack_aware_round_robin_positive_then_negative_quota_fill",
+  "clients": [
+    {
+      "client_id": "C1_L001",
+      "ordered_start_index": 0,
+      "ordered_end_index": 12411,
+      "num_total_samples": 13786,
+      "num_train_samples": 10550,
+      "num_val_samples": 1861,
+      "num_test_samples": 1375,
+      "train_label_counts": {
+        "0": 10490,
+        "1": 60
+      },
+      "val_label_counts": {
+        "0": 1851,
+        "1": 10
+      },
+      "test_label_counts": {
+        "0": 1302,
+        "1": 73
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 10550,
+        "num_samples": 10550,
+        "label_counts": {
+          "0": 10490,
+          "1": 60
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 10550,
+        "end_index": 12411,
+        "num_samples": 1861,
+        "label_counts": {
+          "0": 1851,
+          "1": 10
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 0,
+        "end_index": 1375,
+        "num_samples": 1375,
+        "label_counts": {
+          "0": 1302,
+          "1": 73
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": [
+        "repaired_cluster1_window_first_attack_aware_partition"
+      ]
+    },
+    {
+      "client_id": "C1_L002",
+      "ordered_start_index": 0,
+      "ordered_end_index": 12411,
+      "num_total_samples": 13786,
+      "num_train_samples": 10550,
+      "num_val_samples": 1861,
+      "num_test_samples": 1375,
+      "train_label_counts": {
+        "0": 10491,
+        "1": 59
+      },
+      "val_label_counts": {
+        "0": 1851,
+        "1": 10
+      },
+      "test_label_counts": {
+        "0": 1302,
+        "1": 73
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 10550,
+        "num_samples": 10550,
+        "label_counts": {
+          "0": 10491,
+          "1": 59
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 10550,
+        "end_index": 12411,
+        "num_samples": 1861,
+        "label_counts": {
+          "0": 1851,
+          "1": 10
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 0,
+        "end_index": 1375,
+        "num_samples": 1375,
+        "label_counts": {
+          "0": 1302,
+          "1": 73
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": [
+        "repaired_cluster1_window_first_attack_aware_partition"
+      ]
+    },
+    {
+      "client_id": "C1_L003",
+      "ordered_start_index": 0,
+      "ordered_end_index": 12411,
+      "num_total_samples": 13786,
+      "num_train_samples": 10550,
+      "num_val_samples": 1861,
+      "num_test_samples": 1375,
+      "train_label_counts": {
+        "0": 10491,
+        "1": 59
+      },
+      "val_label_counts": {
+        "0": 1851,
+        "1": 10
+      },
+      "test_label_counts": {
+        "0": 1356,
+        "1": 19
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 10550,
+        "num_samples": 10550,
+        "label_counts": {
+          "0": 10491,
+          "1": 59
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 10550,
+        "end_index": 12411,
+        "num_samples": 1861,
+        "label_counts": {
+          "0": 1851,
+          "1": 10
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 0,
+        "end_index": 1375,
+        "num_samples": 1375,
+        "label_counts": {
+          "0": 1356,
+          "1": 19
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": [
+        "repaired_cluster1_window_first_attack_aware_partition"
+      ]
+    },
+    {
+      "client_id": "C1_L004",
+      "ordered_start_index": 0,
+      "ordered_end_index": 12411,
+      "num_total_samples": 13786,
+      "num_train_samples": 10550,
+      "num_val_samples": 1861,
+      "num_test_samples": 1375,
+      "train_label_counts": {
+        "0": 10491,
+        "1": 59
+      },
+      "val_label_counts": {
+        "0": 1851,
+        "1": 10
+      },
+      "test_label_counts": {
+        "0": 1350,
+        "1": 25
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 10550,
+        "num_samples": 10550,
+        "label_counts": {
+          "0": 10491,
+          "1": 59
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 10550,
+        "end_index": 12411,
+        "num_samples": 1861,
+        "label_counts": {
+          "0": 1851,
+          "1": 10
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 0,
+        "end_index": 1375,
+        "num_samples": 1375,
+        "label_counts": {
+          "0": 1350,
+          "1": 25
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": [
+        "repaired_cluster1_window_first_attack_aware_partition"
+      ]
+    },
+    {
+      "client_id": "C1_L005",
+      "ordered_start_index": 0,
+      "ordered_end_index": 12411,
+      "num_total_samples": 13786,
+      "num_train_samples": 10550,
+      "num_val_samples": 1861,
+      "num_test_samples": 1375,
+      "train_label_counts": {
+        "0": 10491,
+        "1": 59
+      },
+      "val_label_counts": {
+        "0": 1851,
+        "1": 10
+      },
+      "test_label_counts": {
+        "0": 1339,
+        "1": 36
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 10550,
+        "num_samples": 10550,
+        "label_counts": {
+          "0": 10491,
+          "1": 59
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 10550,
+        "end_index": 12411,
+        "num_samples": 1861,
+        "label_counts": {
+          "0": 1851,
+          "1": 10
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 0,
+        "end_index": 1375,
+        "num_samples": 1375,
+        "label_counts": {
+          "0": 1339,
+          "1": 36
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": [
+        "repaired_cluster1_window_first_attack_aware_partition"
+      ]
+    },
+    {
+      "client_id": "C1_L006",
+      "ordered_start_index": 0,
+      "ordered_end_index": 12411,
+      "num_total_samples": 13786,
+      "num_train_samples": 10550,
+      "num_val_samples": 1861,
+      "num_test_samples": 1375,
+      "train_label_counts": {
+        "0": 10491,
+        "1": 59
+      },
+      "val_label_counts": {
+        "0": 1851,
+        "1": 10
+      },
+      "test_label_counts": {
+        "0": 1320,
+        "1": 55
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 10550,
+        "num_samples": 10550,
+        "label_counts": {
+          "0": 10491,
+          "1": 59
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 10550,
+        "end_index": 12411,
+        "num_samples": 1861,
+        "label_counts": {
+          "0": 1851,
+          "1": 10
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 0,
+        "end_index": 1375,
+        "num_samples": 1375,
+        "label_counts": {
+          "0": 1320,
+          "1": 55
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": [
+        "repaired_cluster1_window_first_attack_aware_partition"
+      ]
+    },
+    {
+      "client_id": "C1_L007",
+      "ordered_start_index": 0,
+      "ordered_end_index": 12411,
+      "num_total_samples": 13785,
+      "num_train_samples": 10550,
+      "num_val_samples": 1861,
+      "num_test_samples": 1374,
+      "train_label_counts": {
+        "0": 10491,
+        "1": 59
+      },
+      "val_label_counts": {
+        "0": 1851,
+        "1": 10
+      },
+      "test_label_counts": {
+        "0": 1322,
+        "1": 52
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 10550,
+        "num_samples": 10550,
+        "label_counts": {
+          "0": 10491,
+          "1": 59
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 10550,
+        "end_index": 12411,
+        "num_samples": 1861,
+        "label_counts": {
+          "0": 1851,
+          "1": 10
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 0,
+        "end_index": 1374,
+        "num_samples": 1374,
+        "label_counts": {
+          "0": 1322,
+          "1": 52
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": [
+        "repaired_cluster1_window_first_attack_aware_partition"
+      ]
+    },
+    {
+      "client_id": "C1_L008",
+      "ordered_start_index": 0,
+      "ordered_end_index": 12411,
+      "num_total_samples": 13785,
+      "num_train_samples": 10550,
+      "num_val_samples": 1861,
+      "num_test_samples": 1374,
+      "train_label_counts": {
+        "0": 10491,
+        "1": 59
+      },
+      "val_label_counts": {
+        "0": 1851,
+        "1": 10
+      },
+      "test_label_counts": {
+        "0": 1361,
+        "1": 13
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 10550,
+        "num_samples": 10550,
+        "label_counts": {
+          "0": 10491,
+          "1": 59
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 10550,
+        "end_index": 12411,
+        "num_samples": 1861,
+        "label_counts": {
+          "0": 1851,
+          "1": 10
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 0,
+        "end_index": 1374,
+        "num_samples": 1374,
+        "label_counts": {
+          "0": 1361,
+          "1": 13
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": [
+        "repaired_cluster1_window_first_attack_aware_partition"
+      ]
+    },
+    {
+      "client_id": "C1_L009",
+      "ordered_start_index": 0,
+      "ordered_end_index": 12411,
+      "num_total_samples": 13785,
+      "num_train_samples": 10550,
+      "num_val_samples": 1861,
+      "num_test_samples": 1374,
+      "train_label_counts": {
+        "0": 10491,
+        "1": 59
+      },
+      "val_label_counts": {
+        "0": 1851,
+        "1": 10
+      },
+      "test_label_counts": {
+        "0": 1330,
+        "1": 44
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 10550,
+        "num_samples": 10550,
+        "label_counts": {
+          "0": 10491,
+          "1": 59
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 10550,
+        "end_index": 12411,
+        "num_samples": 1861,
+        "label_counts": {
+          "0": 1851,
+          "1": 10
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 0,
+        "end_index": 1374,
+        "num_samples": 1374,
+        "label_counts": {
+          "0": 1330,
+          "1": 44
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": [
+        "repaired_cluster1_window_first_attack_aware_partition"
+      ]
+    },
+    {
+      "client_id": "C1_L010",
+      "ordered_start_index": 0,
+      "ordered_end_index": 12411,
+      "num_total_samples": 13785,
+      "num_train_samples": 10550,
+      "num_val_samples": 1861,
+      "num_test_samples": 1374,
+      "train_label_counts": {
+        "0": 10491,
+        "1": 59
+      },
+      "val_label_counts": {
+        "0": 1851,
+        "1": 10
+      },
+      "test_label_counts": {
+        "0": 1374
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 10550,
+        "num_samples": 10550,
+        "label_counts": {
+          "0": 10491,
+          "1": 59
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 10550,
+        "end_index": 12411,
+        "num_samples": 1861,
+        "label_counts": {
+          "0": 1851,
+          "1": 10
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 0,
+        "end_index": 1374,
+        "num_samples": 1374,
+        "label_counts": {
+          "0": 1374
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "test"
+      ],
+      "notes": [
+        "repaired_cluster1_window_first_attack_aware_partition"
+      ]
+    },
+    {
+      "client_id": "C1_L011",
+      "ordered_start_index": 0,
+      "ordered_end_index": 12411,
+      "num_total_samples": 13785,
+      "num_train_samples": 10550,
+      "num_val_samples": 1861,
+      "num_test_samples": 1374,
+      "train_label_counts": {
+        "0": 10491,
+        "1": 59
+      },
+      "val_label_counts": {
+        "0": 1851,
+        "1": 10
+      },
+      "test_label_counts": {
+        "0": 1374
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 10550,
+        "num_samples": 10550,
+        "label_counts": {
+          "0": 10491,
+          "1": 59
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 10550,
+        "end_index": 12411,
+        "num_samples": 1861,
+        "label_counts": {
+          "0": 1851,
+          "1": 10
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 0,
+        "end_index": 1374,
+        "num_samples": 1374,
+        "label_counts": {
+          "0": 1374
+        },
+        "single_class": true
+      },
+      "single_class_splits": [
+        "test"
+      ],
+      "notes": [
+        "repaired_cluster1_window_first_attack_aware_partition"
+      ]
+    },
+    {
+      "client_id": "C1_L012",
+      "ordered_start_index": 0,
+      "ordered_end_index": 12411,
+      "num_total_samples": 13785,
+      "num_train_samples": 10550,
+      "num_val_samples": 1861,
+      "num_test_samples": 1374,
+      "train_label_counts": {
+        "0": 10491,
+        "1": 59
+      },
+      "val_label_counts": {
+        "0": 1851,
+        "1": 10
+      },
+      "test_label_counts": {
+        "0": 1283,
+        "1": 91
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 10550,
+        "num_samples": 10550,
+        "label_counts": {
+          "0": 10491,
+          "1": 59
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 10550,
+        "end_index": 12411,
+        "num_samples": 1861,
+        "label_counts": {
+          "0": 1851,
+          "1": 10
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 0,
+        "end_index": 1374,
+        "num_samples": 1374,
+        "label_counts": {
+          "0": 1283,
+          "1": 91
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": [
+        "repaired_cluster1_window_first_attack_aware_partition"
+      ]
+    }
+  ]
+}

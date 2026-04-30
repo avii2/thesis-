@@ -26,6 +26,15 @@
   "batch_size": 128,
   "learning_rate": 0.05,
   "seed": 42,
+  "tcn_block_channels": [
+    32,
+    64,
+    64
+  ],
+  "tcn_hidden_dim": 32,
+  "tcn_dropout": 0.1,
+  "computed_positive_class_weight": 120.23141361256545,
+  "positive_class_weight_scale": 1.0,
   "positive_class_weight": 120.23141361256545,
   "communicated_non_bn_parameter_bytes": 105860,
   "communication_cost_per_round_bytes": 2964080,
@@ -35,7 +44,7 @@
   "best_validation_f1_default_threshold": 0.09793103448275862,
   "threshold_used": 0.9929866194725037,
   "test_f1_at_best_validation_round": 0.4931506849315068,
-  "wall_clock_training_seconds": 1128.8251387920027,
+  "wall_clock_training_seconds": 977.3873293750075,
   "data_summary": {
     "cluster_id": 1,
     "dataset": "HAI 21.03",

@@ -1,0 +1,28 @@
+{
+  "cluster_id": 1,
+  "dataset": "HAI 21.03",
+  "variant": "cluster1_repaired",
+  "label_column": "attack",
+  "train_validation_window_counts": {
+    "0": 148103,
+    "1": 829
+  },
+  "heldout_test_window_counts": {
+    "0": 16013,
+    "1": 481
+  },
+  "cluster_split_label_counts": {
+    "train": {
+      "0": 125891,
+      "1": 709
+    },
+    "validation": {
+      "0": 22212,
+      "1": 120
+    },
+    "test": {
+      "0": 16013,
+      "1": 481
+    }
+  }
+}
