@@ -394,10 +394,12 @@ def _write_client_balance_report(path: Path, clients: Sequence[Mapping[str, Any]
         for client in clients
         if client["train_label_counts"].get("1", 0) + client["val_label_counts"].get("1", 0) > 0
     )
+    attack_free_clients = len(clients) - clients_with_positive
     lines.extend(
         [
             "",
             f"Clients with at least one positive train-or-validation window: `{clients_with_positive}/{len(clients)}`",
+            f"Clients still attack-free across train and validation: `{attack_free_clients}`",
         ]
     )
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -417,10 +419,20 @@ def _write_validation_summary_report(
         for client in clients
         if int(client["train_label_counts"].get("1", 0)) > 0
     ]
+    clients_with_positive_train_or_validation = [
+        str(client["client_id"])
+        for client in clients
+        if int(client["train_label_counts"].get("1", 0)) + int(client["val_label_counts"].get("1", 0)) > 0
+    ]
     attack_free_training_clients = [
         str(client["client_id"])
         for client in clients
         if int(client["train_label_counts"].get("1", 0)) == 0
+    ]
+    attack_free_train_or_validation_clients = [
+        str(client["client_id"])
+        for client in clients
+        if int(client["train_label_counts"].get("1", 0)) + int(client["val_label_counts"].get("1", 0)) == 0
     ]
     all_clients_have_positive_train = len(attack_free_training_clients) == 0
 
@@ -447,13 +459,19 @@ def _write_validation_summary_report(
         "## Client Attack Coverage",
         "",
         f"- Clients with at least one positive training window: `{len(clients_with_positive_train)}/{len(clients)}`",
+        f"- Clients with at least one positive train-or-validation window: `{len(clients_with_positive_train_or_validation)}/{len(clients)}`",
         f"- Every client received at least one positive training window: `{'YES' if all_clients_have_positive_train else 'NO'}`",
         f"- Attack-free training clients: `{len(attack_free_training_clients)}`",
+        f"- Clients still attack-free across train and validation: `{len(attack_free_train_or_validation_clients)}`",
     ]
     if attack_free_training_clients:
         lines.append(f"- Attack-free training client IDs: `{attack_free_training_clients}`")
     else:
         lines.append("- Attack-free training client IDs: `[]`")
+    if attack_free_train_or_validation_clients:
+        lines.append(f"- Train-or-validation attack-free client IDs: `{attack_free_train_or_validation_clients}`")
+    else:
+        lines.append("- Train-or-validation attack-free client IDs: `[]`")
     lines.extend(
         [
             "",

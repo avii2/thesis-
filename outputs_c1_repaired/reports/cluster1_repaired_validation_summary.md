@@ -20,9 +20,12 @@ This summary validates only the exploratory repaired Cluster 1 dataset-construct
 ## Client Attack Coverage
 
 - Clients with at least one positive training window: `12/12`
+- Clients with at least one positive train-or-validation window: `12/12`
 - Every client received at least one positive training window: `YES`
 - Attack-free training clients: `0`
+- Clients still attack-free across train and validation: `0`
 - Attack-free training client IDs: `[]`
+- Train-or-validation attack-free client IDs: `[]`
 
 ## Leakage Check
 

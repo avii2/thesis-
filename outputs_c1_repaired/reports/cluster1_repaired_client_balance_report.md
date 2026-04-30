@@ -18,3 +18,4 @@ Positive windows are distributed round-robin across the 12 candidate clients bef
 | C1_L012 | 10491 | 59 | 1851 | 10 | 1283 | 91 |
 
 Clients with at least one positive train-or-validation window: `12/12`
+Clients still attack-free across train and validation: `0`

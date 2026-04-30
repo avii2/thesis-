@@ -27,7 +27,7 @@
   "best_validation_f1_default_threshold": 0.04701432045393137,
   "threshold_used": 0.9999959468841553,
   "test_f1_at_best_validation_round": 0.30591932949188055,
-  "wall_clock_training_seconds": 131.89431041698845,
+  "wall_clock_training_seconds": 125.75668745899998,
   "data_summary": {
     "cluster_id": 1,
     "dataset": "HAI 21.03 repaired supervised variant",
@@ -561,5 +561,6 @@
     "selected_threshold_path": "outputs_c1_repaired/predictions/A_C1_REPAIRED/selected_threshold_seed_42.json"
   },
   "round_metrics_path": "outputs_c1_repaired/runs/A_C1_REPAIRED/round_metrics.csv",
-  "metrics_csv_path": "outputs_c1_repaired/metrics/A_C1_REPAIRED_metrics.csv"
+  "metrics_csv_path": "outputs_c1_repaired/metrics/A_C1_REPAIRED_metrics.csv",
+  "summary_path": "outputs_c1_repaired/runs/A_C1_REPAIRED/run_summary.json"
 }

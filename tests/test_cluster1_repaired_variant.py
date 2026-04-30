@@ -119,6 +119,7 @@ class Cluster1RepairedVariantTests(unittest.TestCase):
             self.assertTrue(validation_summary.exists())
             validation_summary_text = validation_summary.read_text(encoding="utf-8")
             self.assertIn("Every client received at least one positive training window: `YES`", validation_summary_text)
+            self.assertIn("Clients still attack-free across train and validation: `0`", validation_summary_text)
 
             membership = json.loads((output_root / "clustering/cluster1_memberships.json").read_text(encoding="utf-8"))
             self.assertEqual(membership["n_subclusters"], 2)
