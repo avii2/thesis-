@@ -229,7 +229,7 @@ outputs/preprocessing/cluster1_hai_scaler.pkl
 
 ### 5.9 Windowing
 
-Cluster 1 uses a TCN and therefore requires sliding windows.
+Cluster 1 uses CNN1D-BN on sliding-window inputs.
 
 Recommended implementation choice:
 

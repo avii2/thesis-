@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Mapping
+from typing import Any, Mapping
 
 import numpy as np
 
@@ -12,7 +12,7 @@ from src.fl.aggregators import (
     is_batch_norm_key,
 )
 from src.fl.client import ClientSplit, FlatClientDataset, LocalTrainingResult
-from src.models.tcn import TCNClassifier, TCNConfig
+from src.models.cnn1d_bn import CNN1DBNClassifier, CNN1DBNConfig
 
 
 @dataclass(frozen=True)
@@ -71,11 +71,22 @@ def non_bn_parameter_bytes(state: Mapping[str, np.ndarray]) -> int:
     )
 
 
+def _model_from_state(
+    model_config: CNN1DBNConfig,
+    state: Mapping[str, Any],
+    *,
+    seed: int = 42,
+) -> CNN1DBNClassifier:
+    if isinstance(model_config, CNN1DBNConfig):
+        return CNN1DBNClassifier.from_state(model_config, state, seed=seed)
+    raise TypeError(f"Unsupported FedBN model config type: {type(model_config).__name__}.")
+
+
 def train_fedbn_client(
     client: FlatClientDataset,
     shared_state: Mapping[str, np.ndarray],
     local_state: Mapping[str, np.ndarray] | None,
-    model_config: TCNConfig,
+    model_config: CNN1DBNConfig,
     *,
     local_epochs: int,
     batch_size: int,
@@ -87,7 +98,7 @@ def train_fedbn_client(
         raise ValueError(f"{client.client_id}: train split must contain at least one sample.")
 
     initial_state = merge_global_non_bn_with_local_bn(shared_state, local_state)
-    model = TCNClassifier.from_state(model_config, initial_state, seed=seed)
+    model = _model_from_state(model_config, initial_state, seed=seed)
     rng = np.random.default_rng(seed)
     losses: list[float] = []
     for _ in range(local_epochs):
@@ -111,7 +122,7 @@ def train_fedbn_client(
 
 def predict_split_fedbn(
     state: Mapping[str, np.ndarray],
-    model_config: TCNConfig,
+    model_config: CNN1DBNConfig,
     split: ClientSplit,
     *,
     threshold: float = 0.5,
@@ -119,7 +130,7 @@ def predict_split_fedbn(
     if split.num_samples == 0:
         return np.empty(0, dtype=np.float32), np.empty(0, dtype=np.int8)
 
-    model = TCNClassifier.from_state(model_config, state)
+    model = _model_from_state(model_config, state)
     probabilities = model.predict_proba(split.inputs)
     predictions = (probabilities >= threshold).astype(np.int8, copy=False)
     return probabilities, predictions

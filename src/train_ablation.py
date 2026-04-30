@@ -23,8 +23,8 @@ from src.fl.maincluster import (
     write_prediction_outputs,
 )
 from src.fl.subcluster import group_clients_by_subcluster, load_frozen_membership
+from src.models.cnn1d_bn import CNN1DBNClassifier, CNN1DBNConfig
 from src.models.mlp import CompactMLPClassifier, MLPConfig, STATE_KEYS
-from src.models.tcn import TCNClassifier, TCNConfig
 from src.train_hierarchical_baseline import run_hierarchical_baseline_experiment
 
 
@@ -131,10 +131,10 @@ def _load_custom_control_entry(
     return resolved_config_path, config, comparison, control
 
 
-def _train_tcn_fedavg_client(
+def _train_cnn_bn_fedavg_client(
     client: FlatClientDataset,
     parent_state: Mapping[str, np.ndarray],
-    model_config: TCNConfig,
+    model_config: CNN1DBNConfig,
     *,
     local_epochs: int,
     batch_size: int,
@@ -145,7 +145,7 @@ def _train_tcn_fedavg_client(
     if client.num_train_samples <= 0:
         raise ValueError(f"{client.client_id}: train split must contain at least one sample.")
 
-    model = TCNClassifier.from_state(model_config, parent_state, seed=seed)
+    model = CNN1DBNClassifier.from_state(model_config, parent_state, seed=seed)
     rng = np.random.default_rng(seed)
     epoch_losses: list[float] = []
     for _ in range(local_epochs):
@@ -167,9 +167,9 @@ def _train_tcn_fedavg_client(
     )
 
 
-def _predict_tcn_split(
+def _predict_cnn_bn_split(
     state: Mapping[str, np.ndarray],
-    model_config: TCNConfig,
+    model_config: CNN1DBNConfig,
     split: ClientSplit,
     *,
     threshold: float = 0.5,
@@ -177,24 +177,24 @@ def _predict_tcn_split(
     if split.num_samples == 0:
         return np.empty(0, dtype=np.float32), np.empty(0, dtype=np.int8)
 
-    model = TCNClassifier.from_state(model_config, state)
+    model = CNN1DBNClassifier.from_state(model_config, state)
     probabilities = model.predict_proba(split.inputs)
     predictions = (probabilities >= threshold).astype(np.int8, copy=False)
     return probabilities, predictions
 
 
-def _evaluate_tcn_cluster_split(
+def _evaluate_cnn_bn_cluster_split(
     clients: list[FlatClientDataset],
     *,
     state: Mapping[str, np.ndarray],
-    model_config: TCNConfig,
+    model_config: CNN1DBNConfig,
     split_name: str,
 ) -> dict[str, Any]:
     probabilities: list[np.ndarray] = []
     labels: list[np.ndarray] = []
     for client in clients:
         split = getattr(client, split_name)
-        split_probabilities, _ = _predict_tcn_split(state, model_config, split)
+        split_probabilities, _ = _predict_cnn_bn_split(state, model_config, split)
         if split_probabilities.size == 0:
             continue
         probabilities.append(split_probabilities)
@@ -304,7 +304,7 @@ def _evaluate_mlp_cluster_split(
     return _split_metrics(np.concatenate(labels), np.concatenate(probabilities))
 
 
-def run_cluster1_fedavg_tcn_ablation(
+def run_cluster1_fedavg_cnnbn_ablation(
     ablation_config_path: str | Path = "configs/ablation_cluster1_fedbn.yaml",
     *,
     rounds: int | None = None,
@@ -318,10 +318,10 @@ def run_cluster1_fedavg_tcn_ablation(
 ) -> AblationRunResult:
     resolved_config_path, config, comparison, control = _load_custom_control_entry(
         ablation_config_path,
-        expected_experiment_id="AB_C1_FEDAVG_TCN",
-        expected_run_source="custom_cluster1_fedavg_tcn",
+        expected_experiment_id="AB_C1_FEDAVG_CNNBN",
+        expected_run_source="custom_cluster1_fedavg_cnnbn",
         expected_cluster_id=1,
-        expected_model_family="tcn",
+        expected_model_family="cnn1d_bn",
     )
     configured_rounds, configured_local_epochs, configured_batch_size, configured_seed = _configured_defaults(
         config,
@@ -341,7 +341,7 @@ def run_cluster1_fedavg_tcn_ablation(
         raise ValueError(f"{cluster_config_path}: cluster metadata is missing.")
     cluster_id = int(cluster_section["id"])
     if cluster_id != 1:
-        raise ValueError("AB_C1_FEDAVG_TCN only supports Cluster 1.")
+        raise ValueError("AB_C1_FEDAVG_CNNBN only supports Cluster 1.")
 
     clients, _, data_summary = build_flat_federated_clients(
         cluster_config_path,
@@ -350,7 +350,7 @@ def run_cluster1_fedavg_tcn_ablation(
     )
     positive_class_weight = compute_cluster_positive_class_weight(clients)
     if data_summary["input_adapter"] != "sliding_window_feature_channels":
-        raise ValueError("AB_C1_FEDAVG_TCN requires sliding-window Cluster 1 inputs.")
+        raise ValueError("AB_C1_FEDAVG_CNNBN requires sliding-window Cluster 1 inputs.")
 
     membership = load_frozen_membership(
         membership_path,
@@ -360,18 +360,18 @@ def run_cluster1_fedavg_tcn_ablation(
     )
     clients_by_subcluster = group_clients_by_subcluster(clients, membership)
 
-    model_config = TCNConfig(
+    model_config = CNN1DBNConfig(
         input_channels=int(data_summary["input_channels"]),
         input_length=int(data_summary["input_length"]),
     )
-    global_model = TCNClassifier(model_config, seed=configured_seed)
+    global_model = CNN1DBNClassifier(model_config, seed=configured_seed)
     global_state = global_model.state_dict()
     parameter_bytes = global_model.parameter_bytes()
 
     output_root = Path(output_root)
-    run_dir = output_root / "runs" / "AB_C1_FEDAVG_TCN"
+    run_dir = output_root / "runs" / "AB_C1_FEDAVG_CNNBN"
     run_dir.mkdir(parents=True, exist_ok=True)
-    metrics_csv_path = output_root / "metrics" / "AB_C1_FEDAVG_TCN_metrics.csv"
+    metrics_csv_path = output_root / "metrics" / "AB_C1_FEDAVG_CNNBN_metrics.csv"
     round_metrics_path = run_dir / "round_metrics.csv"
     summary_path = run_dir / "run_summary.json"
     membership_contents_before = membership.membership_file.read_text(encoding="utf-8")
@@ -405,7 +405,7 @@ def run_cluster1_fedavg_tcn_ablation(
             subcluster_clients = clients_by_subcluster[subcluster.subcluster_id]
 
             for client_index, client in enumerate(subcluster_clients):
-                result = _train_tcn_fedavg_client(
+                result = _train_cnn_bn_fedavg_client(
                     client,
                     global_state,
                     model_config,
@@ -442,7 +442,7 @@ def run_cluster1_fedavg_tcn_ablation(
         )
         round_evaluation = evaluate_round_with_validation_threshold(
             clients,
-            predictor=lambda _client, split: _predict_tcn_split(
+            predictor=lambda _client, split: _predict_cnn_bn_split(
                 global_state,
                 model_config,
                 split,
@@ -497,18 +497,18 @@ def run_cluster1_fedavg_tcn_ablation(
         or best_test_labels is None
         or best_test_probabilities is None
     ):
-        raise ValueError("AB_C1_FEDAVG_TCN: unable to determine best validation round.")
+        raise ValueError("AB_C1_FEDAVG_CNNBN: unable to determine best validation round.")
     if best_subcluster_sample_counts is None or best_subcluster_client_counts is None:
-        raise ValueError("AB_C1_FEDAVG_TCN: missing best-round subcluster statistics.")
+        raise ValueError("AB_C1_FEDAVG_CNNBN: missing best-round subcluster statistics.")
 
     membership_contents_after = membership.membership_file.read_text(encoding="utf-8")
     if membership_contents_before != membership_contents_after:
-        raise ValueError("AB_C1_FEDAVG_TCN: frozen membership file changed during ablation execution.")
+        raise ValueError("AB_C1_FEDAVG_CNNBN: frozen membership file changed during ablation execution.")
 
     total_communication_cost_bytes = int(sum(row["communication_cost_bytes"] for row in round_rows))
     prediction_outputs = write_prediction_outputs(
         output_root=output_root,
-        experiment_id="AB_C1_FEDAVG_TCN",
+        experiment_id="AB_C1_FEDAVG_CNNBN",
         validation_labels=best_validation_labels,
         validation_probabilities=best_validation_probabilities,
         test_labels=best_test_labels,
@@ -517,7 +517,7 @@ def run_cluster1_fedavg_tcn_ablation(
         seed=configured_seed,
     )
     summary = {
-        "experiment_id": "AB_C1_FEDAVG_TCN",
+        "experiment_id": "AB_C1_FEDAVG_CNNBN",
         "comparison_id": str(comparison["comparison_id"]),
         "cluster_id": cluster_id,
         "dataset": str(cluster_section["dataset_name"]),
@@ -527,7 +527,7 @@ def run_cluster1_fedavg_tcn_ablation(
         "membership_file_used": str(membership.membership_file),
         "membership_hash": membership.membership_hash,
         "membership_file_changed": False,
-        "model_family": "tcn",
+        "model_family": "cnn1d_bn",
         "fl_method": "FedAvg",
         "aggregation": "weighted_arithmetic_mean",
         "clustering_method": "agglomerative",
@@ -546,6 +546,10 @@ def run_cluster1_fedavg_tcn_ablation(
         "learning_rate": learning_rate,
         "optimizer_style": "sgd",
         "seed": configured_seed,
+        "cnn_bn_channels": list(model_config.block_channels),
+        "cnn_bn_kernel_sizes": list(model_config.kernel_sizes),
+        "cnn_bn_hidden_dim": model_config.hidden_dim,
+        "cnn_bn_dropout": model_config.dropout,
         "positive_class_weight": positive_class_weight,
         "model_parameter_bytes": parameter_bytes,
         "communication_cost_per_round_bytes": round_rows[-1]["communication_cost_bytes"],
@@ -570,11 +574,11 @@ def run_cluster1_fedavg_tcn_ablation(
     }
 
     summary_row = {
-        "experiment_id": "AB_C1_FEDAVG_TCN",
+        "experiment_id": "AB_C1_FEDAVG_CNNBN",
         "cluster_id": cluster_id,
         "dataset": str(cluster_section["dataset_name"]),
         "hierarchy": "hierarchical_fixed",
-        "model_family": "tcn",
+        "model_family": "cnn1d_bn",
         "fl_method": "FedAvg",
         "aggregation": "weighted_arithmetic_mean",
         "clustering_method": "agglomerative",
@@ -583,6 +587,10 @@ def run_cluster1_fedavg_tcn_ablation(
         "num_leaf_clients": len(clients),
         "n_subclusters": membership.n_subclusters,
         "rounds": configured_rounds,
+        "cnn_bn_channels": json.dumps(list(model_config.block_channels)),
+        "cnn_bn_kernel_sizes": json.dumps(list(model_config.kernel_sizes)),
+        "cnn_bn_hidden_dim": model_config.hidden_dim,
+        "cnn_bn_dropout": model_config.dropout,
         "positive_class_weight": positive_class_weight,
         "best_validation_round": best_round_index,
         "best_validation_f1": best_validation_metrics["f1"],
@@ -616,7 +624,7 @@ def run_cluster1_fedavg_tcn_ablation(
     summary_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
 
     return AblationRunResult(
-        experiment_id="AB_C1_FEDAVG_TCN",
+        experiment_id="AB_C1_FEDAVG_CNNBN",
         cluster_id=cluster_id,
         dataset=str(cluster_section["dataset_name"]),
         output_dir=run_dir,

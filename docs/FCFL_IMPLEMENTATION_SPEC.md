@@ -96,7 +96,7 @@ The three main clusters are:
 
 | Main cluster | Domain | Dataset | Model | FL method | Aggregation |
 |---|---|---|---|---|---|
-| Cluster 1 | Process-control telemetry IDS | HAI 21.03 | TCN | FedBN | weighted non-BN mean |
+| Cluster 1 | Process-control telemetry IDS | HAI 21.03 | CNN1D-BN | FedBN | weighted non-BN mean |
 | Cluster 2 | Heterogeneous IIoT telemetry IDS | TON IoT combined telemetry | compact MLP | FedProx | weighted arithmetic mean |
 | Cluster 3 | IIoT network-flow IDS | WUSTL-IIOT-2021 | 1D-CNN | SCAFFOLD | weighted arithmetic mean |
 
@@ -158,7 +158,7 @@ Across main clusters:
 
 | Cluster | Dataset | Candidate leaf clients | Fixed sub-clusters | Model | FL method | Aggregation |
 |---|---:|---:|---:|---|---|---|
-| Cluster 1 | HAI 21.03 | 12 | \(K_1=2\) | TCN | FedBN | weighted non-BN mean |
+| Cluster 1 | HAI 21.03 | 12 | \(K_1=2\) | CNN1D-BN | FedBN | weighted non-BN mean |
 | Cluster 2 | TON IoT combined telemetry | 15 | \(K_2=3\) | compact MLP | FedProx | weighted arithmetic mean |
 | Cluster 3 | WUSTL-IIOT-2021 | 15 | \(K_3=3\) | 1D-CNN | SCAFFOLD | weighted arithmetic mean |
 
@@ -934,7 +934,7 @@ predicted_label = 1 if probability >= 0.5 else 0
 
 Threshold tuning is not part of the first implementation.
 
-## 8.1 Cluster 1: TCNClassifier
+## 8.1 Cluster 1: CNN1DBNClassifier
 
 Input shape:
 
@@ -953,20 +953,20 @@ Recommended architecture:
 ```text
 Input: [B, F, 32]
 
-TCN Block 1:
-- Conv1d(F, 32, kernel_size=3, dilation=1, padding=same)
+CNN1D-BN Block 1:
+- Conv1d(F, 32, kernel_size=5, padding=2)
 - BatchNorm1d(32)
 - ReLU
 - Dropout(0.1)
 
-TCN Block 2:
-- Conv1d(32, 64, kernel_size=3, dilation=2, padding=same)
+CNN1D-BN Block 2:
+- Conv1d(32, 64, kernel_size=3, padding=1)
 - BatchNorm1d(64)
 - ReLU
 - Dropout(0.1)
 
-TCN Block 3:
-- Conv1d(64, 64, kernel_size=3, dilation=4, padding=same)
+CNN1D-BN Block 3:
+- Conv1d(64, 64, kernel_size=3, padding=1)
 - BatchNorm1d(64)
 - ReLU
 - Dropout(0.1)
@@ -1339,7 +1339,7 @@ Evaluate the final proposed FCFL mechanism.
 
 | Cluster | Dataset | Model | FL method | Hierarchy | Clustering | Aggregation |
 |---|---|---|---|---|---|---|
-| C1 | HAI 21.03 | TCN | FedBN | hierarchical | agglomerative | weighted non-BN mean |
+| C1 | HAI 21.03 | CNN1D-BN | FedBN | hierarchical | agglomerative | weighted non-BN mean |
 | C2 | TON IoT combined telemetry | compact MLP | FedProx | hierarchical | agglomerative | weighted mean |
 | C3 | WUSTL-IIOT-2021 | 1D-CNN | SCAFFOLD | hierarchical | agglomerative | weighted mean |
 
@@ -1626,6 +1626,7 @@ fcfl-cps-ids/
 │   ├── clustering/
 │   │   └── agglomerative.py
 │   ├── models/
+│   │   ├── cnn1d_bn.py
 │   │   ├── cnn1d.py
 │   │   ├── tcn.py
 │   │   └── mlp.py

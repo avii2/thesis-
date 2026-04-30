@@ -23,7 +23,7 @@ from src.train import (  # noqa: E402
     validate_experiment_registry,
 )
 from src.train_ablation import (  # noqa: E402
-    run_cluster1_fedavg_tcn_ablation,
+    run_cluster1_fedavg_cnnbn_ablation,
     run_cluster2_fedavg_mlp_ablation,
     run_cluster3_fedavg_cnn1d_ablation,
 )
@@ -215,7 +215,7 @@ def run_ablation_configs(
                 experiment_id = str(arm["experiment_id"])
                 if run_source == "standard":
                     standard_experiment_ids.append(experiment_id)
-                elif run_source == "custom_cluster1_fedavg_tcn":
+                elif run_source == "custom_cluster1_fedavg_cnnbn":
                     need_custom_cluster1 = True
                 elif run_source == "custom_cluster2_fedavg_mlp":
                     need_custom_cluster2 = True
@@ -246,7 +246,7 @@ def run_ablation_configs(
         )
 
     if need_custom_cluster1:
-        raw_result = run_cluster1_fedavg_tcn_ablation(
+        raw_result = run_cluster1_fedavg_cnnbn_ablation(
             ablation_config_path=REPO_ROOT / "configs" / "ablation_cluster1_fedbn.yaml",
             rounds=active_rounds,
             local_epochs=active_local_epochs,
@@ -257,9 +257,9 @@ def run_ablation_configs(
             max_eval_examples_per_client=max_eval_examples_per_client,
             output_root=output_root,
         )
-        artifact_by_experiment_id["AB_C1_FEDAVG_TCN"] = _finalize_run_outputs(
-            experiment_id="AB_C1_FEDAVG_TCN",
-            spec=matrix["AB_C1_FEDAVG_TCN"],
+        artifact_by_experiment_id["AB_C1_FEDAVG_CNNBN"] = _finalize_run_outputs(
+            experiment_id="AB_C1_FEDAVG_CNNBN",
+            spec=matrix["AB_C1_FEDAVG_CNNBN"],
             raw_result=raw_result,
             output_root=output_root,
         )

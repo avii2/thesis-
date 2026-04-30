@@ -34,7 +34,7 @@ clusters:
     n_subclusters: 2
     descriptor: feature_mean_std
     membership_file: outputs/clustering/cluster1_memberships.json
-    model_family: tcn
+    model_family: cnn1d_bn
     fl_method: FedBN
     aggregation: weighted_non_bn_mean
   - experiment_id: P_C2

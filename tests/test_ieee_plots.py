@@ -24,7 +24,7 @@ EXPERIMENT_IDS = (
     "P_C1",
     "P_C2",
     "P_C3",
-    "AB_C1_FEDAVG_TCN",
+    "AB_C1_FEDAVG_CNNBN",
     "AB_C2_FEDAVG_MLP",
     "AB_C3_FEDAVG_CNN1D",
 )

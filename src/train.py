@@ -20,7 +20,7 @@ from matplotlib.ticker import MaxNLocator
 from src.ledger.metadata_schema import LedgerRecord, canonical_sha256, model_version_for_round
 from src.ledger.mock_ledger import JSONLMockLedger, MAIN_CLUSTER_HEAD_ROLE
 from src.train_ablation import (
-    run_cluster1_fedavg_tcn_ablation,
+    run_cluster1_fedavg_cnnbn_ablation,
     run_cluster2_fedavg_mlp_ablation,
     run_cluster3_fedavg_cnn1d_ablation,
 )
@@ -43,7 +43,7 @@ SUPPORTED_EXPERIMENT_IDS = (
     "P_C1",
     "P_C2",
     "P_C3",
-    "AB_C1_FEDAVG_TCN",
+    "AB_C1_FEDAVG_CNNBN",
     "AB_C2_FEDAVG_MLP",
     "AB_C3_FEDAVG_CNN1D",
 )
@@ -716,8 +716,8 @@ def _dispatch_experiment(
             max_eval_examples_per_client=max_eval_examples_per_client,
             output_root=output_root,
         )
-    if experiment_id == "AB_C1_FEDAVG_TCN":
-        return run_cluster1_fedavg_tcn_ablation(
+    if experiment_id == "AB_C1_FEDAVG_CNNBN":
+        return run_cluster1_fedavg_cnnbn_ablation(
             ablation_config_path=config_entry.config_path,
             smoke_test=smoke_test,
             rounds=rounds,

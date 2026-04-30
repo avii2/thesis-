@@ -180,7 +180,7 @@ class AblationExperimentRegistryTests(unittest.TestCase):
         matrix = load_experiment_matrix(REPO_ROOT / "docs" / "EXPERIMENT_MATRIX.csv")
         registry = load_config_registry()
         for experiment_id in (
-            "AB_C1_FEDAVG_TCN",
+            "AB_C1_FEDAVG_CNNBN",
             "AB_C2_FEDAVG_MLP",
             "AB_C3_FEDAVG_CNN1D",
         ):
@@ -190,6 +190,11 @@ class AblationExperimentRegistryTests(unittest.TestCase):
             self.assertEqual(matrix[experiment_id].run_category, "ablation_fl_method")
             self.assertEqual(registry[experiment_id].experiment_group, "ablation_fl_method")
             self.assertTrue(registry[experiment_id].cluster_config_path.exists())
+        self.assertNotIn("AB_C1_FEDAVG_TCN", SUPPORTED_EXPERIMENT_IDS)
+        self.assertNotIn("AB_C1_FEDAVG_TCN", matrix)
+        self.assertNotIn("AB_C1_FEDAVG_TCN", registry)
+        self.assertEqual(matrix["AB_C1_FEDAVG_CNNBN"].model, "cnn1d_bn")
+        self.assertEqual(registry["AB_C1_FEDAVG_CNNBN"].entry["model_family"], "cnn1d_bn")
 
     def test_smoke_mode_creates_metrics_ledger_and_plot_outputs_for_all_ablation_ids(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -199,10 +204,10 @@ class AblationExperimentRegistryTests(unittest.TestCase):
                 del kwargs
                 return _fake_ablation_result(
                     output_root,
-                    experiment_id="AB_C1_FEDAVG_TCN",
+                    experiment_id="AB_C1_FEDAVG_CNNBN",
                     cluster_id=1,
                     dataset="HAI 21.03",
-                    model_family="tcn",
+                    model_family="cnn1d_bn",
                     fl_method="FedAvg",
                     aggregation="weighted_arithmetic_mean",
                 )
@@ -231,7 +236,7 @@ class AblationExperimentRegistryTests(unittest.TestCase):
                     aggregation="weighted_arithmetic_mean",
                 )
 
-            with patch("src.train.run_cluster1_fedavg_tcn_ablation", side_effect=fake_ab_c1), patch(
+            with patch("src.train.run_cluster1_fedavg_cnnbn_ablation", side_effect=fake_ab_c1), patch(
                 "src.train.run_cluster2_fedavg_mlp_ablation",
                 side_effect=fake_ab_c2,
             ), patch(
@@ -240,7 +245,7 @@ class AblationExperimentRegistryTests(unittest.TestCase):
             ):
                 batch = run_experiments(
                     experiment_ids=[
-                        "AB_C1_FEDAVG_TCN",
+                        "AB_C1_FEDAVG_CNNBN",
                         "AB_C2_FEDAVG_MLP",
                         "AB_C3_FEDAVG_CNN1D",
                     ],
@@ -252,12 +257,12 @@ class AblationExperimentRegistryTests(unittest.TestCase):
             with batch.summary_csv_path.open("r", encoding="utf-8", newline="") as handle:
                 rows = list(csv.DictReader(handle))
             self.assertEqual({row["experiment_id"] for row in rows}, {
-                "AB_C1_FEDAVG_TCN",
+                "AB_C1_FEDAVG_CNNBN",
                 "AB_C2_FEDAVG_MLP",
                 "AB_C3_FEDAVG_CNN1D",
             })
 
-            for experiment_id in ("AB_C1_FEDAVG_TCN", "AB_C2_FEDAVG_MLP", "AB_C3_FEDAVG_CNN1D"):
+            for experiment_id in ("AB_C1_FEDAVG_CNNBN", "AB_C2_FEDAVG_MLP", "AB_C3_FEDAVG_CNN1D"):
                 self.assertTrue((output_root / "runs" / experiment_id / "run_summary.json").exists())
                 self.assertTrue((output_root / "runs" / experiment_id / "round_metrics.csv").exists())
                 self.assertTrue((output_root / "metrics" / f"{experiment_id}_metrics.csv").exists())

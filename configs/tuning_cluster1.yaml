@@ -1,6 +1,6 @@
 config_version: 1
 tuning_id: cluster1_proposed_hyperparameter_search
-description: Targeted hyperparameter search for P_C1 only; architecture remains TCN + FedBN + weighted non-BN aggregation.
+description: Targeted hyperparameter search for P_C1 only; architecture remains CNN1D-BN + FedBN + weighted non-BN aggregation.
 source_of_truth:
   agents: AGENTS.md
   architecture_contract: docs/ARCHITECTURE_CONTRACT.md
@@ -16,7 +16,7 @@ fixed_experiment:
   base_proposed_config: configs/proposed.yaml
   base_cluster_config: configs/cluster1_hai.yaml
   membership_file: outputs/clustering/cluster1_memberships.json
-  model_family: tcn
+  model_family: cnn1d_bn
   fl_method: FedBN
   aggregation: weighted_non_bn_mean
   hierarchy: hierarchical_fixed
