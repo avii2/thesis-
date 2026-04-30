@@ -32,7 +32,7 @@ from src.fl.fedbn import (
     predict_split_fedbn,
     train_fedbn_client,
 )
-from src.models.tcn import TCNClassifier, TCNConfig
+from src.models.cnn1d_bn import CNN1DBNClassifier, CNN1DBNConfig
 
 
 @dataclass(frozen=True)
@@ -70,7 +70,7 @@ def _evaluate_cluster_split_with_local_bn(
     *,
     global_state: Mapping[str, np.ndarray],
     client_local_states: Mapping[str, Mapping[str, np.ndarray]],
-    model_config: TCNConfig,
+    model_config: CNN1DBNConfig,
     split_name: str,
 ) -> dict[str, Any]:
     probabilities: list[np.ndarray] = []
@@ -102,8 +102,8 @@ def _load_cluster1_proposed_entry(config_path: str | Path) -> tuple[Path, Mappin
         experiment_id = str(cluster_entry.get("experiment_id", "")).strip()
         if experiment_id not in {"P_C1", "P_C1_REPAIRED"}:
             continue
-        if str(cluster_entry.get("model_family")) != "tcn":
-            raise ValueError(f"{experiment_id} must use model_family=tcn.")
+        if str(cluster_entry.get("model_family")) != "cnn1d_bn":
+            raise ValueError(f"{experiment_id} must use model_family=cnn1d_bn.")
         if str(cluster_entry.get("fl_method")) != "FedBN":
             raise ValueError(f"{experiment_id} must use fl_method=FedBN.")
         if str(cluster_entry.get("aggregation")) != "weighted_non_bn_mean":
@@ -122,35 +122,49 @@ def _optional_mapping(parent: Mapping[str, Any], key: str) -> Mapping[str, Any]:
     return value
 
 
-def _resolve_block_channels(value: Sequence[int] | None) -> tuple[int, int, int] | None:
+def _resolve_three_positive_ints(
+    value: Sequence[int] | None,
+    *,
+    field_name: str,
+) -> tuple[int, int, int] | None:
     if value is None:
         return None
-    channels = tuple(int(channel) for channel in value)
-    if len(channels) != 3:
-        raise ValueError("TCN block_channels must contain exactly three integers.")
-    if any(channel <= 0 for channel in channels):
-        raise ValueError("TCN block_channels must be positive.")
-    return channels
+    resolved = tuple(int(item) for item in value)
+    if len(resolved) != 3:
+        raise ValueError(f"{field_name} must contain exactly three integers.")
+    if any(item <= 0 for item in resolved):
+        raise ValueError(f"{field_name} values must be positive.")
+    return resolved
 
 
-def _resolve_tcn_hyperparameters(
+def _resolve_cnn_bn_hyperparameters(
     cluster_entry: Mapping[str, Any],
     *,
-    tcn_block_channels: Sequence[int] | None,
-    tcn_hidden_dim: int | None,
-    tcn_dropout: float | None,
+    cnn_bn_channels: Sequence[int] | None,
+    cnn_bn_kernel_sizes: Sequence[int] | None,
+    cnn_bn_hidden_dim: int | None,
+    cnn_bn_dropout: float | None,
 ) -> dict[str, Any]:
     model_hyperparameters = _optional_mapping(cluster_entry, "model_hyperparameters")
-    block_channels = (
-        _resolve_block_channels(tcn_block_channels)
-        if tcn_block_channels is not None
-        else _resolve_block_channels(model_hyperparameters.get("block_channels"))
+    channels = (
+        _resolve_three_positive_ints(cnn_bn_channels, field_name="CNN1D-BN channels")
+        if cnn_bn_channels is not None
+        else _resolve_three_positive_ints(model_hyperparameters.get("channels"), field_name="CNN1D-BN channels")
     )
-    hidden_dim_value = tcn_hidden_dim if tcn_hidden_dim is not None else model_hyperparameters.get("hidden_dim")
-    dropout_value = tcn_dropout if tcn_dropout is not None else model_hyperparameters.get("dropout")
+    kernel_sizes = (
+        _resolve_three_positive_ints(cnn_bn_kernel_sizes, field_name="CNN1D-BN kernel_sizes")
+        if cnn_bn_kernel_sizes is not None
+        else _resolve_three_positive_ints(
+            model_hyperparameters.get("kernel_sizes"),
+            field_name="CNN1D-BN kernel_sizes",
+        )
+    )
+    hidden_dim_value = cnn_bn_hidden_dim if cnn_bn_hidden_dim is not None else model_hyperparameters.get("hidden_dim")
+    dropout_value = cnn_bn_dropout if cnn_bn_dropout is not None else model_hyperparameters.get("dropout")
 
     return {
-        "block_channels": block_channels if block_channels is not None else (32, 64, 64),
+        "channels": channels if channels is not None else (32, 64, 64),
+        "kernel_sizes": kernel_sizes if kernel_sizes is not None else (5, 3, 3),
         "hidden_dim": int(hidden_dim_value) if hidden_dim_value is not None else 32,
         "dropout": float(dropout_value) if dropout_value is not None else 0.1,
     }
@@ -184,9 +198,10 @@ def run_cluster1_proposed(
     max_train_examples_per_client: int | None = None,
     max_eval_examples_per_client: int | None = None,
     output_root: str | Path = "outputs",
-    tcn_block_channels: Sequence[int] | None = None,
-    tcn_hidden_dim: int | None = None,
-    tcn_dropout: float | None = None,
+    cnn_bn_channels: Sequence[int] | None = None,
+    cnn_bn_kernel_sizes: Sequence[int] | None = None,
+    cnn_bn_hidden_dim: int | None = None,
+    cnn_bn_dropout: float | None = None,
     positive_class_weight_scale: float | None = None,
 ) -> Cluster1ProposedRunResult:
     resolved_proposed_config_path, proposed_config, cluster_entry = _load_cluster1_proposed_entry(proposed_config_path)
@@ -242,20 +257,22 @@ def run_cluster1_proposed(
     )
     clients_by_subcluster = group_clients_by_subcluster(clients, membership)
 
-    resolved_tcn_hyperparameters = _resolve_tcn_hyperparameters(
+    resolved_cnn_bn_hyperparameters = _resolve_cnn_bn_hyperparameters(
         cluster_entry,
-        tcn_block_channels=tcn_block_channels,
-        tcn_hidden_dim=tcn_hidden_dim,
-        tcn_dropout=tcn_dropout,
+        cnn_bn_channels=cnn_bn_channels,
+        cnn_bn_kernel_sizes=cnn_bn_kernel_sizes,
+        cnn_bn_hidden_dim=cnn_bn_hidden_dim,
+        cnn_bn_dropout=cnn_bn_dropout,
     )
-    model_config = TCNConfig(
+    model_config = CNN1DBNConfig(
         input_channels=int(data_summary["input_channels"]),
         input_length=int(data_summary["input_length"]),
-        block_channels=resolved_tcn_hyperparameters["block_channels"],
-        hidden_dim=resolved_tcn_hyperparameters["hidden_dim"],
-        dropout=resolved_tcn_hyperparameters["dropout"],
+        block_channels=resolved_cnn_bn_hyperparameters["channels"],
+        kernel_sizes=resolved_cnn_bn_hyperparameters["kernel_sizes"],
+        hidden_dim=resolved_cnn_bn_hyperparameters["hidden_dim"],
+        dropout=resolved_cnn_bn_hyperparameters["dropout"],
     )
-    global_model = TCNClassifier(model_config, seed=configured_seed)
+    global_model = CNN1DBNClassifier(model_config, seed=configured_seed)
     global_state = global_model.state_dict()
     client_local_states = {
         client.client_id: global_model.state_dict()
@@ -437,7 +454,7 @@ def run_cluster1_proposed(
         "membership_file_used": str(membership.membership_file),
         "membership_hash": membership.membership_hash,
         "membership_file_changed": False,
-        "model_family": "tcn",
+        "model_family": "cnn1d_bn",
         "fl_method": "FedBN",
         "aggregation": "weighted_non_bn_mean",
         "clustering_method": "agglomerative",
@@ -455,9 +472,10 @@ def run_cluster1_proposed(
         "batch_size": configured_batch_size,
         "learning_rate": learning_rate,
         "seed": configured_seed,
-        "tcn_block_channels": list(model_config.block_channels),
-        "tcn_hidden_dim": model_config.hidden_dim,
-        "tcn_dropout": model_config.dropout,
+        "cnn_bn_channels": list(model_config.block_channels),
+        "cnn_bn_kernel_sizes": list(model_config.kernel_sizes),
+        "cnn_bn_hidden_dim": model_config.hidden_dim,
+        "cnn_bn_dropout": model_config.dropout,
         "computed_positive_class_weight": computed_positive_class_weight,
         "positive_class_weight_scale": resolved_positive_class_weight_scale,
         "positive_class_weight": positive_class_weight,
@@ -488,7 +506,7 @@ def run_cluster1_proposed(
         "cluster_id": cluster_id,
         "dataset": str(cluster_section["dataset_name"]),
         "hierarchy": "hierarchical_fixed",
-        "model_family": "tcn",
+        "model_family": "cnn1d_bn",
         "fl_method": "FedBN",
         "aggregation": "weighted_non_bn_mean",
         "clustering_method": "agglomerative",
@@ -497,9 +515,10 @@ def run_cluster1_proposed(
         "num_leaf_clients": len(clients),
         "n_subclusters": membership.n_subclusters,
         "rounds": configured_rounds,
-        "tcn_block_channels": json.dumps(list(model_config.block_channels)),
-        "tcn_hidden_dim": model_config.hidden_dim,
-        "tcn_dropout": model_config.dropout,
+        "cnn_bn_channels": json.dumps(list(model_config.block_channels)),
+        "cnn_bn_kernel_sizes": json.dumps(list(model_config.kernel_sizes)),
+        "cnn_bn_hidden_dim": model_config.hidden_dim,
+        "cnn_bn_dropout": model_config.dropout,
         "computed_positive_class_weight": computed_positive_class_weight,
         "positive_class_weight_scale": resolved_positive_class_weight_scale,
         "positive_class_weight": positive_class_weight,
@@ -547,7 +566,7 @@ def run_cluster1_proposed(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the proposed Cluster 1 HAI + TCN + FedBN experiment.")
+    parser = argparse.ArgumentParser(description="Run the proposed Cluster 1 HAI + CNN1D-BN + FedBN experiment.")
     parser.add_argument(
         "--proposed-config",
         default="configs/proposed.yaml",
@@ -559,14 +578,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, help="Optional override for local batch size.")
     parser.add_argument("--learning-rate", type=float, default=0.01, help="Local SGD learning rate.")
     parser.add_argument(
-        "--tcn-block-channels",
+        "--cnn-bn-channels",
         nargs=3,
         type=int,
         metavar=("C1", "C2", "C3"),
-        help="Optional TCN block channel override for P_C1.",
+        help="Optional CNN1D-BN channel override for P_C1.",
     )
-    parser.add_argument("--tcn-hidden-dim", type=int, help="Optional TCN hidden dimension override for P_C1.")
-    parser.add_argument("--tcn-dropout", type=float, help="Optional TCN dropout override for P_C1.")
+    parser.add_argument(
+        "--cnn-bn-kernel-sizes",
+        nargs=3,
+        type=int,
+        metavar=("K1", "K2", "K3"),
+        help="Optional CNN1D-BN kernel-size override for P_C1.",
+    )
+    parser.add_argument("--cnn-bn-hidden-dim", type=int, help="Optional CNN1D-BN hidden dimension override for P_C1.")
+    parser.add_argument("--cnn-bn-dropout", type=float, help="Optional CNN1D-BN dropout override for P_C1.")
     parser.add_argument(
         "--positive-class-weight-scale",
         type=float,
@@ -604,9 +630,10 @@ def main() -> None:
         max_train_examples_per_client=args.max_train_examples_per_client,
         max_eval_examples_per_client=args.max_eval_examples_per_client,
         output_root=args.output_root,
-        tcn_block_channels=args.tcn_block_channels,
-        tcn_hidden_dim=args.tcn_hidden_dim,
-        tcn_dropout=args.tcn_dropout,
+        cnn_bn_channels=args.cnn_bn_channels,
+        cnn_bn_kernel_sizes=args.cnn_bn_kernel_sizes,
+        cnn_bn_hidden_dim=args.cnn_bn_hidden_dim,
+        cnn_bn_dropout=args.cnn_bn_dropout,
         positive_class_weight_scale=args.positive_class_weight_scale,
     )
     print(f"{result.experiment_id}: wrote {result.metrics_csv_path}")

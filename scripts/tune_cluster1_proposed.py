@@ -285,7 +285,7 @@ def _write_trial_configs(
         trial_entry["cluster_config"] = str(trial_cluster_config_path)
         trial_entry["membership_file"] = str(membership_file)
         trial_entry["model_hyperparameters"] = {
-            "block_channels": list(trial.block_channels),
+            "channels": list(trial.block_channels),
             "hidden_dim": trial.hidden_dim,
             "dropout": trial.dropout,
         }
@@ -477,7 +477,7 @@ def _write_summary_markdown(
     lines = [
         "# Cluster 1 P_C1 Tuning Summary",
         "",
-        "This tuning output is restricted to Cluster 1 proposed FCFL only. The run keeps the architecture fixed as TCN + FedBN + weighted non-BN aggregation and reuses the frozen agglomerative membership file.",
+        "This tuning output is restricted to Cluster 1 proposed FCFL only. The run keeps the architecture fixed as CNN1D-BN + FedBN + weighted non-BN aggregation and reuses the frozen agglomerative membership file.",
         "",
         "## Search Status",
         "",
@@ -577,8 +577,8 @@ def run_tuning(args: argparse.Namespace) -> dict[str, Any]:
     fixed = config.get("fixed_experiment")
     if not isinstance(fixed, Mapping):
         raise ValueError(f"{config_path}: missing fixed_experiment mapping.")
-    if fixed.get("experiment_id") != "P_C1" or fixed.get("model_family") != "tcn":
-        raise ValueError("Cluster 1 tuning is restricted to P_C1 with model_family=tcn.")
+    if fixed.get("experiment_id") != "P_C1" or fixed.get("model_family") != "cnn1d_bn":
+        raise ValueError("Cluster 1 tuning is restricted to P_C1 with model_family=cnn1d_bn.")
     if fixed.get("fl_method") != "FedBN" or fixed.get("aggregation") != "weighted_non_bn_mean":
         raise ValueError("Cluster 1 tuning must keep FedBN and weighted_non_bn_mean.")
 
@@ -707,9 +707,9 @@ def run_tuning(args: argparse.Namespace) -> dict[str, Any]:
                 max_train_examples_per_client=max_train,
                 max_eval_examples_per_client=max_eval,
                 output_root=trial_output_root,
-                tcn_block_channels=trial.block_channels,
-                tcn_hidden_dim=trial.hidden_dim,
-                tcn_dropout=trial.dropout,
+                cnn_bn_channels=trial.block_channels,
+                cnn_bn_hidden_dim=trial.hidden_dim,
+                cnn_bn_dropout=trial.dropout,
                 positive_class_weight_scale=trial.positive_class_weight_scale,
             )
             metrics_row = _read_single_row_csv(result.metrics_csv_path)

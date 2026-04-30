@@ -227,7 +227,7 @@ class ExperimentMatrixTests(unittest.TestCase):
                     cluster_id=1,
                     dataset="Dataset P_C1",
                     hierarchy="hierarchical_fixed",
-                    model_family="tcn",
+                    model_family="cnn1d_bn",
                     fl_method="FedBN",
                     aggregation="weighted_non_bn_mean",
                     clustering_method="agglomerative",

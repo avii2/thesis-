@@ -13,7 +13,7 @@ Non-negotiable architecture:
 - Ledger stores metadata only, never raw data and never full model weights.
 
 Cluster definitions:
-- Cluster 1: HAI 21.03, TCN, FedBN, weighted non-BN aggregation.
+- Cluster 1: HAI 21.03, CNN1D-BN, FedBN, weighted non-BN aggregation.
 - Cluster 2: TON IoT combined telemetry, compact MLP, FedProx, weighted arithmetic aggregation.
 - Cluster 3: WUSTL-IIOT-2021, 1D-CNN, SCAFFOLD, weighted arithmetic aggregation.
 

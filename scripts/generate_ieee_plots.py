@@ -30,7 +30,7 @@ A_B_P_GROUPS = {
 }
 
 ABLATION_GROUPS = {
-    "Cluster 1": ("AB_C1_FEDAVG_TCN", "P_C1"),
+    "Cluster 1": ("AB_C1_FEDAVG_CNNBN", "P_C1"),
     "Cluster 2": ("AB_C2_FEDAVG_MLP", "P_C2"),
     "Cluster 3": ("AB_C3_FEDAVG_CNN1D", "P_C3"),
 }

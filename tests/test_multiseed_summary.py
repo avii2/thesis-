@@ -101,8 +101,8 @@ def _write_raw_result(
     hierarchy = "flat" if experiment_id.startswith("A_") else "hierarchical_fixed"
     n_subclusters = 0 if hierarchy == "flat" else (2 if cluster_id == 1 else 3)
     model_family = (
-        "tcn"
-        if experiment_id in {"P_C1", "AB_C1_FEDAVG_TCN"}
+        "cnn1d_bn"
+        if experiment_id in {"P_C1", "AB_C1_FEDAVG_CNNBN"}
         else "compact_mlp"
         if experiment_id in {"P_C2", "AB_C2_FEDAVG_MLP"}
         else "cnn1d"

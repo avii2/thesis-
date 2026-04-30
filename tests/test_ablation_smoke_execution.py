@@ -15,7 +15,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.train_ablation import (  # noqa: E402
-    run_cluster1_fedavg_tcn_ablation,
+    run_cluster1_fedavg_cnnbn_ablation,
     run_cluster2_fedavg_mlp_ablation,
     run_cluster3_fedavg_cnn1d_ablation,
 )
@@ -357,13 +357,13 @@ class AblationSmokeExecutionTests(unittest.TestCase):
                 path=configs / "ab_c1.yaml",
                 ablation_id="ablation_cluster1_fedavg_vs_fedbn",
                 comparison_id="ablation_cluster1_fedavg_vs_fedbn",
-                experiment_id="AB_C1_FEDAVG_TCN",
-                run_source="custom_cluster1_fedavg_tcn",
+                experiment_id="AB_C1_FEDAVG_CNNBN",
+                run_source="custom_cluster1_fedavg_cnnbn",
                 cluster_id=1,
                 cluster_config=c1_config,
                 membership_file=c1_membership,
                 n_subclusters=2,
-                model_family="tcn",
+                model_family="cnn1d_bn",
                 learning_rate=0.01,
                 treatment_id="P_C1",
             )
@@ -397,7 +397,7 @@ class AblationSmokeExecutionTests(unittest.TestCase):
             )
 
             results = [
-                run_cluster1_fedavg_tcn_ablation(
+                run_cluster1_fedavg_cnnbn_ablation(
                     c1_ablation,
                     smoke_test=True,
                     output_root=outputs,
@@ -429,7 +429,7 @@ class AblationSmokeExecutionTests(unittest.TestCase):
                 self.assertEqual(result.summary["aggregation"], "weighted_arithmetic_mean")
                 self.assertIn("prediction_outputs", result.summary)
 
-            self.assertEqual(results[0].summary["model_family"], "tcn")
+            self.assertEqual(results[0].summary["model_family"], "cnn1d_bn")
             self.assertEqual(results[1].summary["model_family"], "compact_mlp")
             self.assertEqual(results[2].summary["model_family"], "cnn1d")
             self.assertIn("positive_class_weight", results[1].summary)

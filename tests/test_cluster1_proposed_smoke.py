@@ -62,6 +62,20 @@ def write_membership(path: Path, *, subclusters: list[tuple[str, list[str]]]) ->
 
 
 class Cluster1ProposedSmokeTests(unittest.TestCase):
+    def test_repo_proposed_config_updates_only_cluster1_model_family(self) -> None:
+        proposed = yaml.safe_load((REPO_ROOT / "configs" / "proposed.yaml").read_text(encoding="utf-8"))
+        entries = {entry["experiment_id"]: entry for entry in proposed["clusters"]}
+
+        self.assertEqual(entries["P_C1"]["model_family"], "cnn1d_bn")
+        self.assertEqual(entries["P_C1"]["fl_method"], "FedBN")
+        self.assertEqual(entries["P_C1"]["aggregation"], "weighted_non_bn_mean")
+        self.assertEqual(entries["P_C2"]["model_family"], "compact_mlp")
+        self.assertEqual(entries["P_C2"]["fl_method"], "FedProx")
+        self.assertEqual(entries["P_C2"]["aggregation"], "weighted_arithmetic_mean")
+        self.assertEqual(entries["P_C3"]["model_family"], "cnn1d")
+        self.assertEqual(entries["P_C3"]["fl_method"], "SCAFFOLD")
+        self.assertEqual(entries["P_C3"]["aggregation"], "weighted_arithmetic_mean")
+
     def test_cluster1_proposed_runs_and_writes_metrics(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_path = Path(tmpdir)
@@ -179,11 +193,12 @@ class Cluster1ProposedSmokeTests(unittest.TestCase):
                                 "n_subclusters": 2,
                                 "descriptor": "feature_mean_std",
                                 "membership_file": str(membership_path),
-                                "model_family": "tcn",
+                                "model_family": "cnn1d_bn",
                                 "fl_method": "FedBN",
                                 "aggregation": "weighted_non_bn_mean",
                                 "model_hyperparameters": {
-                                    "block_channels": [64, 64, 64],
+                                    "channels": [64, 64, 64],
+                                    "kernel_sizes": [5, 3, 3],
                                     "hidden_dim": 64,
                                     "dropout": 0.2,
                                 },
@@ -225,12 +240,13 @@ class Cluster1ProposedSmokeTests(unittest.TestCase):
             self.assertEqual(rows[0]["experiment_id"], "P_C1")
 
             summary = json.loads((run_dir / "run_summary.json").read_text(encoding="utf-8"))
-            self.assertEqual(summary["model_family"], "tcn")
+            self.assertEqual(summary["model_family"], "cnn1d_bn")
             self.assertEqual(summary["fl_method"], "FedBN")
             self.assertEqual(summary["aggregation"], "weighted_non_bn_mean")
-            self.assertEqual(summary["tcn_block_channels"], [64, 64, 64])
-            self.assertEqual(summary["tcn_hidden_dim"], 64)
-            self.assertEqual(summary["tcn_dropout"], 0.2)
+            self.assertEqual(summary["cnn_bn_channels"], [64, 64, 64])
+            self.assertEqual(summary["cnn_bn_kernel_sizes"], [5, 3, 3])
+            self.assertEqual(summary["cnn_bn_hidden_dim"], 64)
+            self.assertEqual(summary["cnn_bn_dropout"], 0.2)
             self.assertEqual(summary["positive_class_weight_scale"], 0.5)
             self.assertAlmostEqual(
                 summary["positive_class_weight"],

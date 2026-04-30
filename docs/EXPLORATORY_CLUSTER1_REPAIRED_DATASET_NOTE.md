@@ -33,7 +33,7 @@ This is Cluster 1-only and exploratory. Cluster 2 and Cluster 3 are unchanged.
 The architecture remains:
 
 - Cluster 1 dataset: HAI 21.03
-- Proposed Cluster 1 model: TCN
+- Proposed Cluster 1 model: CNN1D-BN
 - Proposed Cluster 1 FL method: FedBN
 - Proposed Cluster 1 aggregation: weighted non-BN mean
 - Hierarchical runs: fixed K1 = 2 agglomerative sub-clusters

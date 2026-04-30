@@ -80,7 +80,7 @@ def _repaired_specs() -> dict[str, ExperimentSpec]:
             run_category="proposed_specialized_hierarchical",
             cluster_id=1,
             dataset="HAI 21.03 repaired supervised variant",
-            model="tcn",
+            model="cnn1d_bn",
             fl_method="FedBN",
             aggregation="weighted_non_bn_mean",
             hierarchy="hierarchical_fixed",
@@ -225,7 +225,7 @@ def _write_comparison_report(
         elif repaired_p_f1 < best_repaired_baseline:
             model_family_recommendation = (
                 "NOT YET: repaired P_C1 still trails the repaired baseline, but this single-seed run should be "
-                "confirmed with the existing TCN family before changing model family."
+                "confirmed with the current CNN1D-BN family before further model-family changes."
             )
         else:
             model_family_recommendation = (
