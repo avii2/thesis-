@@ -26,11 +26,11 @@ from .transforms import CategoricalTransformArtifacts, NumericTransformArtifacts
 
 REPORT_PATHS = {
     1: {
-        "summary": Path("outputs/reports/preprocessing_summary_cluster1.json"),
-        "label_summary": Path("outputs/reports/label_summary_cluster1.json"),
-        "imputer": Path("outputs/preprocessing/cluster1_hai_imputer.pkl"),
-        "scaler": Path("outputs/preprocessing/cluster1_hai_scaler.pkl"),
-        "preprocessor": Path("outputs/preprocessing/cluster1_hai_preprocessor.pkl"),
+        "summary": Path("outputs_c1_batadal/reports/preprocessing_summary_cluster1_batadal.json"),
+        "label_summary": Path("outputs_c1_batadal/reports/label_summary_cluster1_batadal.json"),
+        "imputer": Path("outputs_c1_batadal/preprocessing/cluster1_batadal_imputer.pkl"),
+        "scaler": Path("outputs_c1_batadal/preprocessing/cluster1_batadal_scaler.pkl"),
+        "preprocessor": Path("outputs_c1_batadal/preprocessing/cluster1_batadal_preprocessor.pkl"),
     },
     2: {
         "summary": Path("outputs/reports/preprocessing_summary_cluster2.json"),

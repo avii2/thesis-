@@ -1,10 +1,10 @@
 config_version: 1
 experiment_group: baseline_flat
-description: Flat per-cluster FL baseline from docs/EXPERIMENT_MATRIX.csv
+description: Cluster 1 BATADAL flat FedAvg baseline.
 source_of_truth:
   architecture_contract: docs/ARCHITECTURE_CONTRACT.md
   data_contract: docs/DATA_CONTRACT.md
-  experiment_matrix: docs/EXPERIMENT_MATRIX.csv
+  dataset_note: docs/CLUSTER1_BATADAL_DATASET_NOTE.md
 ledger:
   metadata_only: true
 training_defaults:
@@ -31,22 +31,7 @@ clusters:
     fl_method: FedAvg
     aggregation: weighted_arithmetic_mean
     output_root: outputs_c1_batadal
-  - experiment_id: A_C2
-    cluster_config: configs/cluster2_ton_iot.yaml
-    hierarchy: flat
-    clustering_method: none
-    n_subclusters: 0
-    model_family: cnn1d
-    fl_method: FedAvg
-    aggregation: weighted_arithmetic_mean
-  - experiment_id: A_C3
-    cluster_config: configs/cluster3_wustl.yaml
-    hierarchy: flat
-    clustering_method: none
-    n_subclusters: 0
-    model_family: cnn1d
-    fl_method: FedAvg
-    aggregation: weighted_arithmetic_mean
 runtime_validation:
   require_cluster_configs_to_exist: true
   require_ledger_metadata_only: true
+  require_batadal_cluster1_outputs: true

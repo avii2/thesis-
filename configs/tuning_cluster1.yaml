@@ -1,6 +1,6 @@
 config_version: 1
 tuning_id: cluster1_proposed_hyperparameter_search
-description: Targeted hyperparameter search for P_C1 only; architecture remains CNN1D-BN + FedBN + weighted non-BN aggregation.
+description: Targeted hyperparameter search for P_C1_BATADAL only; architecture remains CNN1D-BN + FedBN + weighted non-BN aggregation.
 source_of_truth:
   agents: AGENTS.md
   architecture_contract: docs/ARCHITECTURE_CONTRACT.md
@@ -10,12 +10,12 @@ source_of_truth:
   validation_checks: docs/VALIDATION_CHECKS.md
   experiment_matrix: docs/EXPERIMENT_MATRIX.csv
 fixed_experiment:
-  experiment_id: P_C1
+  experiment_id: P_C1_BATADAL
   cluster_id: 1
-  dataset: HAI_2103
+  dataset: BATADAL
   base_proposed_config: configs/proposed.yaml
-  base_cluster_config: configs/cluster1_hai.yaml
-  membership_file: outputs/clustering/cluster1_memberships.json
+  base_cluster_config: configs/cluster1_batadal.yaml
+  membership_file: outputs_c1_batadal/clustering/cluster1_memberships.json
   model_family: cnn1d_bn
   fl_method: FedBN
   aggregation: weighted_non_bn_mean
@@ -23,7 +23,7 @@ fixed_experiment:
   clustering_method: agglomerative
   reuse_frozen_memberships: true
 output:
-  root: outputs/tuning/cluster1
+  root: outputs_c1_batadal/tuning/cluster1
 selection_rule:
   primary: highest_validation_f1
   tie_breaker_1: higher_validation_recall
@@ -41,11 +41,9 @@ search_space:
     - 1
     - 2
   window_length:
-    - 32
-    - 64
+    - 48
   stride:
-    - 4
-    - 8
+    - 1
   block_channels:
     - [64, 64, 64]
     - [32, 64, 128]

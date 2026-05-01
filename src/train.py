@@ -34,13 +34,13 @@ matplotlib.use("Agg")
 
 
 SUPPORTED_EXPERIMENT_IDS = (
-    "A_C1",
+    "A_C1_BATADAL",
     "A_C2",
     "A_C3",
-    "B_C1",
+    "B_C1_BATADAL",
     "B_C2",
     "B_C3",
-    "P_C1",
+    "P_C1_BATADAL",
     "P_C2",
     "P_C3",
     "AB_C1_FEDAVG_CNNBN",
@@ -49,13 +49,13 @@ SUPPORTED_EXPERIMENT_IDS = (
 )
 
 DEFAULT_RUN_ALL_EXPERIMENT_IDS = (
-    "A_C1",
+    "A_C1_BATADAL",
     "A_C2",
     "A_C3",
-    "B_C1",
+    "B_C1_BATADAL",
     "B_C2",
     "B_C3",
-    "P_C1",
+    "P_C1_BATADAL",
     "P_C2",
     "P_C3",
 )
@@ -680,7 +680,7 @@ def _dispatch_experiment(
             raise ValueError(f"{experiment_id}: expected one hierarchical-baseline result, observed {len(results)}.")
         return results[0]
 
-    if experiment_id == "P_C1":
+    if experiment_id == "P_C1_BATADAL":
         return run_cluster1_proposed(
             proposed_config_path=config_entry.config_path,
             smoke_test=smoke_test,

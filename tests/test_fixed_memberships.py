@@ -148,7 +148,7 @@ class FixedMembershipTests(unittest.TestCase):
         self.assertEqual(
             proposed_by_cluster,
             {
-                "cluster1_hai.yaml": "outputs/clustering/cluster1_memberships.json",
+                "cluster1_batadal.yaml": "outputs_c1_batadal/clustering/cluster1_memberships.json",
                 "cluster2_ton_iot.yaml": "outputs/clustering/cluster2_memberships.json",
                 "cluster3_wustl.yaml": "outputs/clustering/cluster3_memberships.json",
             },
@@ -161,7 +161,7 @@ class FixedMembershipTests(unittest.TestCase):
                 json.dumps(
                     {
                         "cluster_id": 1,
-                        "dataset": "HAI 21.03",
+                        "dataset": "BATADAL",
                         "frozen": True,
                         "n_subclusters": 2,
                         "fixed_subcluster_ids": ["H1", "H2"],

@@ -10,13 +10,15 @@ from typing import Any, Mapping
 import yaml
 from sklearn.cluster import AgglomerativeClustering
 
+from src.data.cluster1_batadal import DEFAULT_OUTPUT_ROOT as C1_BATADAL_OUTPUT_ROOT
+from src.data.cluster1_batadal import prepare_cluster1_batadal
 from src.data.descriptors import ClusterDescriptorResult, build_cluster_descriptors
 from src.data.loaders import DEFAULT_CLUSTER_CONFIG_PATHS
 from src.data.schema_validation import DatasetConfigError, DatasetSchemaError, load_cluster_config
 
 
 MEMBERSHIP_PATHS = {
-    1: Path("outputs/clustering/cluster1_memberships.json"),
+    1: C1_BATADAL_OUTPUT_ROOT / "clustering/cluster1_memberships.json",
     2: Path("outputs/clustering/cluster2_memberships.json"),
     3: Path("outputs/clustering/cluster3_memberships.json"),
 }
@@ -192,6 +194,30 @@ def run_offline_agglomerative_clustering(
 ) -> AgglomerativeResult:
     runtime_config = load_agglomerative_runtime_config(config_path)
     resolved_membership_path = Path(membership_path) if membership_path is not None else _default_membership_path(runtime_config.cluster_id)
+
+    raw_config = yaml.safe_load(Path(config_path).read_text(encoding="utf-8"))
+    partitioning = raw_config.get("partitioning") if isinstance(raw_config, Mapping) else None
+    if isinstance(partitioning, Mapping) and str(partitioning.get("strategy")) == "batadal_controlled_emulation":
+        if resolved_membership_path.exists() and not force_recompute:
+            summary = json.loads(resolved_membership_path.read_text(encoding="utf-8"))
+            return AgglomerativeResult(
+                membership_path=resolved_membership_path,
+                summary=summary,
+                reused_existing_membership=True,
+            )
+        result = prepare_cluster1_batadal(config_path)
+        generated_membership_path = Path(result["paths"]["membership"])
+        if generated_membership_path != resolved_membership_path:
+            resolved_membership_path.parent.mkdir(parents=True, exist_ok=True)
+            resolved_membership_path.write_text(
+                generated_membership_path.read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+        return AgglomerativeResult(
+            membership_path=resolved_membership_path,
+            summary=result["membership"],
+            reused_existing_membership=False,
+        )
 
     if resolved_membership_path.exists() and not force_recompute:
         summary = json.loads(resolved_membership_path.read_text(encoding="utf-8"))

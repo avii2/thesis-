@@ -18,37 +18,37 @@ def write_csv(path: Path, rows: list[list[str]]) -> None:
 
 
 class ProfileDatasetsTests(unittest.TestCase):
-    def test_profile_csv_confirms_hai_attack_label(self) -> None:
+    def test_profile_csv_confirms_batadal_att_flag_label(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_path = Path(tmpdir)
-            csv_path = tmp_path / "hai.csv"
+            csv_path = tmp_path / "batadal.csv"
             write_csv(
                 csv_path,
                 [
-                    ["time", "sensor", "attack", "attack_P1"],
-                    ["2020-01-01 00:00:00", "1.0", "0", "0"],
-                    ["2020-01-01 00:00:01", "2.0", "1", "1"],
+                    ["DATETIME", "sensor", "ATT_FLAG"],
+                    ["04/07/16 00", "1.0", "0"],
+                    ["04/07/16 01", "2.0", "1"],
                 ],
             )
 
             config = profiler.ClusterConfig(
                 cluster_id=1,
-                dataset_name="HAI 21.03",
+                dataset_name="BATADAL",
                 source_paths=(str(tmp_path),),
                 report_path=str(tmp_path / "report.json"),
-                candidate_label_columns=("attack",),
-                confirmed_label_column="attack",
-                timestamp_columns=("time",),
-                leakage_or_id_columns=("attack_P1",),
+                candidate_label_columns=("ATT_FLAG",),
+                confirmed_label_column="ATT_FLAG",
+                timestamp_columns=("DATETIME",),
+                leakage_or_id_columns=(),
                 expected_layout_note="test",
             )
 
             profile = profiler.profile_csv(csv_path, config)
 
             self.assertEqual(profile["row_count"], 2)
-            self.assertEqual(profile["candidate_label_columns"], ["attack"])
-            self.assertEqual(profile["timestamp_or_order_columns"], ["time"])
-            self.assertEqual(profile["obvious_leakage_or_id_columns"], ["attack_P1"])
+            self.assertEqual(profile["candidate_label_columns"], ["ATT_FLAG"])
+            self.assertEqual(profile["timestamp_or_order_columns"], ["DATETIME"])
+            self.assertEqual(profile["obvious_leakage_or_id_columns"], [])
             self.assertEqual(profile["confirmed_label_mapped_counts"], {"0": 1, "1": 1})
             self.assertEqual(profile["candidate_retained_columns"], ["sensor"])
 

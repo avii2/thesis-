@@ -19,6 +19,7 @@ from sklearn.metrics import (
 )
 
 from src.data import cluster1_balanced as c1_balanced
+from src.data import cluster1_batadal as c1_batadal
 from src.data import cluster1_repaired as c1_repaired
 from src.data.partitions import PartitionBuildResult, build_candidate_leaf_clients
 from src.data.preprocess import RawPreparedDataset, prepare_training_dataset
@@ -159,7 +160,7 @@ def _sliding_window_split(
             f"{client_id} {split_name}: requires at least {window_length} rows for Cluster 1 sliding windows, "
             f"observed {rows.shape[0]}."
         )
-    if label_rule != "any_positive_row":
+    if label_rule not in {"any_positive_row", "last_row"}:
         raise ValueError(f"Unsupported Cluster 1 window_label_rule: {label_rule}")
 
     feature_windows = np.lib.stride_tricks.sliding_window_view(
@@ -172,7 +173,10 @@ def _sliding_window_split(
         window_shape=window_length,
         axis=0,
     )[::stride]
-    window_labels = (label_windows.max(axis=1) > 0).astype(np.int8, copy=False)
+    if label_rule == "any_positive_row":
+        window_labels = (label_windows.max(axis=1) > 0).astype(np.int8, copy=False)
+    else:
+        window_labels = label_windows[:, -1].astype(np.int8, copy=False)
     return ClientSplit(
         inputs=feature_windows.astype(np.float32, copy=False),
         labels=window_labels,
@@ -530,8 +534,12 @@ def _build_balanced_cluster1_federated_clients(
     if not metadata_path.exists():
         raise FileNotFoundError(f"Missing Cluster 1 balanced metadata file: {metadata_path}")
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-    if metadata.get("variant") != "cluster1_balanced_training":
-        raise ValueError(f"{metadata_path}: expected variant=cluster1_balanced_training.")
+    supported_variants = {"cluster1_balanced_training", "cluster1_same_setup_optimization"}
+    if metadata.get("variant") not in supported_variants:
+        raise ValueError(
+            f"{metadata_path}: expected variant in {sorted(supported_variants)}, "
+            f"observed {metadata.get('variant')!r}."
+        )
     leakage = metadata.get("leakage_prevention")
     if not isinstance(leakage, Mapping):
         raise ValueError(f"{metadata_path}: missing leakage_prevention metadata.")
@@ -609,7 +617,7 @@ def _build_balanced_cluster1_federated_clients(
     data_summary = {
         "cluster_id": 1,
         "dataset": str(dataset_config.dataset_name),
-        "variant": "cluster1_balanced_training",
+        "variant": str(metadata.get("variant")),
         "ratio": str(metadata.get("ratio")),
         "num_clients": len(clients),
         "input_adapter": "sliding_window_feature_channels",
@@ -647,6 +655,35 @@ def _build_balanced_cluster1_federated_clients(
     return clients, model_config, data_summary
 
 
+def _build_batadal_cluster1_federated_clients(
+    cluster_config_path: str | Path,
+    *,
+    max_train_examples_per_client: int | None = None,
+    max_eval_examples_per_client: int | None = None,
+) -> tuple[list[FlatClientDataset], CNN1DConfig, Mapping[str, Any]]:
+    runtime = c1_batadal.build_batadal_runtime(
+        cluster_config_path,
+        max_train_examples_per_client=max_train_examples_per_client,
+        max_eval_examples_per_client=max_eval_examples_per_client,
+    )
+    model_config = CNN1DConfig(
+        input_channels=int(runtime.input_channels),
+        input_length=int(runtime.input_length),
+    )
+    clients = [
+        FlatClientDataset(
+            cluster_id=1,
+            client_id=client.client_id,
+            train=ClientSplit(inputs=client.train_inputs, labels=client.train_labels),
+            validation=ClientSplit(inputs=client.validation_inputs, labels=client.validation_labels),
+            test=ClientSplit(inputs=client.test_inputs, labels=client.test_labels),
+            input_adapter="sliding_window_feature_channels",
+        )
+        for client in runtime.clients
+    ]
+    return clients, model_config, runtime.data_summary
+
+
 def build_flat_federated_clients(
     cluster_config_path: str | Path,
     *,
@@ -659,6 +696,12 @@ def build_flat_federated_clients(
         return _build_balanced_cluster1_federated_clients(
             cluster_config_path,
             cluster_yaml,
+            max_train_examples_per_client=max_train_examples_per_client,
+            max_eval_examples_per_client=max_eval_examples_per_client,
+        )
+    if isinstance(partitioning, Mapping) and str(partitioning.get("strategy")) == "batadal_controlled_emulation":
+        return _build_batadal_cluster1_federated_clients(
+            cluster_config_path,
             max_train_examples_per_client=max_train_examples_per_client,
             max_eval_examples_per_client=max_eval_examples_per_client,
         )

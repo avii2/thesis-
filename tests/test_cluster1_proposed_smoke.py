@@ -15,7 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.train_cluster1_proposed import run_cluster1_proposed  # noqa: E402
+from src.train_cluster1_proposed import _resolve_positive_class_weight_scale, run_cluster1_proposed  # noqa: E402
 
 
 def write_csv(path: Path, rows: list[list[str]]) -> None:
@@ -29,7 +29,7 @@ def write_csv(path: Path, rows: list[list[str]]) -> None:
 def write_membership(path: Path, *, subclusters: list[tuple[str, list[str]]]) -> None:
     payload = {
         "cluster_id": 1,
-        "dataset": "HAI Smoke",
+        "dataset": "BATADAL Smoke",
         "status": "ok",
         "clustering_method": "AgglomerativeClustering",
         "linkage": "ward",
@@ -62,19 +62,28 @@ def write_membership(path: Path, *, subclusters: list[tuple[str, list[str]]]) ->
 
 
 class Cluster1ProposedSmokeTests(unittest.TestCase):
+    def test_positive_class_weight_scale_accepts_zero_for_unweighted_sweep(self) -> None:
+        self.assertEqual(
+            _resolve_positive_class_weight_scale(
+                {"training_hyperparameters": {"positive_class_weight_scale": 0.0}},
+                None,
+            ),
+            0.0,
+        )
+
     def test_repo_proposed_config_updates_only_cluster1_model_family(self) -> None:
         proposed = yaml.safe_load((REPO_ROOT / "configs" / "proposed.yaml").read_text(encoding="utf-8"))
         entries = {entry["experiment_id"]: entry for entry in proposed["clusters"]}
 
-        self.assertEqual(entries["P_C1"]["model_family"], "cnn1d_bn")
-        self.assertEqual(entries["P_C1"]["fl_method"], "FedBN")
-        self.assertEqual(entries["P_C1"]["aggregation"], "weighted_non_bn_mean")
-        self.assertEqual(entries["P_C1"]["model_hyperparameters"]["channels"], [32, 64, 64])
-        self.assertEqual(entries["P_C1"]["model_hyperparameters"]["kernel_sizes"], [5, 3, 3])
-        self.assertEqual(entries["P_C1"]["model_hyperparameters"]["hidden_dim"], 32)
-        self.assertEqual(entries["P_C1"]["model_hyperparameters"]["dropout"], 0.1)
-        self.assertEqual(entries["P_C1"]["training_hyperparameters"]["learning_rate"], 0.003)
-        self.assertEqual(entries["P_C1"]["training_hyperparameters"]["positive_class_weight_scale"], 1.0)
+        self.assertEqual(entries["P_C1_BATADAL"]["model_family"], "cnn1d_bn")
+        self.assertEqual(entries["P_C1_BATADAL"]["fl_method"], "FedBN")
+        self.assertEqual(entries["P_C1_BATADAL"]["aggregation"], "weighted_non_bn_mean")
+        self.assertEqual(entries["P_C1_BATADAL"]["model_hyperparameters"]["channels"], [32, 64, 64])
+        self.assertEqual(entries["P_C1_BATADAL"]["model_hyperparameters"]["kernel_sizes"], [5, 3, 3])
+        self.assertEqual(entries["P_C1_BATADAL"]["model_hyperparameters"]["hidden_dim"], 32)
+        self.assertEqual(entries["P_C1_BATADAL"]["model_hyperparameters"]["dropout"], 0.1)
+        self.assertEqual(entries["P_C1_BATADAL"]["training_hyperparameters"]["learning_rate"], 0.003)
+        self.assertEqual(entries["P_C1_BATADAL"]["training_hyperparameters"]["positive_class_weight_scale"], 1.0)
         self.assertEqual(entries["P_C2"]["model_family"], "compact_mlp")
         self.assertEqual(entries["P_C2"]["fl_method"], "FedProx")
         self.assertEqual(entries["P_C2"]["aggregation"], "weighted_arithmetic_mean")
@@ -96,7 +105,7 @@ class Cluster1ProposedSmokeTests(unittest.TestCase):
             cluster1_dir = raw_root / "cluster1"
             cluster1_dir.mkdir()
 
-            rows = [["time", "sensor_a", "sensor_b", "attack"]]
+            rows = [["DATETIME", "sensor_a", "sensor_b", "ATT_FLAG"]]
             attack_indices = {
                 10, 11, 18, 19, 26, 27,
                 44, 45,
@@ -109,15 +118,15 @@ class Cluster1ProposedSmokeTests(unittest.TestCase):
                 label = "1" if index in attack_indices else "0"
                 rows.append(
                     [
-                        f"2026-01-01 00:{index // 60:02d}:{index % 60:02d}",
+                        f"04/07/16 {index % 24:02d}",
                         str(10 + index),
                         str(20 + (index % 9)),
                         label,
                     ]
                 )
-            write_csv(cluster1_dir / "hai.csv", rows)
+            write_csv(cluster1_dir / "batadal.csv", rows)
 
-            cluster1_config = configs_dir / "cluster1_hai.yaml"
+            cluster1_config = configs_dir / "cluster1_batadal.yaml"
             cluster1_config.write_text(
                 yaml.safe_dump(
                     {
@@ -125,24 +134,24 @@ class Cluster1ProposedSmokeTests(unittest.TestCase):
                         "cluster": {
                             "id": 1,
                             "key": "C1",
-                            "dataset_key": "HAI_2103",
-                            "dataset_name": "HAI Smoke",
+                            "dataset_key": "BATADAL_SMOKE",
+                            "dataset_name": "BATADAL Smoke",
                             "audit_report": "outputs/reports/test_cluster1.json",
                         },
                         "data": {
                             "data_root_env_var": "FCFL_DATA_ROOT",
                             "default_data_root": str(raw_root),
                             "current_raw_input_dir": str(cluster1_dir),
-                            "current_raw_files": ["hai.csv"],
+                            "current_raw_files": ["batadal.csv"],
                             "training_input_mode": "raw_csv_glob",
                             "training_input_glob": None,
                             "training_input_path": None,
                             "expected_processed_input_path": None,
-                            "label_column": "attack",
+                            "label_column": "ATT_FLAG",
                             "label_column_confirmed_from_audit": True,
-                            "candidate_label_columns_present": ["attack"],
-                            "timestamp_or_order_columns": ["time"],
-                            "excluded_columns": ["attack", "time"],
+                            "candidate_label_columns_present": ["ATT_FLAG"],
+                            "timestamp_or_order_columns": ["DATETIME"],
+                            "excluded_columns": ["ATT_FLAG", "DATETIME"],
                             "exclude_if_present": [],
                         },
                         "partitioning": {
@@ -152,7 +161,7 @@ class Cluster1ProposedSmokeTests(unittest.TestCase):
                             "input_type": "multivariate_time_series",
                             "window_length": 8,
                             "stride": 2,
-                            "window_label_rule": "any_positive_row",
+                            "window_label_rule": "last_row",
                         },
                         "runtime_validation": {
                             "require_training_input_to_exist": True,
@@ -192,7 +201,7 @@ class Cluster1ProposedSmokeTests(unittest.TestCase):
                         },
                         "clusters": [
                             {
-                                "experiment_id": "P_C1",
+                                "experiment_id": "P_C1_BATADAL",
                                 "cluster_config": str(cluster1_config),
                                 "hierarchy": "hierarchical_fixed",
                                 "clustering_method": "agglomerative",
@@ -233,9 +242,9 @@ class Cluster1ProposedSmokeTests(unittest.TestCase):
             finally:
                 os.chdir(old_cwd)
 
-            self.assertEqual(result.experiment_id, "P_C1")
-            run_dir = outputs_dir / "runs" / "P_C1"
-            metrics_csv = outputs_dir / "metrics" / "P_C1_metrics.csv"
+            self.assertEqual(result.experiment_id, "P_C1_BATADAL")
+            run_dir = outputs_dir / "runs" / "P_C1_BATADAL"
+            metrics_csv = outputs_dir / "metrics" / "P_C1_BATADAL_metrics.csv"
             self.assertTrue(run_dir.exists())
             self.assertTrue((run_dir / "round_metrics.csv").exists())
             self.assertTrue((run_dir / "run_summary.json").exists())
@@ -244,7 +253,7 @@ class Cluster1ProposedSmokeTests(unittest.TestCase):
             with metrics_csv.open("r", encoding="utf-8", newline="") as handle:
                 rows = list(csv.DictReader(handle))
             self.assertEqual(len(rows), 1)
-            self.assertEqual(rows[0]["experiment_id"], "P_C1")
+            self.assertEqual(rows[0]["experiment_id"], "P_C1_BATADAL")
             self.assertEqual(rows[0]["cnn_bn_channels"], "[64, 64, 64]")
             self.assertEqual(rows[0]["cnn_bn_kernel_sizes"], "[5, 3, 3]")
             self.assertEqual(int(rows[0]["cnn_bn_hidden_dim"]), 64)

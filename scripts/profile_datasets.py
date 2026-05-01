@@ -31,14 +31,14 @@ class ClusterConfig:
 CLUSTER_CONFIGS = (
     ClusterConfig(
         cluster_id=1,
-        dataset_name="HAI 21.03",
-        source_paths=("data/raw/hai_2103/hai-21.03",),
-        report_path="outputs/reports/data_profile_cluster1.json",
-        candidate_label_columns=("attack", "Attack", "label", "Label", "target", "Target"),
-        confirmed_label_column="attack",
-        timestamp_columns=("time", "Time", "timestamp", "Timestamp", "date", "Date"),
-        leakage_or_id_columns=("attack_P1", "attack_P2", "attack_P3", "attack_P4"),
-        expected_layout_note="Cluster 1 is expected to read the eight HAI 21.03 CSVs under data/raw/hai_2103/hai-21.03/.",
+        dataset_name="BATADAL",
+        source_paths=("data/raw/batadal",),
+        report_path="outputs_c1_batadal/reports/data_profile_cluster1_batadal.json",
+        candidate_label_columns=("ATT_FLAG",),
+        confirmed_label_column="ATT_FLAG",
+        timestamp_columns=("DATETIME",),
+        leakage_or_id_columns=(),
+        expected_layout_note="Cluster 1 is expected to read the three BATADAL CSVs under data/raw/batadal/.",
     ),
     ClusterConfig(
         cluster_id=2,
@@ -63,7 +63,7 @@ CLUSTER_CONFIGS = (
         candidate_label_columns=("label", "Label", "class", "Class", "target", "Target", "traffic", "Traffic", "attack", "Attack"),
         confirmed_label_column=None,
         timestamp_columns=("StartTime", "LastTime", "time", "Time", "timestamp", "Timestamp", "date", "Date"),
-        leakage_or_id_columns=("StartTime", "LastTime", "SrcAddr", "DstAddr", "sIpId", "dIpId", "attack_type", "AttackType", "traffic_class", "TrafficClass"),
+        leakage_or_id_columns=("StartTime", "LastTime", "SrcAddr", "DstAddr", "sIpId", "dIpId", "ATT_FLAG_type", "AttackType", "traffic_class", "TrafficClass"),
         expected_layout_note="Cluster 3 currently has one CSV under data/raw/ wustl_iiot_2021/.",
     ),
 )
@@ -95,6 +95,14 @@ def label_value_to_binary(value: str) -> str | None:
     if lowered in {"0", "normal", "benign", "false"}:
         return "0"
     if lowered in {"1", "attack", "malicious", "anomaly", "true"}:
+        return "1"
+    try:
+        numeric = float(normalized)
+    except ValueError:
+        return None
+    if numeric == 0.0:
+        return "0"
+    if numeric == 1.0:
         return "1"
     return None
 

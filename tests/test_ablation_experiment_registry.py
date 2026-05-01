@@ -206,7 +206,7 @@ class AblationExperimentRegistryTests(unittest.TestCase):
                     output_root,
                     experiment_id="AB_C1_FEDAVG_CNNBN",
                     cluster_id=1,
-                    dataset="HAI 21.03",
+                    dataset="BATADAL",
                     model_family="cnn1d_bn",
                     fl_method="FedAvg",
                     aggregation="weighted_arithmetic_mean",

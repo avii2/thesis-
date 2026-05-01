@@ -29,8 +29,10 @@ The local repo audited on 2026-04-21 contains the raw data under the repo-local
 ```text
 data/
   raw/
-    hai_2103/
-      hai-21.03/
+    batadal/
+      training_dataset_1.csv
+      training_dataset_2.csv
+      test_dataset.csv
     ton_iot/                  # not present in the audited local repo
     <space>ton_iot/
       Train_Test_IoT_Fridge.csv
@@ -103,7 +105,7 @@ These rules apply to all datasets.
 
 | Main cluster | Dataset | Expected raw path | Primary modality | Final task |
 |---|---|---|---|---|
-| Cluster 1 | HAI 21.03 | `data/raw/hai_2103/hai-21.03/` | process-control telemetry | binary classification |
+| Cluster 1 | BATADAL | `data/raw/batadal/` | water-distribution SCADA telemetry | binary classification |
 | Cluster 2 | TON IoT combined telemetry | current raw audit path `data/raw/ ton_iot/`; deterministic processed training input `outputs/processed/cluster2_ton_iot_combined.csv` | IIoT telemetry table | binary classification |
 | Cluster 3 | WUSTL-IIOT-2021 | `data/raw/ wustl_iiot_2021/` | network-flow features | binary classification |
 
@@ -111,29 +113,24 @@ The `original_archive/` under TON IoT must not be used for primary model trainin
 
 ---
 
-## 5. Cluster 1 data contract — HAI 21.03
+## 5. Cluster 1 data contract — BATADAL
 
 ### 5.1 Expected location
 
 ```text
-data/raw/hai_2103/hai-21.03/
+data/raw/batadal/
 ```
 
 ### 5.2 Allowed files
 
 - `.csv` only
 
-Observed audited files:
+Required files:
 
 ```text
-train1.csv
-train2.csv
-train3.csv
-test1.csv
-test2.csv
-test3.csv
-test4.csv
-test5.csv
+training_dataset_1.csv
+training_dataset_2.csv
+test_dataset.csv
 ```
 
 ### 5.3 Expected label column
@@ -141,52 +138,28 @@ test5.csv
 Expected configured label column:
 
 ```text
-attack
+ATT_FLAG
 ```
 
-Audit confirmation:
-- all eight audited HAI CSV files contain the binary label column `attack`
-- audited mapped counts are `0: 1314661`, `1: 8947`
-
-Permitted candidate label names for data profiling only:
-
-```text
-attack
-```
-
-The implementation may inspect candidates during schema profiling, but final training must use the configured label column only.
-
-### 5.4 Optional process-specific label columns
-
-If present, these are allowed for auxiliary reporting only and must never be used as model input features:
-
-```text
-attack_P1
-attack_P2
-attack_P3
-```
-
-Audit note:
-- `attack_P1`, `attack_P2`, and `attack_P3` are present in the current local files
-- `attack_P4` was not observed in the current local files; if it appears in a different snapshot, exclude it as well
+If `ATT_FLAG` is missing, stop with a clear schema error. Do not relabel BATADAL manually and do not infer labels from other columns.
 
 ### 5.5 Included feature columns
 
 Include:
-- all numerical telemetry columns
-- after removing excluded columns
-- after dropping constant or all-missing columns
+- the 43 telemetry columns after excluding `DATETIME` and `ATT_FLAG`
+- `L_*` tank levels
+- `F_*` pump/valve flows
+- `S_*` pump/valve statuses
+- `P_*` pressures
+- all retained features after dropping only all-missing, constant, or invalid columns
 
 ### 5.6 Excluded columns
 
 Always exclude from model input:
 
 ```text
-attack
-time
-attack_P1
-attack_P2
-attack_P3
+ATT_FLAG
+DATETIME
 ```
 
 If a new identifier-like column appears, stop and log it for user review.
@@ -224,7 +197,7 @@ Recommended implementation choice:
 Save to:
 
 ```text
-outputs/preprocessing/cluster1_hai_scaler.pkl
+outputs_c1_batadal/preprocessing/cluster1_batadal_scaler.pkl
 ```
 
 ### 5.9 Windowing
@@ -234,18 +207,17 @@ Cluster 1 uses CNN1D-BN on sliding-window inputs.
 Recommended implementation choice:
 
 ```text
-window_length = 32
-stride = 8
+window_length = 48
+stride = 1
 ```
 
 Window labeling rule:
 
 ```text
-window_label = 1 if any row in the window has label 1
-window_label = 0 otherwise
+For X[t-47:t], window_label = ATT_FLAG at timestamp t.
 ```
 
-If a client partition has fewer than `window_length` rows, skip that partition for window generation and log a warning.
+The BATADAL thesis protocol must use `last_row`; `any_positive_row` is not the BATADAL default.
 
 ### 5.10 Output tensor shape
 
@@ -654,7 +626,7 @@ The implementation must save the following outputs.
 ### 11.1 Preprocessing artifacts
 
 ```text
-outputs/preprocessing/cluster1_hai_scaler.pkl
+outputs_c1_batadal/preprocessing/cluster1_batadal_scaler.pkl
 outputs/preprocessing/cluster2_ton_iot_scaler.pkl
 outputs/preprocessing/cluster3_wustl_scaler.pkl
 ```

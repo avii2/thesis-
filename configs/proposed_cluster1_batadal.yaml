@@ -1,10 +1,10 @@
 config_version: 1
 experiment_group: proposed_specialized_hierarchical
-description: Proposed specialized hierarchical FCFL configuration from docs/EXPERIMENT_MATRIX.csv
+description: Proposed Cluster 1 BATADAL FCFL run using CNN1D-BN, FedBN, and weighted non-BN aggregation.
 source_of_truth:
   architecture_contract: docs/ARCHITECTURE_CONTRACT.md
   data_contract: docs/DATA_CONTRACT.md
-  experiment_matrix: docs/EXPERIMENT_MATRIX.csv
+  dataset_note: docs/CLUSTER1_BATADAL_DATASET_NOTE.md
 ledger:
   metadata_only: true
 training_defaults:
@@ -24,7 +24,7 @@ clustering_defaults:
   method: AgglomerativeClustering
   linkage: ward
   metric: euclidean
-  descriptor: feature_mean_std
+  descriptor: batadal_group_mean_std_status_duty_cycle_attack_ratio
   reuse_frozen_memberships: true
 clusters:
   - experiment_id: P_C1_BATADAL
@@ -46,27 +46,8 @@ clusters:
     training_hyperparameters:
       learning_rate: 0.003
       positive_class_weight_scale: 1.0
-  - experiment_id: P_C2
-    cluster_config: configs/cluster2_ton_iot.yaml
-    hierarchy: hierarchical_fixed
-    clustering_method: agglomerative
-    n_subclusters: 3
-    descriptor: feature_mean_std
-    membership_file: outputs/clustering/cluster2_memberships.json
-    model_family: compact_mlp
-    fl_method: FedProx
-    aggregation: weighted_arithmetic_mean
-  - experiment_id: P_C3
-    cluster_config: configs/cluster3_wustl.yaml
-    hierarchy: hierarchical_fixed
-    clustering_method: agglomerative
-    n_subclusters: 3
-    descriptor: feature_mean_std
-    membership_file: outputs/clustering/cluster3_memberships.json
-    model_family: cnn1d
-    fl_method: SCAFFOLD
-    aggregation: weighted_arithmetic_mean
 runtime_validation:
   require_cluster_configs_to_exist: true
   require_frozen_membership_files_before_training: true
   require_ledger_metadata_only: true
+  require_batadal_cluster1_outputs: true
