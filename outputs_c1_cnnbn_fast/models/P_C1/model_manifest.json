@@ -1,0 +1,14 @@
+{
+  "experiment_id": "P_C1",
+  "cluster_id": 1,
+  "dataset": "HAI 21.03",
+  "model_family": "cnn1d_bn",
+  "model_version": "C1_R006",
+  "model_hash": "sha256:f99360f608c9bafa72ad673640c8e7050587a3db2158c8c5e16d027d4f7ec3ef",
+  "artifact_type": "metadata_manifest",
+  "weights_emitted_by_runner": false,
+  "seed": null,
+  "summary_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_cnnbn_fast/runs/P_C1/run_summary.json",
+  "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_cnnbn_fast/runs/P_C1/round_metrics.csv",
+  "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_cnnbn_fast/metrics/P_C1_metrics.csv"
+}

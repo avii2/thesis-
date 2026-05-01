@@ -186,13 +186,29 @@ def _resolve_positive_class_weight_scale(
     return scale
 
 
+def _resolve_learning_rate(
+    cluster_entry: Mapping[str, Any],
+    learning_rate: float | None,
+) -> float:
+    training_hyperparameters = _optional_mapping(cluster_entry, "training_hyperparameters")
+    configured_learning_rate = (
+        learning_rate
+        if learning_rate is not None
+        else training_hyperparameters.get("learning_rate", 0.003)
+    )
+    resolved = float(configured_learning_rate)
+    if resolved <= 0.0:
+        raise ValueError("learning_rate must be positive.")
+    return resolved
+
+
 def run_cluster1_proposed(
     proposed_config_path: str | Path = "configs/proposed.yaml",
     *,
     rounds: int | None = None,
     local_epochs: int | None = None,
     batch_size: int | None = None,
-    learning_rate: float = 0.05,
+    learning_rate: float | None = None,
     seed: int | None = None,
     smoke_test: bool = False,
     max_train_examples_per_client: int | None = None,
@@ -241,6 +257,7 @@ def run_cluster1_proposed(
         max_eval_examples_per_client=max_eval_examples_per_client,
     )
     computed_positive_class_weight = compute_cluster_positive_class_weight(clients)
+    configured_learning_rate = _resolve_learning_rate(cluster_entry, learning_rate)
     resolved_positive_class_weight_scale = _resolve_positive_class_weight_scale(
         cluster_entry,
         positive_class_weight_scale,
@@ -331,7 +348,7 @@ def run_cluster1_proposed(
                     model_config,
                     local_epochs=configured_local_epochs,
                     batch_size=configured_batch_size,
-                    learning_rate=learning_rate,
+                    learning_rate=configured_learning_rate,
                     seed=configured_seed + round_index * 1000 + subcluster_index * 100 + client_index,
                     positive_class_weight=positive_class_weight,
                 )
@@ -470,7 +487,7 @@ def run_cluster1_proposed(
         "rounds": configured_rounds,
         "local_epochs": configured_local_epochs,
         "batch_size": configured_batch_size,
-        "learning_rate": learning_rate,
+        "learning_rate": configured_learning_rate,
         "seed": configured_seed,
         "cnn_bn_channels": list(model_config.block_channels),
         "cnn_bn_kernel_sizes": list(model_config.kernel_sizes),
@@ -519,6 +536,7 @@ def run_cluster1_proposed(
         "cnn_bn_kernel_sizes": json.dumps(list(model_config.kernel_sizes)),
         "cnn_bn_hidden_dim": model_config.hidden_dim,
         "cnn_bn_dropout": model_config.dropout,
+        "learning_rate": configured_learning_rate,
         "computed_positive_class_weight": computed_positive_class_weight,
         "positive_class_weight_scale": resolved_positive_class_weight_scale,
         "positive_class_weight": positive_class_weight,
@@ -576,7 +594,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rounds", type=int, help="Optional override for FL rounds.")
     parser.add_argument("--local-epochs", type=int, help="Optional override for local epochs.")
     parser.add_argument("--batch-size", type=int, help="Optional override for local batch size.")
-    parser.add_argument("--learning-rate", type=float, default=0.01, help="Local SGD learning rate.")
+    parser.add_argument("--learning-rate", type=float, help="Optional local SGD learning rate override.")
     parser.add_argument(
         "--cnn-bn-channels",
         nargs=3,

@@ -1,0 +1,99 @@
+{
+  "source": "experiment-runner metrics rows",
+  "confusion_matrix_layout": "[[TN, FP], [FN, TP]]",
+  "selection_rule": "selected_threshold maximizes validation F1 and is then applied to test data",
+  "experiments": {
+    "P_C1": {
+      "experiment_id": "P_C1",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03",
+      "run_category": "proposed_specialized_hierarchical",
+      "model_family": "cnn1d_bn",
+      "fl_method": "FedBN",
+      "aggregation": "weighted_non_bn_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.8999646306037903,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 23712,
+        "fp": 32,
+        "fn": 204,
+        "tp": 52,
+        "matrix": [
+          [
+            23712,
+            32
+          ],
+          [
+            204,
+            52
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 14652,
+        "fp": 9092,
+        "fn": 74,
+        "tp": 182,
+        "matrix": [
+          [
+            14652,
+            9092
+          ],
+          [
+            74,
+            182
+          ]
+        ]
+      }
+    },
+    "AB_C1_FEDAVG_CNNBN": {
+      "experiment_id": "AB_C1_FEDAVG_CNNBN",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03",
+      "run_category": "ablation_fl_method",
+      "model_family": "cnn1d_bn",
+      "fl_method": "FedAvg",
+      "aggregation": "weighted_arithmetic_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.6296356320381165,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 23722,
+        "fp": 22,
+        "fn": 179,
+        "tp": 77,
+        "matrix": [
+          [
+            23722,
+            22
+          ],
+          [
+            179,
+            77
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 23373,
+        "fp": 371,
+        "fn": 145,
+        "tp": 111,
+        "matrix": [
+          [
+            23373,
+            371
+          ],
+          [
+            145,
+            111
+          ]
+        ]
+      }
+    }
+  }
+}

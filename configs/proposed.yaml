@@ -37,6 +37,14 @@ clusters:
     model_family: cnn1d_bn
     fl_method: FedBN
     aggregation: weighted_non_bn_mean
+    model_hyperparameters:
+      channels: [32, 64, 64]
+      kernel_sizes: [5, 3, 3]
+      hidden_dim: 32
+      dropout: 0.1
+    training_hyperparameters:
+      learning_rate: 0.003
+      positive_class_weight_scale: 1.0
   - experiment_id: P_C2
     cluster_config: configs/cluster2_ton_iot.yaml
     hierarchy: hierarchical_fixed

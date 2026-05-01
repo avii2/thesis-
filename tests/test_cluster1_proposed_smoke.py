@@ -69,6 +69,12 @@ class Cluster1ProposedSmokeTests(unittest.TestCase):
         self.assertEqual(entries["P_C1"]["model_family"], "cnn1d_bn")
         self.assertEqual(entries["P_C1"]["fl_method"], "FedBN")
         self.assertEqual(entries["P_C1"]["aggregation"], "weighted_non_bn_mean")
+        self.assertEqual(entries["P_C1"]["model_hyperparameters"]["channels"], [32, 64, 64])
+        self.assertEqual(entries["P_C1"]["model_hyperparameters"]["kernel_sizes"], [5, 3, 3])
+        self.assertEqual(entries["P_C1"]["model_hyperparameters"]["hidden_dim"], 32)
+        self.assertEqual(entries["P_C1"]["model_hyperparameters"]["dropout"], 0.1)
+        self.assertEqual(entries["P_C1"]["training_hyperparameters"]["learning_rate"], 0.003)
+        self.assertEqual(entries["P_C1"]["training_hyperparameters"]["positive_class_weight_scale"], 1.0)
         self.assertEqual(entries["P_C2"]["model_family"], "compact_mlp")
         self.assertEqual(entries["P_C2"]["fl_method"], "FedProx")
         self.assertEqual(entries["P_C2"]["aggregation"], "weighted_arithmetic_mean")
@@ -203,6 +209,7 @@ class Cluster1ProposedSmokeTests(unittest.TestCase):
                                     "dropout": 0.2,
                                 },
                                 "training_hyperparameters": {
+                                    "learning_rate": 0.004,
                                     "positive_class_weight_scale": 0.5,
                                 },
                             }
@@ -238,6 +245,12 @@ class Cluster1ProposedSmokeTests(unittest.TestCase):
                 rows = list(csv.DictReader(handle))
             self.assertEqual(len(rows), 1)
             self.assertEqual(rows[0]["experiment_id"], "P_C1")
+            self.assertEqual(rows[0]["cnn_bn_channels"], "[64, 64, 64]")
+            self.assertEqual(rows[0]["cnn_bn_kernel_sizes"], "[5, 3, 3]")
+            self.assertEqual(int(rows[0]["cnn_bn_hidden_dim"]), 64)
+            self.assertAlmostEqual(float(rows[0]["cnn_bn_dropout"]), 0.2)
+            self.assertAlmostEqual(float(rows[0]["learning_rate"]), 0.004)
+            self.assertAlmostEqual(float(rows[0]["positive_class_weight_scale"]), 0.5)
 
             summary = json.loads((run_dir / "run_summary.json").read_text(encoding="utf-8"))
             self.assertEqual(summary["model_family"], "cnn1d_bn")
@@ -247,6 +260,7 @@ class Cluster1ProposedSmokeTests(unittest.TestCase):
             self.assertEqual(summary["cnn_bn_kernel_sizes"], [5, 3, 3])
             self.assertEqual(summary["cnn_bn_hidden_dim"], 64)
             self.assertEqual(summary["cnn_bn_dropout"], 0.2)
+            self.assertEqual(summary["learning_rate"], 0.004)
             self.assertEqual(summary["positive_class_weight_scale"], 0.5)
             self.assertAlmostEqual(
                 summary["positive_class_weight"],

@@ -1,0 +1,53 @@
+{
+  "source": "experiment-runner metrics rows",
+  "confusion_matrix_layout": "[[TN, FP], [FN, TP]]",
+  "selection_rule": "selected_threshold maximizes validation F1 and is then applied to test data",
+  "experiments": {
+    "AB_C1_FEDAVG_CNNBN": {
+      "experiment_id": "AB_C1_FEDAVG_CNNBN",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03",
+      "run_category": "ablation_fl_method",
+      "model_family": "cnn1d_bn",
+      "fl_method": "FedAvg",
+      "aggregation": "weighted_arithmetic_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.8048277497291565,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 24503,
+        "fp": 21,
+        "fn": 135,
+        "tp": 121,
+        "matrix": [
+          [
+            24503,
+            21
+          ],
+          [
+            135,
+            121
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 24487,
+        "fp": 37,
+        "fn": 126,
+        "tp": 130,
+        "matrix": [
+          [
+            24487,
+            37
+          ],
+          [
+            126,
+            130
+          ]
+        ]
+      }
+    }
+  }
+}

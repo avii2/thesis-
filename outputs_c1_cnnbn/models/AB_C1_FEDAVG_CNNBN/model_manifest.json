@@ -1,0 +1,14 @@
+{
+  "experiment_id": "AB_C1_FEDAVG_CNNBN",
+  "cluster_id": 1,
+  "dataset": "HAI 21.03",
+  "model_family": "cnn1d_bn",
+  "model_version": "C1_R036",
+  "model_hash": "sha256:65334caa2431806b18578c700478d91f545230c4fe8c4263751fb081b9e7f04f",
+  "artifact_type": "metadata_manifest",
+  "weights_emitted_by_runner": false,
+  "seed": null,
+  "summary_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_cnnbn/runs/AB_C1_FEDAVG_CNNBN/run_summary.json",
+  "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_cnnbn/runs/AB_C1_FEDAVG_CNNBN/round_metrics.csv",
+  "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_cnnbn/metrics/AB_C1_FEDAVG_CNNBN_metrics.csv"
+}
