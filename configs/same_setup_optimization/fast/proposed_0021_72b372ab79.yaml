@@ -1,0 +1,58 @@
+---
+config_version: 1
+experiment_group: proposed_specialized_hierarchical
+description: Same-setup optimized Cluster 1 candidate no_constants_w64_s8_r5to1_pcw0p0_lr0p003_do0p05.
+source_of_truth:
+  architecture_contract: docs/ARCHITECTURE_CONTRACT.md
+  data_contract: docs/DATA_CONTRACT.md
+  same_setup_optimization: docs/CLUSTER1_SAME_SETUP_OPTIMIZATION.md
+ledger:
+  metadata_only: true
+training_defaults:
+  rounds: 50
+  local_epochs: 1
+  batch_size: 128
+  seeds:
+  - 42
+smoke_test_defaults:
+  rounds: 2
+  local_epochs: 1
+  batch_size: 64
+  seed: 42
+clustering_defaults:
+  method: AgglomerativeClustering
+  linkage: ward
+  metric: euclidean
+  descriptor: feature_wise_mean_std
+  reuse_frozen_memberships: true
+clusters:
+- experiment_id: P_C1_OPT_FAST_0021
+  cluster_config: configs/same_setup_optimization/fast/cluster1_0021_72b372ab79.yaml
+  hierarchy: hierarchical_fixed
+  clustering_method: agglomerative
+  n_subclusters: 2
+  descriptor: feature_wise_mean_std
+  membership_file: outputs_c1_same_setup_optimization/data_variants/no_constants_w64_s8_r5to1_selection_no_test/clustering/cluster1_memberships.json
+  model_family: cnn1d_bn
+  fl_method: FedBN
+  aggregation: weighted_non_bn_mean
+  model_hyperparameters:
+    channels:
+    - 32
+    - 64
+    - 64
+    kernel_sizes:
+    - 5
+    - 3
+    - 3
+    hidden_dim: 32
+    dropout: 0.05
+  training_hyperparameters:
+    learning_rate: 0.003
+    positive_class_weight_scale: 0.0
+  output_root: outputs_c1_same_setup_optimization/fast/0021_72b372ab79
+runtime_validation:
+  require_cluster_configs_to_exist: true
+  require_frozen_membership_files_before_training: true
+  require_ledger_metadata_only: true
+  require_same_setup_optimized_cluster1_outputs: true

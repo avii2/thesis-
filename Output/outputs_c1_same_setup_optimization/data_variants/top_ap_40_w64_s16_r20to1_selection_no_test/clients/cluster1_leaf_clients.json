@@ -1,0 +1,276 @@
+{
+  "cluster_id": 1,
+  "dataset": "HAI 21.03",
+  "variant": "cluster1_same_setup_optimization",
+  "variant_id": "top_ap_40_w64_s16_r20to1_selection_no_test",
+  "feature_variant": "top_ap_40",
+  "window_length": 64,
+  "stride": 16,
+  "negative_to_positive_ratio": 20,
+  "num_leaf_clients": 12,
+  "clients": [
+    {
+      "client_id": "C1_L001",
+      "train_window_count": 624,
+      "train_positive_count": 30,
+      "train_negative_count": 594,
+      "val_window_count": 563,
+      "val_positive_count": 11,
+      "val_negative_count": 552,
+      "test_window_count": 0,
+      "test_positive_count": 0,
+      "test_negative_count": 0,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L002",
+      "train_window_count": 624,
+      "train_positive_count": 30,
+      "train_negative_count": 594,
+      "val_window_count": 563,
+      "val_positive_count": 11,
+      "val_negative_count": 552,
+      "test_window_count": 0,
+      "test_positive_count": 0,
+      "test_negative_count": 0,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L003",
+      "train_window_count": 624,
+      "train_positive_count": 30,
+      "train_negative_count": 594,
+      "val_window_count": 563,
+      "val_positive_count": 11,
+      "val_negative_count": 552,
+      "test_window_count": 0,
+      "test_positive_count": 0,
+      "test_negative_count": 0,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L004",
+      "train_window_count": 624,
+      "train_positive_count": 30,
+      "train_negative_count": 594,
+      "val_window_count": 563,
+      "val_positive_count": 11,
+      "val_negative_count": 552,
+      "test_window_count": 0,
+      "test_positive_count": 0,
+      "test_negative_count": 0,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L005",
+      "train_window_count": 623,
+      "train_positive_count": 30,
+      "train_negative_count": 593,
+      "val_window_count": 563,
+      "val_positive_count": 11,
+      "val_negative_count": 552,
+      "test_window_count": 0,
+      "test_positive_count": 0,
+      "test_negative_count": 0,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L006",
+      "train_window_count": 623,
+      "train_positive_count": 30,
+      "train_negative_count": 593,
+      "val_window_count": 563,
+      "val_positive_count": 11,
+      "val_negative_count": 552,
+      "test_window_count": 0,
+      "test_positive_count": 0,
+      "test_negative_count": 0,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L007",
+      "train_window_count": 623,
+      "train_positive_count": 30,
+      "train_negative_count": 593,
+      "val_window_count": 562,
+      "val_positive_count": 11,
+      "val_negative_count": 551,
+      "test_window_count": 0,
+      "test_positive_count": 0,
+      "test_negative_count": 0,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L008",
+      "train_window_count": 623,
+      "train_positive_count": 30,
+      "train_negative_count": 593,
+      "val_window_count": 562,
+      "val_positive_count": 11,
+      "val_negative_count": 551,
+      "test_window_count": 0,
+      "test_positive_count": 0,
+      "test_negative_count": 0,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L009",
+      "train_window_count": 622,
+      "train_positive_count": 29,
+      "train_negative_count": 593,
+      "val_window_count": 562,
+      "val_positive_count": 11,
+      "val_negative_count": 551,
+      "test_window_count": 0,
+      "test_positive_count": 0,
+      "test_negative_count": 0,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L010",
+      "train_window_count": 622,
+      "train_positive_count": 29,
+      "train_negative_count": 593,
+      "val_window_count": 561,
+      "val_positive_count": 10,
+      "val_negative_count": 551,
+      "test_window_count": 0,
+      "test_positive_count": 0,
+      "test_negative_count": 0,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L011",
+      "train_window_count": 622,
+      "train_positive_count": 29,
+      "train_negative_count": 593,
+      "val_window_count": 561,
+      "val_positive_count": 10,
+      "val_negative_count": 551,
+      "test_window_count": 0,
+      "test_positive_count": 0,
+      "test_negative_count": 0,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L012",
+      "train_window_count": 622,
+      "train_positive_count": 29,
+      "train_negative_count": 593,
+      "val_window_count": 561,
+      "val_positive_count": 10,
+      "val_negative_count": 551,
+      "test_window_count": 0,
+      "test_positive_count": 0,
+      "test_negative_count": 0,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "warning": ""
+    }
+  ],
+  "cluster_split_label_counts": {
+    "train": {
+      "0": 7120,
+      "1": 356
+    },
+    "validation": {
+      "0": 6618,
+      "1": 129
+    },
+    "test": {}
+  }
+}

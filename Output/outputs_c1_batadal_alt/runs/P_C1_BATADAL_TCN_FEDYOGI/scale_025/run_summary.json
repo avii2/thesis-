@@ -1,0 +1,651 @@
+{
+  "batch_size": 128,
+  "client_lr": 0.001,
+  "data_summary": {
+    "client_test_label_counts": {
+      "C1_L001": {
+        "0": 171
+      },
+      "C1_L002": {
+        "0": 101,
+        "1": 70
+      },
+      "C1_L003": {
+        "0": 170
+      },
+      "C1_L004": {
+        "0": 105,
+        "1": 65
+      },
+      "C1_L005": {
+        "0": 139,
+        "1": 31
+      },
+      "C1_L006": {
+        "0": 139,
+        "1": 31
+      },
+      "C1_L007": {
+        "0": 160,
+        "1": 10
+      },
+      "C1_L008": {
+        "0": 80,
+        "1": 90
+      },
+      "C1_L009": {
+        "0": 165,
+        "1": 5
+      },
+      "C1_L010": {
+        "0": 95,
+        "1": 75
+      },
+      "C1_L011": {
+        "0": 170
+      },
+      "C1_L012": {
+        "0": 140,
+        "1": 30
+      }
+    },
+    "client_test_sample_counts": {
+      "C1_L001": 171,
+      "C1_L002": 171,
+      "C1_L003": 170,
+      "C1_L004": 170,
+      "C1_L005": 170,
+      "C1_L006": 170,
+      "C1_L007": 170,
+      "C1_L008": 170,
+      "C1_L009": 170,
+      "C1_L010": 170,
+      "C1_L011": 170,
+      "C1_L012": 170
+    },
+    "client_train_label_counts": {
+      "C1_L001": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L002": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L003": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L004": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L005": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L006": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L007": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L008": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L009": {
+        "0": 994,
+        "1": 24
+      },
+      "C1_L010": {
+        "0": 994,
+        "1": 24
+      },
+      "C1_L011": {
+        "0": 994,
+        "1": 24
+      },
+      "C1_L012": {
+        "0": 994,
+        "1": 24
+      }
+    },
+    "client_train_sample_counts": {
+      "C1_L001": 1019,
+      "C1_L002": 1019,
+      "C1_L003": 1019,
+      "C1_L004": 1019,
+      "C1_L005": 1019,
+      "C1_L006": 1019,
+      "C1_L007": 1019,
+      "C1_L008": 1019,
+      "C1_L009": 1018,
+      "C1_L010": 1018,
+      "C1_L011": 1018,
+      "C1_L012": 1018
+    },
+    "client_validation_label_counts": {
+      "C1_L001": {
+        "0": 48
+      },
+      "C1_L002": {
+        "0": 48
+      },
+      "C1_L003": {
+        "0": 27,
+        "1": 21
+      },
+      "C1_L004": {
+        "1": 48
+      },
+      "C1_L005": {
+        "0": 23,
+        "1": 25
+      },
+      "C1_L006": {
+        "0": 48
+      },
+      "C1_L007": {
+        "0": 35,
+        "1": 13
+      },
+      "C1_L008": {
+        "1": 48
+      },
+      "C1_L009": {
+        "1": 48
+      },
+      "C1_L010": {
+        "0": 46,
+        "1": 1
+      },
+      "C1_L011": {
+        "0": 47
+      },
+      "C1_L012": {
+        "0": 47
+      }
+    },
+    "client_validation_sample_counts": {
+      "C1_L001": 48,
+      "C1_L002": 48,
+      "C1_L003": 48,
+      "C1_L004": 48,
+      "C1_L005": 48,
+      "C1_L006": 48,
+      "C1_L007": 48,
+      "C1_L008": 48,
+      "C1_L009": 48,
+      "C1_L010": 47,
+      "C1_L011": 47,
+      "C1_L012": 47
+    },
+    "cluster_id": 1,
+    "cluster_split_label_counts": {
+      "test": {
+        "0": 1635,
+        "1": 407
+      },
+      "train": {
+        "0": 11936,
+        "1": 288
+      },
+      "validation": {
+        "0": 369,
+        "1": 204
+      }
+    },
+    "dataset": "BATADAL",
+    "dataset_description": "BATADAL water-distribution SCADA telemetry",
+    "dropped_all_missing_feature_columns": [],
+    "dropped_constant_feature_columns": [
+      "S_PU1",
+      "F_PU3",
+      "S_PU3",
+      "F_PU5",
+      "S_PU5",
+      "F_PU9",
+      "S_PU9"
+    ],
+    "dropped_high_cardinality_categorical_columns": [],
+    "heldout_test_source_files": [
+      "test_dataset.csv"
+    ],
+    "input_adapter": "sliding_window_feature_channels",
+    "input_channels": 36,
+    "input_length": 48,
+    "max_eval_examples_per_client": null,
+    "max_train_examples_per_client": null,
+    "model_feature_columns": [
+      "L_T1",
+      "L_T2",
+      "L_T3",
+      "L_T4",
+      "L_T5",
+      "L_T6",
+      "L_T7",
+      "F_PU1",
+      "F_PU2",
+      "S_PU2",
+      "F_PU4",
+      "S_PU4",
+      "F_PU6",
+      "S_PU6",
+      "F_PU7",
+      "S_PU7",
+      "F_PU8",
+      "S_PU8",
+      "F_PU10",
+      "S_PU10",
+      "F_PU11",
+      "S_PU11",
+      "F_V2",
+      "S_V2",
+      "P_J280",
+      "P_J269",
+      "P_J300",
+      "P_J256",
+      "P_J289",
+      "P_J415",
+      "P_J302",
+      "P_J306",
+      "P_J307",
+      "P_J317",
+      "P_J14",
+      "P_J422"
+    ],
+    "num_clients": 12,
+    "preprocessing_fit_scope": "cluster1_training_rows_only",
+    "retained_input_feature_columns": [
+      "L_T1",
+      "L_T2",
+      "L_T3",
+      "L_T4",
+      "L_T5",
+      "L_T6",
+      "L_T7",
+      "F_PU1",
+      "S_PU1",
+      "F_PU2",
+      "S_PU2",
+      "F_PU3",
+      "S_PU3",
+      "F_PU4",
+      "S_PU4",
+      "F_PU5",
+      "S_PU5",
+      "F_PU6",
+      "S_PU6",
+      "F_PU7",
+      "S_PU7",
+      "F_PU8",
+      "S_PU8",
+      "F_PU9",
+      "S_PU9",
+      "F_PU10",
+      "S_PU10",
+      "F_PU11",
+      "S_PU11",
+      "F_V2",
+      "S_V2",
+      "P_J280",
+      "P_J269",
+      "P_J300",
+      "P_J256",
+      "P_J289",
+      "P_J415",
+      "P_J302",
+      "P_J306",
+      "P_J307",
+      "P_J317",
+      "P_J14",
+      "P_J422"
+    ],
+    "test_dataset_used_for_clustering": false,
+    "test_dataset_used_for_descriptor_computation": false,
+    "test_dataset_used_for_preprocessing_fit": false,
+    "test_dataset_used_for_threshold_tuning": false,
+    "test_dataset_used_for_training": false,
+    "test_dataset_used_for_validation": false,
+    "train_source_files": [
+      "training_dataset_1.csv",
+      "training_dataset_2.csv"
+    ],
+    "validation_source_files": [
+      "training_dataset_2.csv"
+    ],
+    "variant": "cluster1_batadal",
+    "window_label_rule": "last_row"
+  },
+  "experiment_id": "P_C1_BATADAL_TCN_FEDYOGI",
+  "fedyogi": {
+    "beta1": 0.9,
+    "beta2": 0.99,
+    "server_lr": 0.01,
+    "tau": 0.001
+  },
+  "local_epochs": 1,
+  "model_config": {
+    "channels": 64,
+    "dilations": [
+      1,
+      2,
+      4,
+      8,
+      16
+    ],
+    "dropout": 0.15,
+    "groups": 8,
+    "hidden_dim": 32,
+    "input_channels": 36,
+    "input_length": 48,
+    "kernel_size": 3
+  },
+  "positive_class_weight_scale": 0.25,
+  "round_rows": [
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 1,
+      "train_loss_local_mean": 0.748029379794995
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 2,
+      "train_loss_local_mean": 0.6495302890737852
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 3,
+      "train_loss_local_mean": 0.5953111142540971
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 4,
+      "train_loss_local_mean": 0.5865733264945447
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 5,
+      "train_loss_local_mean": 0.6350692364697655
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 6,
+      "train_loss_local_mean": 0.7818533154592539
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 7,
+      "train_loss_local_mean": 0.8661222483303087
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 8,
+      "train_loss_local_mean": 0.8784355447084332
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 9,
+      "train_loss_local_mean": 0.7816092353702212
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 10,
+      "train_loss_local_mean": 0.6455470564542338
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 11,
+      "train_loss_local_mean": 0.5038178946900492
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 12,
+      "train_loss_local_mean": 0.4276747302307437
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 13,
+      "train_loss_local_mean": 0.44938930791492265
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 14,
+      "train_loss_local_mean": 0.5988453679407636
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 15,
+      "train_loss_local_mean": 0.7691999316836396
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 16,
+      "train_loss_local_mean": 0.858229223638773
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 17,
+      "train_loss_local_mean": 0.8569816363354524
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 18,
+      "train_loss_local_mean": 0.8106180007259051
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 19,
+      "train_loss_local_mean": 0.711971340700984
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 20,
+      "train_loss_local_mean": 0.5811530975624919
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 21,
+      "train_loss_local_mean": 0.44270308859025437
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 22,
+      "train_loss_local_mean": 0.36469632340595126
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 23,
+      "train_loss_local_mean": 0.3531604184148212
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 24,
+      "train_loss_local_mean": 0.3949564549063022
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 25,
+      "train_loss_local_mean": 0.5022100034693722
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 26,
+      "train_loss_local_mean": 0.6592976537018936
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 27,
+      "train_loss_local_mean": 0.8488882678198024
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 28,
+      "train_loss_local_mean": 0.9963288500468934
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 29,
+      "train_loss_local_mean": 1.1051998222019392
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 30,
+      "train_loss_local_mean": 1.1843102716971998
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 31,
+      "train_loss_local_mean": 1.246207830902435
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 32,
+      "train_loss_local_mean": 1.1790413907026693
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 33,
+      "train_loss_local_mean": 1.1300318429954548
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 34,
+      "train_loss_local_mean": 1.013932655489043
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 35,
+      "train_loss_local_mean": 0.9167847815769316
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 36,
+      "train_loss_local_mean": 0.8015601106684093
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 37,
+      "train_loss_local_mean": 0.7100112227368905
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 38,
+      "train_loss_local_mean": 0.6076878112168439
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 39,
+      "train_loss_local_mean": 0.5567298909300007
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 40,
+      "train_loss_local_mean": 0.5571704276371747
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 41,
+      "train_loss_local_mean": 0.6608157528874775
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 42,
+      "train_loss_local_mean": 0.9683730965480208
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 43,
+      "train_loss_local_mean": 1.4607082766791184
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 44,
+      "train_loss_local_mean": 2.0443024461468062
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 45,
+      "train_loss_local_mean": 2.449036287764708
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 46,
+      "train_loss_local_mean": 2.6757220389942327
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 47,
+      "train_loss_local_mean": 2.6265008759995303
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 48,
+      "train_loss_local_mean": 2.4181483003000417
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 49,
+      "train_loss_local_mean": 2.097408170501391
+    },
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 50,
+      "train_loss_local_mean": 1.7955398348470528
+    }
+  ],
+  "rounds": 50
+}
