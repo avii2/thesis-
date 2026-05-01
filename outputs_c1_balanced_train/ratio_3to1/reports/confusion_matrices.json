@@ -1,0 +1,99 @@
+{
+  "source": "experiment-runner metrics rows",
+  "confusion_matrix_layout": "[[TN, FP], [FN, TP]]",
+  "selection_rule": "selected_threshold maximizes validation F1 and is then applied to test data",
+  "experiments": {
+    "B_C1_BAL_3TO1": {
+      "experiment_id": "B_C1_BAL_3TO1",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03 balanced-training variant 3to1",
+      "run_category": null,
+      "model_family": "cnn1d",
+      "fl_method": "FedAvg",
+      "aggregation": "weighted_arithmetic_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.6653572916984558,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 15974,
+        "fp": 39,
+        "fn": 284,
+        "tp": 197,
+        "matrix": [
+          [
+            15974,
+            39
+          ],
+          [
+            284,
+            197
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 13314,
+        "fp": 2699,
+        "fn": 193,
+        "tp": 288,
+        "matrix": [
+          [
+            13314,
+            2699
+          ],
+          [
+            193,
+            288
+          ]
+        ]
+      }
+    },
+    "P_C1_BAL_3TO1": {
+      "experiment_id": "P_C1_BAL_3TO1",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03 balanced-training variant 3to1",
+      "run_category": null,
+      "model_family": "cnn1d_bn",
+      "fl_method": "FedBN",
+      "aggregation": "weighted_non_bn_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.522558867931366,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 15896,
+        "fp": 117,
+        "fn": 410,
+        "tp": 71,
+        "matrix": [
+          [
+            15896,
+            117
+          ],
+          [
+            410,
+            71
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 4984,
+        "fp": 11029,
+        "fn": 110,
+        "tp": 371,
+        "matrix": [
+          [
+            4984,
+            11029
+          ],
+          [
+            110,
+            371
+          ]
+        ]
+      }
+    }
+  }
+}

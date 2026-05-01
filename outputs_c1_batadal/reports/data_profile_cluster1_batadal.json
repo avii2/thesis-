@@ -1,0 +1,257 @@
+{
+  "cluster_id": 1,
+  "dataset": "BATADAL",
+  "dataset_description": "BATADAL water-distribution SCADA telemetry",
+  "variant": "cluster1_batadal",
+  "status": "ok",
+  "config_path": "configs/cluster1_batadal.yaml",
+  "output_root": "outputs_c1_batadal",
+  "raw_files": [
+    {
+      "file_name": "training_dataset_1.csv",
+      "path": "data/raw/batadal/training_dataset_1.csv",
+      "row_count": 8761,
+      "label_counts": {
+        "0": 8761
+      },
+      "start_timestamp": "2014-01-06T00:00:00",
+      "end_timestamp": "2015-01-06T00:00:00",
+      "feature_count": 43
+    },
+    {
+      "file_name": "training_dataset_2.csv",
+      "path": "data/raw/batadal/training_dataset_2.csv",
+      "row_count": 4177,
+      "label_counts": {
+        "0": 3685,
+        "1": 492
+      },
+      "start_timestamp": "2016-07-04T00:00:00",
+      "end_timestamp": "2016-12-25T00:00:00",
+      "feature_count": 43
+    },
+    {
+      "file_name": "test_dataset.csv",
+      "path": "data/raw/batadal/test_dataset.csv",
+      "row_count": 2089,
+      "label_counts": {
+        "0": 1682,
+        "1": 407
+      },
+      "start_timestamp": "2017-01-04T00:00:00",
+      "end_timestamp": "2017-04-01T00:00:00",
+      "feature_count": 43
+    }
+  ],
+  "validation_cutoff": "2016-11-29 05:00",
+  "segments": {
+    "train": [
+      {
+        "segment_key": "training_dataset_1.csv::train",
+        "file_name": "training_dataset_1.csv",
+        "split": "train",
+        "row_count": 8761,
+        "label_counts": {
+          "0": 8761
+        },
+        "start_timestamp": "2014-01-06T00:00:00",
+        "end_timestamp": "2015-01-06T00:00:00"
+      },
+      {
+        "segment_key": "training_dataset_2.csv::train",
+        "file_name": "training_dataset_2.csv",
+        "split": "train",
+        "row_count": 3557,
+        "label_counts": {
+          "0": 3269,
+          "1": 288
+        },
+        "start_timestamp": "2016-07-04T00:00:00",
+        "end_timestamp": "2016-11-29T04:00:00"
+      }
+    ],
+    "validation": [
+      {
+        "segment_key": "training_dataset_2.csv::validation",
+        "file_name": "training_dataset_2.csv",
+        "split": "validation",
+        "row_count": 620,
+        "label_counts": {
+          "0": 416,
+          "1": 204
+        },
+        "start_timestamp": "2016-11-29T05:00:00",
+        "end_timestamp": "2016-12-25T00:00:00"
+      }
+    ],
+    "test": [
+      {
+        "segment_key": "test_dataset.csv::test",
+        "file_name": "test_dataset.csv",
+        "split": "test",
+        "row_count": 2089,
+        "label_counts": {
+          "0": 1682,
+          "1": 407
+        },
+        "start_timestamp": "2017-01-04T00:00:00",
+        "end_timestamp": "2017-04-01T00:00:00"
+      }
+    ]
+  },
+  "row_counts": {
+    "train": 12318,
+    "validation": 620,
+    "test": 2089
+  },
+  "row_label_counts": {
+    "train": {
+      "0": 12030,
+      "1": 288
+    },
+    "validation": {
+      "0": 416,
+      "1": 204
+    },
+    "test": {
+      "0": 1682,
+      "1": 407
+    }
+  },
+  "window_counts": {
+    "train_total": 12224,
+    "validation_total": 573,
+    "test_total": 2042
+  },
+  "window_label_counts": {
+    "train": {
+      "0": 11936,
+      "1": 288
+    },
+    "validation": {
+      "0": 369,
+      "1": 204
+    },
+    "test": {
+      "0": 1635,
+      "1": 407
+    }
+  },
+  "feature_columns_before_preprocessing": [
+    "L_T1",
+    "L_T2",
+    "L_T3",
+    "L_T4",
+    "L_T5",
+    "L_T6",
+    "L_T7",
+    "F_PU1",
+    "S_PU1",
+    "F_PU2",
+    "S_PU2",
+    "F_PU3",
+    "S_PU3",
+    "F_PU4",
+    "S_PU4",
+    "F_PU5",
+    "S_PU5",
+    "F_PU6",
+    "S_PU6",
+    "F_PU7",
+    "S_PU7",
+    "F_PU8",
+    "S_PU8",
+    "F_PU9",
+    "S_PU9",
+    "F_PU10",
+    "S_PU10",
+    "F_PU11",
+    "S_PU11",
+    "F_V2",
+    "S_V2",
+    "P_J280",
+    "P_J269",
+    "P_J300",
+    "P_J256",
+    "P_J289",
+    "P_J415",
+    "P_J302",
+    "P_J306",
+    "P_J307",
+    "P_J317",
+    "P_J14",
+    "P_J422"
+  ],
+  "feature_columns_after_preprocessing": [
+    "L_T1",
+    "L_T2",
+    "L_T3",
+    "L_T4",
+    "L_T5",
+    "L_T6",
+    "L_T7",
+    "F_PU1",
+    "F_PU2",
+    "S_PU2",
+    "F_PU4",
+    "S_PU4",
+    "F_PU6",
+    "S_PU6",
+    "F_PU7",
+    "S_PU7",
+    "F_PU8",
+    "S_PU8",
+    "F_PU10",
+    "S_PU10",
+    "F_PU11",
+    "S_PU11",
+    "F_V2",
+    "S_V2",
+    "P_J280",
+    "P_J269",
+    "P_J300",
+    "P_J256",
+    "P_J289",
+    "P_J415",
+    "P_J302",
+    "P_J306",
+    "P_J307",
+    "P_J317",
+    "P_J14",
+    "P_J422"
+  ],
+  "dropped_all_missing_feature_columns": [],
+  "dropped_constant_feature_columns": [
+    "S_PU1",
+    "F_PU3",
+    "S_PU3",
+    "F_PU5",
+    "S_PU5",
+    "F_PU9",
+    "S_PU9"
+  ],
+  "input_type": "multivariate_time_series",
+  "window_length": 48,
+  "stride": 1,
+  "window_label_rule": "last_row",
+  "num_leaf_clients": 12,
+  "num_subclusters": 2,
+  "client_metadata_path": "outputs_c1_batadal/clients/cluster1_leaf_clients.json",
+  "membership_path": "outputs_c1_batadal/clustering/cluster1_memberships.json",
+  "preprocessing_artifact_paths": {
+    "imputer": "outputs_c1_batadal/preprocessing/cluster1_batadal_imputer.pkl",
+    "scaler": "outputs_c1_batadal/preprocessing/cluster1_batadal_scaler.pkl",
+    "preprocessor": "outputs_c1_batadal/preprocessing/cluster1_batadal_preprocessor.pkl"
+  },
+  "test_leakage_prevention": {
+    "test_dataset_used_for_training": false,
+    "test_dataset_used_for_validation": false,
+    "test_dataset_used_for_scaler_fit": false,
+    "test_dataset_used_for_imputation_fit": false,
+    "test_dataset_used_for_descriptor_computation": false,
+    "test_dataset_used_for_clustering": false,
+    "test_dataset_used_for_threshold_tuning": false,
+    "test_dataset_used_for_hyperparameter_selection": false
+  },
+  "active_proposed_model_family": "cnn1d_bn"
+}

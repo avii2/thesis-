@@ -100,7 +100,11 @@ def _load_cluster1_proposed_entry(config_path: str | Path) -> tuple[Path, Mappin
         if not isinstance(cluster_entry, Mapping):
             continue
         experiment_id = str(cluster_entry.get("experiment_id", "")).strip()
-        if experiment_id not in {"P_C1", "P_C1_REPAIRED"}:
+        if not (
+            experiment_id == "P_C1_BATADAL"
+            or experiment_id.startswith("P_C1_BAL_")
+            or experiment_id.startswith("P_C1_OPT_")
+        ):
             continue
         if str(cluster_entry.get("model_family")) != "cnn1d_bn":
             raise ValueError(f"{experiment_id} must use model_family=cnn1d_bn.")
@@ -110,7 +114,7 @@ def _load_cluster1_proposed_entry(config_path: str | Path) -> tuple[Path, Mappin
             raise ValueError(f"{experiment_id} must use aggregation=weighted_non_bn_mean.")
         return config_path, config, cluster_entry
 
-    raise ValueError(f"{config_path}: could not find a P_C1 or P_C1_REPAIRED entry in proposed config.")
+    raise ValueError(f"{config_path}: could not find a P_C1_BATADAL entry in proposed config.")
 
 
 def _optional_mapping(parent: Mapping[str, Any], key: str) -> Mapping[str, Any]:
@@ -181,8 +185,8 @@ def _resolve_positive_class_weight_scale(
         else training_hyperparameters.get("positive_class_weight_scale", 1.0)
     )
     scale = float(configured_scale)
-    if scale <= 0.0:
-        raise ValueError("positive_class_weight_scale must be positive.")
+    if scale < 0.0:
+        raise ValueError("positive_class_weight_scale must be non-negative.")
     return scale
 
 
@@ -262,7 +266,11 @@ def run_cluster1_proposed(
         cluster_entry,
         positive_class_weight_scale,
     )
-    positive_class_weight = computed_positive_class_weight * resolved_positive_class_weight_scale
+    positive_class_weight = (
+        1.0
+        if resolved_positive_class_weight_scale == 0.0
+        else computed_positive_class_weight * resolved_positive_class_weight_scale
+    )
     if data_summary["input_adapter"] != "sliding_window_feature_channels":
         raise ValueError("Cluster 1 proposed path requires sliding-window inputs.")
 
@@ -584,7 +592,7 @@ def run_cluster1_proposed(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the proposed Cluster 1 HAI + CNN1D-BN + FedBN experiment.")
+    parser = argparse.ArgumentParser(description="Run the proposed Cluster 1 BATADAL + CNN1D-BN + FedBN experiment.")
     parser.add_argument(
         "--proposed-config",
         default="configs/proposed.yaml",

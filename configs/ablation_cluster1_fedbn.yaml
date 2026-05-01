@@ -26,18 +26,18 @@ comparisons:
       run_source: custom_cluster1_fedavg_cnnbn
       label: FedAvg CNN1D-BN Control
       cluster_id: 1
-      cluster_config: configs/cluster1_hai.yaml
-      membership_file: outputs/clustering/cluster1_memberships.json
+      cluster_config: configs/cluster1_batadal.yaml
+      membership_file: outputs_c1_batadal/clustering/cluster1_memberships.json
       hierarchy: hierarchical_fixed
       clustering_method: agglomerative
       n_subclusters: 2
-      descriptor: feature_mean_std
+      descriptor: batadal_group_mean_std_status_duty_cycle_attack_ratio
       model_family: cnn1d_bn
       fl_method: FedAvg
       aggregation: weighted_arithmetic_mean
       learning_rate: 0.003
     treatment:
-      experiment_id: P_C1
+      experiment_id: P_C1_BATADAL
       run_source: standard
       label: FedBN CNN1D-BN
 runtime_validation:

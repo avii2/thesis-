@@ -96,7 +96,7 @@ The three main clusters are:
 
 | Main cluster | Domain | Dataset | Model | FL method | Aggregation |
 |---|---|---|---|---|---|
-| Cluster 1 | Process-control telemetry IDS | HAI 21.03 | CNN1D-BN | FedBN | weighted non-BN mean |
+| Cluster 1 | Process-control telemetry IDS | BATADAL | CNN1D-BN | FedBN | weighted non-BN mean |
 | Cluster 2 | Heterogeneous IIoT telemetry IDS | TON IoT combined telemetry | compact MLP | FedProx | weighted arithmetic mean |
 | Cluster 3 | IIoT network-flow IDS | WUSTL-IIOT-2021 | 1D-CNN | SCAFFOLD | weighted arithmetic mean |
 
@@ -158,7 +158,7 @@ Across main clusters:
 
 | Cluster | Dataset | Candidate leaf clients | Fixed sub-clusters | Model | FL method | Aggregation |
 |---|---:|---:|---:|---|---|---|
-| Cluster 1 | HAI 21.03 | 12 | \(K_1=2\) | CNN1D-BN | FedBN | weighted non-BN mean |
+| Cluster 1 | BATADAL | 12 | \(K_1=2\) | CNN1D-BN | FedBN | weighted non-BN mean |
 | Cluster 2 | TON IoT combined telemetry | 15 | \(K_2=3\) | compact MLP | FedProx | weighted arithmetic mean |
 | Cluster 3 | WUSTL-IIOT-2021 | 15 | \(K_3=3\) | 1D-CNN | SCAFFOLD | weighted arithmetic mean |
 
@@ -235,8 +235,10 @@ Current audited local folder structure:
 ```text
 data/
   raw/
-    hai_2103/
-      hai-21.03/
+    batadal/
+      training_dataset_1.csv
+      training_dataset_2.csv
+      test_dataset.csv
     ton_iot/                  # not present in the audited local repo
     <space>ton_iot/
       Train_Test_IoT_Fridge.csv
@@ -268,12 +270,12 @@ The current local repo uses repo-local data/ and currently has leading-space dir
 for TON and WUSTL under data/raw/.
 ```
 
-## 4.2 Cluster 1 dataset contract: HAI 21.03
+## 4.2 Cluster 1 dataset contract: BATADAL
 
 Dataset path:
 
 ```text
-${FCFL_DATA_ROOT}/raw/hai_2103/hai-21.03/
+${FCFL_DATA_ROOT}/raw/batadal/
 ```
 
 Expected file type:
@@ -285,19 +287,19 @@ Expected file type:
 Expected task:
 
 ```text
-binary process-control telemetry intrusion detection
+binary water-distribution SCADA intrusion detection
 ```
 
 Expected label column:
 
 ```text
-attack
+ATT_FLAG
 ```
 
 Audit confirmation:
 
 ```text
-Audit confirmed that all eight local HAI CSVs contain the label column attack.
+BATADAL training_dataset_1.csv, training_dataset_2.csv, and test_dataset.csv share the same schema and contain ATT_FLAG.
 ```
 
 Label handling:
@@ -597,7 +599,7 @@ Fit scaler on training data only.
 Save scalers:
 
 ```text
-outputs/preprocessing/cluster1_hai_scaler.pkl
+outputs_c1_batadal/preprocessing/cluster1_batadal_scaler.pkl
 outputs/preprocessing/cluster2_ton_iot_scaler.pkl
 outputs/preprocessing/cluster3_wustl_scaler.pkl
 ```
@@ -757,7 +759,7 @@ Each file must include:
 ```json
 {
   "cluster_id": 1,
-  "dataset": "HAI 21.03",
+  "dataset": "BATADAL",
   "num_leaf_clients": 12,
   "clients": [
     {
@@ -871,7 +873,7 @@ Required JSON structure:
 ```json
 {
   "cluster_id": 1,
-  "dataset": "HAI 21.03",
+  "dataset": "BATADAL",
   "clustering_method": "AgglomerativeClustering",
   "n_subclusters": 2,
   "linkage": "ward",
@@ -1297,7 +1299,7 @@ Measure performance without sub-cluster hierarchy.
 
 | Cluster | Dataset | Model | FL method | Hierarchy | Clustering |
 |---|---|---|---|---|---|
-| C1 | HAI 21.03 | 1D-CNN | FedAvg | flat | none |
+| C1 | BATADAL | 1D-CNN | FedAvg | flat | none |
 | C2 | TON IoT combined telemetry | 1D-CNN | FedAvg | flat | none |
 | C3 | WUSTL-IIOT-2021 | 1D-CNN | FedAvg | flat | none |
 
@@ -1318,7 +1320,7 @@ Measure the effect of hierarchy while removing model/FL specialization.
 
 | Cluster | Dataset | Model | FL method | Hierarchy | Clustering |
 |---|---|---|---|---|---|
-| C1 | HAI 21.03 | 1D-CNN | FedAvg | hierarchical | agglomerative |
+| C1 | BATADAL | 1D-CNN | FedAvg | hierarchical | agglomerative |
 | C2 | TON IoT combined telemetry | 1D-CNN | FedAvg | hierarchical | agglomerative |
 | C3 | WUSTL-IIOT-2021 | 1D-CNN | FedAvg | hierarchical | agglomerative |
 
@@ -1339,7 +1341,7 @@ Evaluate the final proposed FCFL mechanism.
 
 | Cluster | Dataset | Model | FL method | Hierarchy | Clustering | Aggregation |
 |---|---|---|---|---|---|---|
-| C1 | HAI 21.03 | CNN1D-BN | FedBN | hierarchical | agglomerative | weighted non-BN mean |
+| C1 | BATADAL | CNN1D-BN | FedBN | hierarchical | agglomerative | weighted non-BN mean |
 | C2 | TON IoT combined telemetry | compact MLP | FedProx | hierarchical | agglomerative | weighted mean |
 | C3 | WUSTL-IIOT-2021 | 1D-CNN | SCAFFOLD | hierarchical | agglomerative | weighted mean |
 
@@ -1586,7 +1588,7 @@ Byzantine robustness
 poisoning defense
 full Hyperledger Fabric deployment in phase 1
 multiclass IDS
-new datasets beyond HAI 21.03, TON IoT combined telemetry, WUSTL-IIOT-2021
+new datasets beyond BATADAL, TON IoT combined telemetry, WUSTL-IIOT-2021
 new FL methods beyond FedAvg, FedBN, FedProx, SCAFFOLD
 ```
 
@@ -1604,7 +1606,7 @@ fcfl-cps-ids/
 ├── README.md
 ├── requirements.txt
 ├── configs/
-│   ├── cluster1_hai.yaml
+│   ├── cluster1_batadal.yaml
 │   ├── cluster2_ton_iot.yaml
 │   ├── cluster3_wustl.yaml
 │   ├── baseline_flat.yaml

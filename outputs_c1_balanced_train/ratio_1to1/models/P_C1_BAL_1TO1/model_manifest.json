@@ -1,0 +1,14 @@
+{
+  "experiment_id": "P_C1_BAL_1TO1",
+  "cluster_id": 1,
+  "dataset": "HAI 21.03 balanced-training variant 1to1",
+  "model_family": "cnn1d_bn",
+  "model_version": "C1_R050",
+  "model_hash": "sha256:2a27d95733f7247a856699682914d0ebb1a0ce2a533ea2c05f5ff47eb7f75b80",
+  "artifact_type": "metadata_manifest",
+  "weights_emitted_by_runner": false,
+  "seed": null,
+  "summary_path": "outputs_c1_balanced_train/ratio_1to1/runs/P_C1_BAL_1TO1/run_summary.json",
+  "round_metrics_path": "outputs_c1_balanced_train/ratio_1to1/runs/P_C1_BAL_1TO1/round_metrics.csv",
+  "metrics_csv_path": "outputs_c1_balanced_train/ratio_1to1/metrics/P_C1_BAL_1TO1_metrics.csv"
+}

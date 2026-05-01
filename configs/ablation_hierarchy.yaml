@@ -22,11 +22,11 @@ comparisons:
   - comparison_id: ablation_hierarchy_effect_c1
     title: Hierarchy Effect Cluster 1
     control:
-      experiment_id: A_C1
+      experiment_id: A_C1_BATADAL
       run_source: standard
       label: Baseline A
     treatment:
-      experiment_id: B_C1
+      experiment_id: B_C1_BATADAL
       run_source: standard
       label: Baseline B
   - comparison_id: ablation_hierarchy_effect_c2

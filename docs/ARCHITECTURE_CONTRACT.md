@@ -30,7 +30,7 @@ This contract is aligned with the current report architecture: three independent
 
 | Main cluster | Dataset | Model | FL method | Aggregation | Fixed sub-clusters |
 |---|---|---|---|---|---|
-| Cluster 1 | HAI 21.03 | CNN1D-BN | FedBN | weighted non-BN mean | H1–H2, K1 = 2 |
+| Cluster 1 | BATADAL | CNN1D-BN | FedBN | weighted non-BN mean | H1–H2, K1 = 2 |
 | Cluster 2 | TON IoT combined telemetry | compact MLP | FedProx | weighted arithmetic mean | T1–T3, K2 = 3 |
 | Cluster 3 | WUSTL-IIOT-2021 | 1D-CNN | SCAFFOLD | weighted arithmetic mean | W1–W3, K3 = 3 |
 

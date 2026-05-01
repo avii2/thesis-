@@ -27,16 +27,17 @@ clustering_defaults:
   descriptor: feature_mean_std
   reuse_frozen_memberships: true
 clusters:
-  - experiment_id: P_C1
-    cluster_config: configs/cluster1_hai.yaml
+  - experiment_id: P_C1_BATADAL
+    cluster_config: configs/cluster1_batadal.yaml
     hierarchy: hierarchical_fixed
     clustering_method: agglomerative
     n_subclusters: 2
-    descriptor: feature_mean_std
-    membership_file: outputs/clustering/cluster1_memberships.json
+    descriptor: batadal_group_mean_std_status_duty_cycle_attack_ratio
+    membership_file: outputs_c1_batadal/clustering/cluster1_memberships.json
     model_family: cnn1d_bn
     fl_method: FedBN
     aggregation: weighted_non_bn_mean
+    output_root: outputs_c1_batadal
     model_hyperparameters:
       channels: [32, 64, 64]
       kernel_sizes: [5, 3, 3]

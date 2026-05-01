@@ -18,6 +18,16 @@ from src.ledger.metadata_schema import canonical_sha256  # noqa: E402
 from src.train import DEFAULT_RUN_ALL_EXPERIMENT_IDS, SUPPORTED_EXPERIMENT_IDS, load_config_registry, load_experiment_matrix, run_experiments  # noqa: E402
 
 
+def _cluster_id_from_experiment_id(experiment_id: str) -> int:
+    if "_C1" in experiment_id:
+        return 1
+    if "_C2" in experiment_id:
+        return 2
+    if "_C3" in experiment_id:
+        return 3
+    raise ValueError(experiment_id)
+
+
 @dataclass(frozen=True)
 class FakeRunResult:
     experiment_id: str
@@ -188,7 +198,7 @@ class ExperimentMatrixTests(unittest.TestCase):
                     _fake_result(
                         output_root_arg,
                         experiment_id=experiment_id,
-                        cluster_id=int(experiment_id[-1]),
+                        cluster_id=_cluster_id_from_experiment_id(experiment_id),
                         dataset=f"Dataset {experiment_id}",
                         hierarchy="flat",
                         model_family="cnn1d",
@@ -203,12 +213,12 @@ class ExperimentMatrixTests(unittest.TestCase):
             def fake_hierarchical_runner(**kwargs: object) -> list[FakeRunResult]:
                 experiment_ids = list(kwargs["experiment_ids"])
                 output_root_arg = Path(kwargs["output_root"])
-                subclusters = {"B_C1": 2, "B_C2": 3, "B_C3": 3}
+                subclusters = {"B_C1_BATADAL": 2, "B_C2": 3, "B_C3": 3}
                 return [
                     _fake_result(
                         output_root_arg,
                         experiment_id=experiment_id,
-                        cluster_id=int(experiment_id[-1]),
+                        cluster_id=_cluster_id_from_experiment_id(experiment_id),
                         dataset=f"Dataset {experiment_id}",
                         hierarchy="hierarchical_fixed",
                         model_family="cnn1d",
@@ -223,9 +233,9 @@ class ExperimentMatrixTests(unittest.TestCase):
             def fake_cluster1_runner(**kwargs: object) -> FakeRunResult:
                 return _fake_result(
                     Path(kwargs["output_root"]),
-                    experiment_id="P_C1",
+                    experiment_id="P_C1_BATADAL",
                     cluster_id=1,
-                    dataset="Dataset P_C1",
+                    dataset="Dataset P_C1_BATADAL",
                     hierarchy="hierarchical_fixed",
                     model_family="cnn1d_bn",
                     fl_method="FedBN",

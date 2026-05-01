@@ -21,14 +21,16 @@ smoke_test_defaults:
   batch_size: 64
   seed: 42
 clusters:
-  - experiment_id: A_C1
-    cluster_config: configs/cluster1_hai.yaml
+  - experiment_id: A_C1_BATADAL
+    cluster_config: configs/cluster1_batadal.yaml
     hierarchy: flat
     clustering_method: none
     n_subclusters: 0
+    descriptor: none
     model_family: cnn1d
     fl_method: FedAvg
     aggregation: weighted_arithmetic_mean
+    output_root: outputs_c1_batadal
   - experiment_id: A_C2
     cluster_config: configs/cluster2_ton_iot.yaml
     hierarchy: flat

@@ -14,14 +14,16 @@ def load_yaml(relative_path: str) -> dict:
 
 class ConfigFileTests(unittest.TestCase):
     def test_cluster_configs_match_audited_dataset_facts(self) -> None:
-        cluster1 = load_yaml("configs/cluster1_hai.yaml")
-        self.assertEqual(cluster1["data"]["label_column"], "attack")
+        cluster1 = load_yaml("configs/cluster1_batadal.yaml")
+        self.assertEqual(cluster1["data"]["label_column"], "ATT_FLAG")
         self.assertTrue(cluster1["data"]["label_column_confirmed_from_audit"])
-        self.assertEqual(cluster1["data"]["timestamp_or_order_columns"], ["time"])
+        self.assertEqual(cluster1["data"]["timestamp_or_order_columns"], ["DATETIME"])
         self.assertEqual(cluster1["partitioning"]["candidate_leaf_clients"], 12)
         self.assertEqual(cluster1["clustering"]["fixed_subclusters"], 2)
-        self.assertIn("attack_P3", cluster1["data"]["excluded_columns"])
-        self.assertIn("attack_P4", cluster1["data"]["exclude_if_present"])
+        self.assertEqual(cluster1["preprocessing"]["window_length"], 48)
+        self.assertEqual(cluster1["preprocessing"]["window_label_rule"], "last_row")
+        self.assertIn("ATT_FLAG", cluster1["data"]["excluded_columns"])
+        self.assertIn("DATETIME", cluster1["data"]["excluded_columns"])
 
         cluster2 = load_yaml("configs/cluster2_ton_iot.yaml")
         self.assertEqual(cluster2["data"]["label_column"], "label")

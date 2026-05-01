@@ -25,8 +25,8 @@ EXPECTED_SEARCH_SPACE = {
     "learning_rate": [0.001, 0.003, 0.005],
     "batch_size": [64, 128],
     "local_epochs": [1, 2],
-    "window_length": [32, 64],
-    "stride": [4, 8],
+    "window_length": [48],
+    "stride": [1],
     "block_channels": [[64, 64, 64], [32, 64, 128]],
     "hidden_dim": [64],
     "dropout": [0.0, 0.05, 0.1],
@@ -155,8 +155,8 @@ def build_trials(search_space: Mapping[str, Any], *, heuristic_order: bool = Tru
             "learning_rate": _priority_order(space["learning_rate"], [0.003, 0.005, 0.001, 0.01]),
             "batch_size": _priority_order(space["batch_size"], [128, 64]),
             "local_epochs": _priority_order(space["local_epochs"], [1, 2]),
-            "window_length": _priority_order(space["window_length"], [32, 64]),
-            "stride": _priority_order(space["stride"], [8, 4]),
+            "window_length": _priority_order(space["window_length"], [48]),
+            "stride": _priority_order(space["stride"], [1]),
             "block_channels": _priority_order(
                 space["block_channels"],
                 [[64, 64, 64], [32, 64, 128]],
@@ -236,7 +236,7 @@ def _float_or_nan(value: Any) -> float:
 
 def _comparison_metrics(metrics_root: Path) -> dict[str, float]:
     values: dict[str, float] = {}
-    for experiment_id in ("A_C1", "B_C1", "P_C1"):
+    for experiment_id in ("A_C1_BATADAL", "B_C1_BATADAL", "P_C1_BATADAL"):
         row = _read_single_row_csv(metrics_root / f"{experiment_id}_metrics.csv")
         values[experiment_id] = _float_or_nan(row.get("test_f1")) if row else math.nan
     return values
@@ -270,7 +270,7 @@ def _write_trial_configs(
     cluster_config["preprocessing"] = preprocessing
 
     trial_config_dir = tuning_root / "trial_configs" / trial.trial_id
-    trial_cluster_config_path = trial_config_dir / "cluster1_hai.yaml"
+    trial_cluster_config_path = trial_config_dir / "cluster1_batadal.yaml"
     _write_yaml(trial_cluster_config_path, cluster_config)
 
     proposed_config = dict(_read_yaml(base_proposed_config_path))
@@ -279,7 +279,7 @@ def _write_trial_configs(
         raise ValueError(f"{base_proposed_config_path}: expected clusters list.")
     trial_clusters: list[dict[str, Any]] = []
     for entry in clusters:
-        if not isinstance(entry, Mapping) or str(entry.get("experiment_id")) != "P_C1":
+        if not isinstance(entry, Mapping) or str(entry.get("experiment_id")) != "P_C1_BATADAL":
             continue
         trial_entry = dict(entry)
         trial_entry["cluster_config"] = str(trial_cluster_config_path)
@@ -295,7 +295,7 @@ def _write_trial_configs(
         trial_clusters.append(trial_entry)
 
     if len(trial_clusters) != 1:
-        raise ValueError(f"{base_proposed_config_path}: expected exactly one P_C1 cluster entry.")
+        raise ValueError(f"{base_proposed_config_path}: expected exactly one P_C1_BATADAL cluster entry.")
     proposed_config["clusters"] = trial_clusters
     trial_proposed_config_path = trial_config_dir / "proposed.yaml"
     _write_yaml(trial_proposed_config_path, proposed_config)
@@ -475,7 +475,7 @@ def _write_summary_markdown(
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = [
-        "# Cluster 1 P_C1 Tuning Summary",
+        "# Cluster 1 P_C1_BATADAL Tuning Summary",
         "",
         "This tuning output is restricted to Cluster 1 proposed FCFL only. The run keeps the architecture fixed as CNN1D-BN + FedBN + weighted non-BN aggregation and reuses the frozen agglomerative membership file.",
         "",
@@ -489,9 +489,9 @@ def _write_summary_markdown(
         "",
         "## Current References",
         "",
-        f"- A_C1 test F1: `{comparison.get('A_C1', math.nan):.4f}`",
-        f"- B_C1 test F1: `{comparison.get('B_C1', math.nan):.4f}`",
-        f"- P_C1 test F1: `{comparison.get('P_C1', math.nan):.4f}`",
+        f"- A_C1_BATADAL test F1: `{comparison.get('A_C1_BATADAL', math.nan):.4f}`",
+        f"- B_C1_BATADAL test F1: `{comparison.get('B_C1_BATADAL', math.nan):.4f}`",
+        f"- P_C1_BATADAL test F1: `{comparison.get('P_C1_BATADAL', math.nan):.4f}`",
         "",
         "## Best Trial",
         "",
@@ -508,9 +508,9 @@ def _write_summary_markdown(
                 f"- Test F1: `{_float_or_nan(best_row['test_f1']):.4f}`",
                 f"- Test FPR: `{_float_or_nan(best_row['test_fpr']):.4f}`",
                 f"- Wall-clock seconds: `{_float_or_nan(best_row['wall_clock_training_seconds']):.3f}`",
-                f"- Beats current P_C1: `{best_row.get('beats_current_p_c1')}`",
-                f"- Beats A_C1: `{best_row.get('beats_current_a_c1')}`",
-                f"- Beats B_C1: `{best_row.get('beats_current_b_c1')}`",
+                f"- Beats current P_C1_BATADAL: `{best_row.get('beats_current_p_c1')}`",
+                f"- Beats A_C1_BATADAL: `{best_row.get('beats_current_a_c1')}`",
+                f"- Beats B_C1_BATADAL: `{best_row.get('beats_current_b_c1')}`",
                 "",
                 "## Best Config",
                 "",
@@ -539,9 +539,9 @@ def _write_summary_markdown(
                 f"- Best validation FPR: `{_float_or_nan(highest_test_f1_row['best_validation_fpr']):.4f}`",
                 f"- Test F1: `{_float_or_nan(highest_test_f1_row['test_f1']):.4f}`",
                 f"- Test FPR: `{_float_or_nan(highest_test_f1_row['test_fpr']):.4f}`",
-                f"- Beats current P_C1: `{highest_test_f1_row.get('beats_current_p_c1')}`",
-                f"- Beats A_C1: `{highest_test_f1_row.get('beats_current_a_c1')}`",
-                f"- Beats B_C1: `{highest_test_f1_row.get('beats_current_b_c1')}`",
+                f"- Beats current P_C1_BATADAL: `{highest_test_f1_row.get('beats_current_p_c1')}`",
+                f"- Beats A_C1_BATADAL: `{highest_test_f1_row.get('beats_current_a_c1')}`",
+                f"- Beats B_C1_BATADAL: `{highest_test_f1_row.get('beats_current_b_c1')}`",
                 f"- Config: lr=`{highest_test_f1_row['learning_rate']}`, batch_size=`{highest_test_f1_row['batch_size']}`, local_epochs=`{highest_test_f1_row['local_epochs']}`, window_length=`{highest_test_f1_row['window_length']}`, stride=`{highest_test_f1_row['stride']}`, block_channels=`{highest_test_f1_row['block_channels']}`, hidden_dim=`{highest_test_f1_row['hidden_dim']}`, dropout=`{highest_test_f1_row['dropout']}`, positive_class_weight_scale=`{highest_test_f1_row['positive_class_weight_scale']}`",
             ]
         )
@@ -551,7 +551,7 @@ def _write_summary_markdown(
             "## Notes",
             "",
             "- Current selection uses validation F1, then validation recall, validation FPR, and wall-clock time. Test metrics are reported only after selection.",
-            "- Main `outputs/runs/P_C1/` and `outputs/metrics/P_C1_metrics.csv` are not overwritten by this script.",
+            "- Main `outputs_c1_batadal/runs/P_C1_BATADAL/` and `outputs_c1_batadal/metrics/P_C1_BATADAL_metrics.csv` are not overwritten by this script.",
         ]
     )
     if not fair_comparison_to_current:
@@ -577,8 +577,8 @@ def run_tuning(args: argparse.Namespace) -> dict[str, Any]:
     fixed = config.get("fixed_experiment")
     if not isinstance(fixed, Mapping):
         raise ValueError(f"{config_path}: missing fixed_experiment mapping.")
-    if fixed.get("experiment_id") != "P_C1" or fixed.get("model_family") != "cnn1d_bn":
-        raise ValueError("Cluster 1 tuning is restricted to P_C1 with model_family=cnn1d_bn.")
+    if fixed.get("experiment_id") != "P_C1_BATADAL" or fixed.get("model_family") != "cnn1d_bn":
+        raise ValueError("Cluster 1 tuning is restricted to P_C1_BATADAL with model_family=cnn1d_bn.")
     if fixed.get("fl_method") != "FedBN" or fixed.get("aggregation") != "weighted_non_bn_mean":
         raise ValueError("Cluster 1 tuning must keep FedBN and weighted_non_bn_mean.")
 
@@ -744,9 +744,9 @@ def run_tuning(args: argparse.Namespace) -> dict[str, Any]:
                 }
             )
             test_f1 = _float_or_nan(metrics_row.get("test_f1"))
-            row["beats_current_p_c1"] = bool(test_f1 > comparison["P_C1"]) if not math.isnan(comparison["P_C1"]) else ""
-            row["beats_current_a_c1"] = bool(test_f1 > comparison["A_C1"]) if not math.isnan(comparison["A_C1"]) else ""
-            row["beats_current_b_c1"] = bool(test_f1 > comparison["B_C1"]) if not math.isnan(comparison["B_C1"]) else ""
+            row["beats_current_p_c1"] = bool(test_f1 > comparison["P_C1_BATADAL"]) if not math.isnan(comparison["P_C1_BATADAL"]) else ""
+            row["beats_current_a_c1"] = bool(test_f1 > comparison["A_C1_BATADAL"]) if not math.isnan(comparison["A_C1_BATADAL"]) else ""
+            row["beats_current_b_c1"] = bool(test_f1 > comparison["B_C1_BATADAL"]) if not math.isnan(comparison["B_C1_BATADAL"]) else ""
         except Exception as exc:  # noqa: BLE001 - failures are persisted as tuning outcomes.
             row["status"] = "FAILED"
             row["error"] = str(exc)
@@ -819,7 +819,7 @@ def run_tuning(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Tune Cluster 1 proposed P_C1 hyperparameters only.")
+    parser = argparse.ArgumentParser(description="Tune Cluster 1 proposed P_C1_BATADAL hyperparameters only.")
     parser.add_argument("--config", default="configs/tuning_cluster1.yaml")
     parser.add_argument("--smoke-test", action="store_true", help="Use smoke budget before full tuning.")
     parser.add_argument("--rounds", type=int, help="Override the tuning run round count.")

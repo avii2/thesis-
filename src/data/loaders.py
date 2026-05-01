@@ -15,7 +15,7 @@ from .schema_validation import (
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 DEFAULT_CLUSTER_CONFIG_PATHS = {
-    1: REPO_ROOT / "configs/cluster1_hai.yaml",
+    1: REPO_ROOT / "configs/cluster1_batadal.yaml",
     2: REPO_ROOT / "configs/cluster2_ton_iot.yaml",
     3: REPO_ROOT / "configs/cluster3_wustl.yaml",
 }

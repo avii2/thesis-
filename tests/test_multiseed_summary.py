@@ -102,21 +102,21 @@ def _write_raw_result(
     n_subclusters = 0 if hierarchy == "flat" else (2 if cluster_id == 1 else 3)
     model_family = (
         "cnn1d_bn"
-        if experiment_id in {"P_C1", "AB_C1_FEDAVG_CNNBN"}
+        if experiment_id in {"P_C1_BATADAL", "AB_C1_FEDAVG_CNNBN"}
         else "compact_mlp"
         if experiment_id in {"P_C2", "AB_C2_FEDAVG_MLP"}
         else "cnn1d"
     )
     fl_method = (
         "FedBN"
-        if experiment_id == "P_C1"
+        if experiment_id == "P_C1_BATADAL"
         else "FedProx"
         if experiment_id == "P_C2"
         else "SCAFFOLD"
         if experiment_id == "P_C3"
         else "FedAvg"
     )
-    aggregation = "weighted_non_bn_mean" if experiment_id == "P_C1" else "weighted_arithmetic_mean"
+    aggregation = "weighted_non_bn_mean" if experiment_id == "P_C1_BATADAL" else "weighted_arithmetic_mean"
     clustering_method = "none" if hierarchy == "flat" else "agglomerative"
     metrics_row = {
         "experiment_id": experiment_id,
@@ -211,7 +211,7 @@ class MultiSeedSummaryTests(unittest.TestCase):
 
             _write_seed_metrics(
                 output_root,
-                experiment_id="A_C1",
+                experiment_id="A_C1_BATADAL",
                 seed=42,
                 test_accuracy=0.80,
                 test_precision=0.70,
@@ -225,7 +225,7 @@ class MultiSeedSummaryTests(unittest.TestCase):
             )
             _write_seed_metrics(
                 output_root,
-                experiment_id="A_C1",
+                experiment_id="A_C1_BATADAL",
                 seed=123,
                 test_accuracy=0.90,
                 test_precision=0.80,
@@ -239,7 +239,7 @@ class MultiSeedSummaryTests(unittest.TestCase):
             )
             _write_seed_metrics(
                 output_root,
-                experiment_id="A_C1",
+                experiment_id="A_C1_BATADAL",
                 seed=2025,
                 test_accuracy=1.00,
                 test_precision=0.90,
@@ -253,7 +253,7 @@ class MultiSeedSummaryTests(unittest.TestCase):
             )
 
             summary_path, table_path, written_markdown_path = write_multiseed_reports(
-                experiment_ids=["A_C1"],
+                experiment_ids=["A_C1_BATADAL"],
                 seeds=[42, 123, 2025],
                 output_root=output_root,
                 markdown_output_path=markdown_path,
@@ -265,7 +265,7 @@ class MultiSeedSummaryTests(unittest.TestCase):
             with summary_path.open("r", encoding="utf-8", newline="") as handle:
                 row = next(csv.DictReader(handle))
 
-            self.assertEqual(row["experiment_id"], "A_C1")
+            self.assertEqual(row["experiment_id"], "A_C1_BATADAL")
             self.assertEqual(row["status"], "COMPLETE")
             self.assertEqual(row["successful_seeds"], "42,123,2025")
             self.assertEqual(row["missing_seeds"], "")
@@ -284,7 +284,7 @@ class MultiSeedSummaryTests(unittest.TestCase):
             markdown_path = Path(tmpdir) / "RESULTS_SUMMARY_MEAN_STD.md"
             _write_seed_metrics(
                 output_root,
-                experiment_id="A_C1",
+                experiment_id="A_C1_BATADAL",
                 seed=42,
                 test_accuracy=0.75,
                 test_precision=0.65,
@@ -297,15 +297,15 @@ class MultiSeedSummaryTests(unittest.TestCase):
                 total_communication_cost_bytes=1200,
             )
 
-            failed_dir = output_root / "runs" / "A_C1" / "seed_123"
+            failed_dir = output_root / "runs" / "A_C1_BATADAL" / "seed_123"
             failed_dir.mkdir(parents=True, exist_ok=True)
             (failed_dir / "FAILED.json").write_text(
-                '{"experiment_id":"A_C1","seed":123,"status":"FAILED","error":"synthetic failure"}\n',
+                '{"experiment_id":"A_C1_BATADAL","seed":123,"status":"FAILED","error":"synthetic failure"}\n',
                 encoding="utf-8",
             )
 
             summary_path, _, written_markdown_path = write_multiseed_reports(
-                experiment_ids=["A_C1"],
+                experiment_ids=["A_C1_BATADAL"],
                 seeds=[42, 123, 2025],
                 output_root=output_root,
                 markdown_output_path=markdown_path,
@@ -321,7 +321,7 @@ class MultiSeedSummaryTests(unittest.TestCase):
             self.assertIn("seed 123 FAILED: synthetic failure", row["notes"])
             self.assertIn("seed 2025 MISSING", row["notes"])
             markdown_text = written_markdown_path.read_text(encoding="utf-8")
-            self.assertIn("A_C1", markdown_text)
+            self.assertIn("A_C1_BATADAL", markdown_text)
             self.assertIn("FAILED", markdown_text)
             self.assertIn("MISSING", markdown_text)
 

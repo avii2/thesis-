@@ -1,0 +1,99 @@
+{
+  "source": "experiment-runner metrics rows",
+  "confusion_matrix_layout": "[[TN, FP], [FN, TP]]",
+  "selection_rule": "selected_threshold maximizes validation F1 and is then applied to test data",
+  "experiments": {
+    "B_C1_BAL_1TO1": {
+      "experiment_id": "B_C1_BAL_1TO1",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03 balanced-training variant 1to1",
+      "run_category": null,
+      "model_family": "cnn1d",
+      "fl_method": "FedAvg",
+      "aggregation": "weighted_arithmetic_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.5308841466903687,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 16010,
+        "fp": 3,
+        "fn": 446,
+        "tp": 35,
+        "matrix": [
+          [
+            16010,
+            3
+          ],
+          [
+            446,
+            35
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 8672,
+        "fp": 7341,
+        "fn": 212,
+        "tp": 269,
+        "matrix": [
+          [
+            8672,
+            7341
+          ],
+          [
+            212,
+            269
+          ]
+        ]
+      }
+    },
+    "P_C1_BAL_1TO1": {
+      "experiment_id": "P_C1_BAL_1TO1",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03 balanced-training variant 1to1",
+      "run_category": null,
+      "model_family": "cnn1d_bn",
+      "fl_method": "FedBN",
+      "aggregation": "weighted_non_bn_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.5054724812507629,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 14041,
+        "fp": 1972,
+        "fn": 389,
+        "tp": 92,
+        "matrix": [
+          [
+            14041,
+            1972
+          ],
+          [
+            389,
+            92
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 7811,
+        "fp": 8202,
+        "fn": 199,
+        "tp": 282,
+        "matrix": [
+          [
+            7811,
+            8202
+          ],
+          [
+            199,
+            282
+          ]
+        ]
+      }
+    }
+  }
+}

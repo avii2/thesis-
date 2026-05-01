@@ -152,10 +152,10 @@ class AblationRunnerTests(unittest.TestCase):
             ) -> SimpleNamespace:
                 del registry, smoke_test, rounds, local_epochs, batch_size, seed
                 del max_train_examples_per_client, max_eval_examples_per_client
-                if experiment_id == "A_C1":
-                    return _fake_raw_result(output_root, experiment_id=experiment_id, cluster_id=1, dataset="HAI", hierarchy="flat", model_family="cnn1d", fl_method="FedAvg", aggregation="weighted_arithmetic_mean", clustering_method="none", best_validation_f1=0.50, test_f1=0.49)
-                if experiment_id == "B_C1":
-                    return _fake_raw_result(output_root, experiment_id=experiment_id, cluster_id=1, dataset="HAI", hierarchy="hierarchical_fixed", model_family="cnn1d", fl_method="FedAvg", aggregation="weighted_arithmetic_mean", clustering_method="agglomerative", best_validation_f1=0.55, test_f1=0.54)
+                if experiment_id == "A_C1_BATADAL":
+                    return _fake_raw_result(output_root, experiment_id=experiment_id, cluster_id=1, dataset="BATADAL", hierarchy="flat", model_family="cnn1d", fl_method="FedAvg", aggregation="weighted_arithmetic_mean", clustering_method="none", best_validation_f1=0.50, test_f1=0.49)
+                if experiment_id == "B_C1_BATADAL":
+                    return _fake_raw_result(output_root, experiment_id=experiment_id, cluster_id=1, dataset="BATADAL", hierarchy="hierarchical_fixed", model_family="cnn1d", fl_method="FedAvg", aggregation="weighted_arithmetic_mean", clustering_method="agglomerative", best_validation_f1=0.55, test_f1=0.54)
                 if experiment_id == "A_C2":
                     return _fake_raw_result(output_root, experiment_id=experiment_id, cluster_id=2, dataset="TON", hierarchy="flat", model_family="cnn1d", fl_method="FedAvg", aggregation="weighted_arithmetic_mean", clustering_method="none", best_validation_f1=0.60, test_f1=0.58)
                 if experiment_id == "B_C2":
@@ -164,8 +164,8 @@ class AblationRunnerTests(unittest.TestCase):
                     return _fake_raw_result(output_root, experiment_id=experiment_id, cluster_id=3, dataset="WUSTL", hierarchy="flat", model_family="cnn1d", fl_method="FedAvg", aggregation="weighted_arithmetic_mean", clustering_method="none", best_validation_f1=0.57, test_f1=0.56)
                 if experiment_id == "B_C3":
                     return _fake_raw_result(output_root, experiment_id=experiment_id, cluster_id=3, dataset="WUSTL", hierarchy="hierarchical_fixed", model_family="cnn1d", fl_method="FedAvg", aggregation="weighted_arithmetic_mean", clustering_method="agglomerative", best_validation_f1=0.65, test_f1=0.64)
-                if experiment_id == "P_C1":
-                    return _fake_raw_result(output_root, experiment_id=experiment_id, cluster_id=1, dataset="HAI", hierarchy="hierarchical_fixed", model_family="cnn1d_bn", fl_method="FedBN", aggregation="weighted_non_bn_mean", clustering_method="agglomerative", best_validation_f1=0.62, test_f1=0.60)
+                if experiment_id == "P_C1_BATADAL":
+                    return _fake_raw_result(output_root, experiment_id=experiment_id, cluster_id=1, dataset="BATADAL", hierarchy="hierarchical_fixed", model_family="cnn1d_bn", fl_method="FedBN", aggregation="weighted_non_bn_mean", clustering_method="agglomerative", best_validation_f1=0.62, test_f1=0.60)
                 if experiment_id == "P_C2":
                     return _fake_raw_result(output_root, experiment_id=experiment_id, cluster_id=2, dataset="TON", hierarchy="hierarchical_fixed", model_family="compact_mlp", fl_method="FedProx", aggregation="weighted_arithmetic_mean", clustering_method="agglomerative", best_validation_f1=0.67, test_f1=0.66)
                 if experiment_id == "P_C3":
@@ -174,7 +174,7 @@ class AblationRunnerTests(unittest.TestCase):
 
             def fake_cluster1(*args: object, **kwargs: object) -> SimpleNamespace:
                 del args, kwargs
-                return _fake_raw_result(output_root, experiment_id="AB_C1_FEDAVG_CNNBN", cluster_id=1, dataset="HAI", hierarchy="hierarchical_fixed", model_family="cnn1d_bn", fl_method="FedAvg", aggregation="weighted_arithmetic_mean", clustering_method="agglomerative", best_validation_f1=0.57, test_f1=0.55)
+                return _fake_raw_result(output_root, experiment_id="AB_C1_FEDAVG_CNNBN", cluster_id=1, dataset="BATADAL", hierarchy="hierarchical_fixed", model_family="cnn1d_bn", fl_method="FedAvg", aggregation="weighted_arithmetic_mean", clustering_method="agglomerative", best_validation_f1=0.57, test_f1=0.55)
 
             def fake_cluster2(*args: object, **kwargs: object) -> SimpleNamespace:
                 del args, kwargs
