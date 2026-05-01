@@ -1,0 +1,309 @@
+{
+  "cluster_id": 1,
+  "dataset": "BATADAL",
+  "variant": "cluster1_batadal",
+  "num_leaf_clients": 12,
+  "partitioning_strategy": "controlled_federated_emulation_positive_round_robin_negative_chronological_fill",
+  "controlled_emulation_note": "BATADAL is partitioned into 12 deterministic emulated leaf clients for simulation; these clients are not physical independent water utilities.",
+  "source_paths": [
+    "data/raw/batadal/training_dataset_1.csv",
+    "data/raw/batadal/training_dataset_2.csv"
+  ],
+  "heldout_test_source_paths": [
+    "data/raw/batadal/test_dataset.csv"
+  ],
+  "descriptor_source_split": "train",
+  "cluster_split_label_counts": {
+    "train": {
+      "0": 11936,
+      "1": 288
+    },
+    "validation": {
+      "0": 369,
+      "1": 204
+    },
+    "test": {
+      "0": 1635,
+      "1": 407
+    }
+  },
+  "clients": [
+    {
+      "client_id": "C1_L001",
+      "num_train_samples": 1019,
+      "num_val_samples": 48,
+      "num_test_samples": 171,
+      "train_label_counts": {
+        "0": 995,
+        "1": 24
+      },
+      "val_label_counts": {
+        "0": 48
+      },
+      "test_label_counts": {
+        "0": 171
+      },
+      "train_positive_windows": 24,
+      "validation_positive_windows": 0,
+      "test_positive_windows": 0,
+      "notes": [
+        "controlled_federated_emulation_positive_round_robin_negative_chronological_fill"
+      ]
+    },
+    {
+      "client_id": "C1_L002",
+      "num_train_samples": 1019,
+      "num_val_samples": 48,
+      "num_test_samples": 171,
+      "train_label_counts": {
+        "0": 995,
+        "1": 24
+      },
+      "val_label_counts": {
+        "0": 48
+      },
+      "test_label_counts": {
+        "0": 101,
+        "1": 70
+      },
+      "train_positive_windows": 24,
+      "validation_positive_windows": 0,
+      "test_positive_windows": 70,
+      "notes": [
+        "controlled_federated_emulation_positive_round_robin_negative_chronological_fill"
+      ]
+    },
+    {
+      "client_id": "C1_L003",
+      "num_train_samples": 1019,
+      "num_val_samples": 48,
+      "num_test_samples": 170,
+      "train_label_counts": {
+        "0": 995,
+        "1": 24
+      },
+      "val_label_counts": {
+        "0": 27,
+        "1": 21
+      },
+      "test_label_counts": {
+        "0": 170
+      },
+      "train_positive_windows": 24,
+      "validation_positive_windows": 21,
+      "test_positive_windows": 0,
+      "notes": [
+        "controlled_federated_emulation_positive_round_robin_negative_chronological_fill"
+      ]
+    },
+    {
+      "client_id": "C1_L004",
+      "num_train_samples": 1019,
+      "num_val_samples": 48,
+      "num_test_samples": 170,
+      "train_label_counts": {
+        "0": 995,
+        "1": 24
+      },
+      "val_label_counts": {
+        "1": 48
+      },
+      "test_label_counts": {
+        "0": 105,
+        "1": 65
+      },
+      "train_positive_windows": 24,
+      "validation_positive_windows": 48,
+      "test_positive_windows": 65,
+      "notes": [
+        "controlled_federated_emulation_positive_round_robin_negative_chronological_fill"
+      ]
+    },
+    {
+      "client_id": "C1_L005",
+      "num_train_samples": 1019,
+      "num_val_samples": 48,
+      "num_test_samples": 170,
+      "train_label_counts": {
+        "0": 995,
+        "1": 24
+      },
+      "val_label_counts": {
+        "0": 23,
+        "1": 25
+      },
+      "test_label_counts": {
+        "0": 139,
+        "1": 31
+      },
+      "train_positive_windows": 24,
+      "validation_positive_windows": 25,
+      "test_positive_windows": 31,
+      "notes": [
+        "controlled_federated_emulation_positive_round_robin_negative_chronological_fill"
+      ]
+    },
+    {
+      "client_id": "C1_L006",
+      "num_train_samples": 1019,
+      "num_val_samples": 48,
+      "num_test_samples": 170,
+      "train_label_counts": {
+        "0": 995,
+        "1": 24
+      },
+      "val_label_counts": {
+        "0": 48
+      },
+      "test_label_counts": {
+        "0": 139,
+        "1": 31
+      },
+      "train_positive_windows": 24,
+      "validation_positive_windows": 0,
+      "test_positive_windows": 31,
+      "notes": [
+        "controlled_federated_emulation_positive_round_robin_negative_chronological_fill"
+      ]
+    },
+    {
+      "client_id": "C1_L007",
+      "num_train_samples": 1019,
+      "num_val_samples": 48,
+      "num_test_samples": 170,
+      "train_label_counts": {
+        "0": 995,
+        "1": 24
+      },
+      "val_label_counts": {
+        "0": 35,
+        "1": 13
+      },
+      "test_label_counts": {
+        "0": 160,
+        "1": 10
+      },
+      "train_positive_windows": 24,
+      "validation_positive_windows": 13,
+      "test_positive_windows": 10,
+      "notes": [
+        "controlled_federated_emulation_positive_round_robin_negative_chronological_fill"
+      ]
+    },
+    {
+      "client_id": "C1_L008",
+      "num_train_samples": 1019,
+      "num_val_samples": 48,
+      "num_test_samples": 170,
+      "train_label_counts": {
+        "0": 995,
+        "1": 24
+      },
+      "val_label_counts": {
+        "1": 48
+      },
+      "test_label_counts": {
+        "0": 80,
+        "1": 90
+      },
+      "train_positive_windows": 24,
+      "validation_positive_windows": 48,
+      "test_positive_windows": 90,
+      "notes": [
+        "controlled_federated_emulation_positive_round_robin_negative_chronological_fill"
+      ]
+    },
+    {
+      "client_id": "C1_L009",
+      "num_train_samples": 1018,
+      "num_val_samples": 48,
+      "num_test_samples": 170,
+      "train_label_counts": {
+        "0": 994,
+        "1": 24
+      },
+      "val_label_counts": {
+        "1": 48
+      },
+      "test_label_counts": {
+        "0": 165,
+        "1": 5
+      },
+      "train_positive_windows": 24,
+      "validation_positive_windows": 48,
+      "test_positive_windows": 5,
+      "notes": [
+        "controlled_federated_emulation_positive_round_robin_negative_chronological_fill"
+      ]
+    },
+    {
+      "client_id": "C1_L010",
+      "num_train_samples": 1018,
+      "num_val_samples": 47,
+      "num_test_samples": 170,
+      "train_label_counts": {
+        "0": 994,
+        "1": 24
+      },
+      "val_label_counts": {
+        "0": 46,
+        "1": 1
+      },
+      "test_label_counts": {
+        "0": 95,
+        "1": 75
+      },
+      "train_positive_windows": 24,
+      "validation_positive_windows": 1,
+      "test_positive_windows": 75,
+      "notes": [
+        "controlled_federated_emulation_positive_round_robin_negative_chronological_fill"
+      ]
+    },
+    {
+      "client_id": "C1_L011",
+      "num_train_samples": 1018,
+      "num_val_samples": 47,
+      "num_test_samples": 170,
+      "train_label_counts": {
+        "0": 994,
+        "1": 24
+      },
+      "val_label_counts": {
+        "0": 47
+      },
+      "test_label_counts": {
+        "0": 170
+      },
+      "train_positive_windows": 24,
+      "validation_positive_windows": 0,
+      "test_positive_windows": 0,
+      "notes": [
+        "controlled_federated_emulation_positive_round_robin_negative_chronological_fill"
+      ]
+    },
+    {
+      "client_id": "C1_L012",
+      "num_train_samples": 1018,
+      "num_val_samples": 47,
+      "num_test_samples": 170,
+      "train_label_counts": {
+        "0": 994,
+        "1": 24
+      },
+      "val_label_counts": {
+        "0": 47
+      },
+      "test_label_counts": {
+        "0": 140,
+        "1": 30
+      },
+      "train_positive_windows": 24,
+      "validation_positive_windows": 0,
+      "test_positive_windows": 30,
+      "notes": [
+        "controlled_federated_emulation_positive_round_robin_negative_chronological_fill"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "source": "experiment-runner metrics rows",
+  "confusion_matrix_layout": "[[TN, FP], [FN, TP]]",
+  "selection_rule": "selected_threshold maximizes validation F1 and is then applied to test data",
+  "experiments": {
+    "P_C1_BATADAL": {
+      "experiment_id": "P_C1_BATADAL",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "BATADAL",
+      "run_category": "proposed_specialized_hierarchical",
+      "model_family": "cnn1d_bn",
+      "fl_method": "FedBN",
+      "aggregation": "weighted_non_bn_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.500888466835022,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 233,
+        "fp": 1402,
+        "fn": 19,
+        "tp": 388,
+        "matrix": [
+          [
+            233,
+            1402
+          ],
+          [
+            19,
+            388
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 191,
+        "fp": 1444,
+        "fn": 8,
+        "tp": 399,
+        "matrix": [
+          [
+            191,
+            1444
+          ],
+          [
+            8,
+            399
+          ]
+        ]
+      }
+    }
+  }
+}
