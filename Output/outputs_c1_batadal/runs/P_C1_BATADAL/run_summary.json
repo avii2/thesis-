@@ -1,0 +1,519 @@
+{
+  "experiment_id": "P_C1_BATADAL",
+  "cluster_id": 1,
+  "dataset": "BATADAL",
+  "cluster_config_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/configs/cluster1_batadal.yaml",
+  "hierarchy": "hierarchical_fixed",
+  "subcluster_layer_used": true,
+  "membership_file_used": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_batadal/clustering/cluster1_memberships.json",
+  "membership_hash": "c605adadbd648c8a0c946c56e1bd185aec1f492c4c5368d6e9d4de2698f7400f",
+  "membership_file_changed": false,
+  "model_family": "cnn1d_bn",
+  "fl_method": "FedBN",
+  "aggregation": "weighted_non_bn_mean",
+  "clustering_method": "agglomerative",
+  "input_adapter": "sliding_window_feature_channels",
+  "input_channels": 36,
+  "input_length": 48,
+  "num_leaf_clients": 12,
+  "n_subclusters": 2,
+  "subcluster_client_counts": {
+    "H1": 9,
+    "H2": 3
+  },
+  "rounds": 50,
+  "local_epochs": 1,
+  "batch_size": 128,
+  "learning_rate": 0.003,
+  "seed": 42,
+  "cnn_bn_channels": [
+    32,
+    64,
+    64
+  ],
+  "cnn_bn_kernel_sizes": [
+    5,
+    3,
+    3
+  ],
+  "cnn_bn_hidden_dim": 32,
+  "cnn_bn_dropout": 0.1,
+  "computed_positive_class_weight": 41.44444444444444,
+  "positive_class_weight_scale": 1.0,
+  "positive_class_weight": 41.44444444444444,
+  "communicated_non_bn_parameter_bytes": 105860,
+  "communication_cost_per_round_bytes": 2964080,
+  "total_communication_cost_bytes": 148204000,
+  "best_validation_round": 30,
+  "best_validation_f1": 0.5581395348837209,
+  "best_validation_f1_default_threshold": 0.5514285714285714,
+  "threshold_used": 0.500888466835022,
+  "test_f1_at_best_validation_round": 0.3532089212562585,
+  "wall_clock_training_seconds": 134.97344358299597,
+  "data_summary": {
+    "cluster_id": 1,
+    "dataset": "BATADAL",
+    "dataset_description": "BATADAL water-distribution SCADA telemetry",
+    "variant": "cluster1_batadal",
+    "num_clients": 12,
+    "input_adapter": "sliding_window_feature_channels",
+    "input_channels": 36,
+    "input_length": 48,
+    "retained_input_feature_columns": [
+      "L_T1",
+      "L_T2",
+      "L_T3",
+      "L_T4",
+      "L_T5",
+      "L_T6",
+      "L_T7",
+      "F_PU1",
+      "S_PU1",
+      "F_PU2",
+      "S_PU2",
+      "F_PU3",
+      "S_PU3",
+      "F_PU4",
+      "S_PU4",
+      "F_PU5",
+      "S_PU5",
+      "F_PU6",
+      "S_PU6",
+      "F_PU7",
+      "S_PU7",
+      "F_PU8",
+      "S_PU8",
+      "F_PU9",
+      "S_PU9",
+      "F_PU10",
+      "S_PU10",
+      "F_PU11",
+      "S_PU11",
+      "F_V2",
+      "S_V2",
+      "P_J280",
+      "P_J269",
+      "P_J300",
+      "P_J256",
+      "P_J289",
+      "P_J415",
+      "P_J302",
+      "P_J306",
+      "P_J307",
+      "P_J317",
+      "P_J14",
+      "P_J422"
+    ],
+    "model_feature_columns": [
+      "L_T1",
+      "L_T2",
+      "L_T3",
+      "L_T4",
+      "L_T5",
+      "L_T6",
+      "L_T7",
+      "F_PU1",
+      "F_PU2",
+      "S_PU2",
+      "F_PU4",
+      "S_PU4",
+      "F_PU6",
+      "S_PU6",
+      "F_PU7",
+      "S_PU7",
+      "F_PU8",
+      "S_PU8",
+      "F_PU10",
+      "S_PU10",
+      "F_PU11",
+      "S_PU11",
+      "F_V2",
+      "S_V2",
+      "P_J280",
+      "P_J269",
+      "P_J300",
+      "P_J256",
+      "P_J289",
+      "P_J415",
+      "P_J302",
+      "P_J306",
+      "P_J307",
+      "P_J317",
+      "P_J14",
+      "P_J422"
+    ],
+    "dropped_all_missing_feature_columns": [],
+    "dropped_constant_feature_columns": [
+      "S_PU1",
+      "F_PU3",
+      "S_PU3",
+      "F_PU5",
+      "S_PU5",
+      "F_PU9",
+      "S_PU9"
+    ],
+    "dropped_high_cardinality_categorical_columns": [],
+    "max_train_examples_per_client": null,
+    "max_eval_examples_per_client": null,
+    "train_source_files": [
+      "training_dataset_1.csv",
+      "training_dataset_2.csv"
+    ],
+    "validation_source_files": [
+      "training_dataset_2.csv"
+    ],
+    "heldout_test_source_files": [
+      "test_dataset.csv"
+    ],
+    "test_dataset_used_for_training": false,
+    "test_dataset_used_for_validation": false,
+    "test_dataset_used_for_preprocessing_fit": false,
+    "test_dataset_used_for_clustering": false,
+    "test_dataset_used_for_descriptor_computation": false,
+    "test_dataset_used_for_threshold_tuning": false,
+    "client_train_sample_counts": {
+      "C1_L001": 1019,
+      "C1_L002": 1019,
+      "C1_L003": 1019,
+      "C1_L004": 1019,
+      "C1_L005": 1019,
+      "C1_L006": 1019,
+      "C1_L007": 1019,
+      "C1_L008": 1019,
+      "C1_L009": 1018,
+      "C1_L010": 1018,
+      "C1_L011": 1018,
+      "C1_L012": 1018
+    },
+    "client_validation_sample_counts": {
+      "C1_L001": 48,
+      "C1_L002": 48,
+      "C1_L003": 48,
+      "C1_L004": 48,
+      "C1_L005": 48,
+      "C1_L006": 48,
+      "C1_L007": 48,
+      "C1_L008": 48,
+      "C1_L009": 48,
+      "C1_L010": 47,
+      "C1_L011": 47,
+      "C1_L012": 47
+    },
+    "client_test_sample_counts": {
+      "C1_L001": 171,
+      "C1_L002": 171,
+      "C1_L003": 170,
+      "C1_L004": 170,
+      "C1_L005": 170,
+      "C1_L006": 170,
+      "C1_L007": 170,
+      "C1_L008": 170,
+      "C1_L009": 170,
+      "C1_L010": 170,
+      "C1_L011": 170,
+      "C1_L012": 170
+    },
+    "client_train_label_counts": {
+      "C1_L001": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L002": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L003": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L004": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L005": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L006": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L007": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L008": {
+        "0": 995,
+        "1": 24
+      },
+      "C1_L009": {
+        "0": 994,
+        "1": 24
+      },
+      "C1_L010": {
+        "0": 994,
+        "1": 24
+      },
+      "C1_L011": {
+        "0": 994,
+        "1": 24
+      },
+      "C1_L012": {
+        "0": 994,
+        "1": 24
+      }
+    },
+    "client_validation_label_counts": {
+      "C1_L001": {
+        "0": 48
+      },
+      "C1_L002": {
+        "0": 48
+      },
+      "C1_L003": {
+        "0": 27,
+        "1": 21
+      },
+      "C1_L004": {
+        "1": 48
+      },
+      "C1_L005": {
+        "0": 23,
+        "1": 25
+      },
+      "C1_L006": {
+        "0": 48
+      },
+      "C1_L007": {
+        "0": 35,
+        "1": 13
+      },
+      "C1_L008": {
+        "1": 48
+      },
+      "C1_L009": {
+        "1": 48
+      },
+      "C1_L010": {
+        "0": 46,
+        "1": 1
+      },
+      "C1_L011": {
+        "0": 47
+      },
+      "C1_L012": {
+        "0": 47
+      }
+    },
+    "client_test_label_counts": {
+      "C1_L001": {
+        "0": 171
+      },
+      "C1_L002": {
+        "0": 101,
+        "1": 70
+      },
+      "C1_L003": {
+        "0": 170
+      },
+      "C1_L004": {
+        "0": 105,
+        "1": 65
+      },
+      "C1_L005": {
+        "0": 139,
+        "1": 31
+      },
+      "C1_L006": {
+        "0": 139,
+        "1": 31
+      },
+      "C1_L007": {
+        "0": 160,
+        "1": 10
+      },
+      "C1_L008": {
+        "0": 80,
+        "1": 90
+      },
+      "C1_L009": {
+        "0": 165,
+        "1": 5
+      },
+      "C1_L010": {
+        "0": 95,
+        "1": 75
+      },
+      "C1_L011": {
+        "0": 170
+      },
+      "C1_L012": {
+        "0": 140,
+        "1": 30
+      }
+    },
+    "cluster_split_label_counts": {
+      "train": {
+        "0": 11936,
+        "1": 288
+      },
+      "validation": {
+        "0": 369,
+        "1": 204
+      },
+      "test": {
+        "0": 1635,
+        "1": 407
+      }
+    },
+    "window_label_rule": "last_row",
+    "preprocessing_fit_scope": "cluster1_training_rows_only"
+  },
+  "best_round_train_metrics": {
+    "loss": 0.7170043587684631,
+    "accuracy": 0.12761780104712042,
+    "precision": 0.026210045662100456,
+    "recall": 0.9965277777777778,
+    "f1": 0.051076704039864744,
+    "auroc": 0.9189086586796246,
+    "pr_auc": 0.4504491345654805,
+    "fpr": 0.8933478552278821,
+    "confusion_matrix": [
+      [
+        1273,
+        10663
+      ],
+      [
+        1,
+        287
+      ]
+    ],
+    "support": 12224,
+    "label_counts": {
+      "0": 11936,
+      "1": 288
+    },
+    "threshold_used": 0.5
+  },
+  "best_round_validation_metrics_default_threshold": {
+    "loss": 0.8641035556793213,
+    "accuracy": 0.45200698080279234,
+    "precision": 0.38911290322580644,
+    "recall": 0.946078431372549,
+    "f1": 0.5514285714285714,
+    "auroc": 0.5867939316648069,
+    "pr_auc": 0.5448581283105526,
+    "fpr": 0.8211382113821138,
+    "confusion_matrix": [
+      [
+        66,
+        303
+      ],
+      [
+        11,
+        193
+      ]
+    ],
+    "support": 573,
+    "label_counts": {
+      "0": 369,
+      "1": 204
+    },
+    "threshold_used": 0.5
+  },
+  "best_round_validation_metrics": {
+    "loss": 0.8641035556793213,
+    "accuracy": 0.4694589877835951,
+    "precision": 0.39669421487603307,
+    "recall": 0.9411764705882353,
+    "f1": 0.5581395348837209,
+    "auroc": 0.5867939316648069,
+    "pr_auc": 0.5448581283105526,
+    "fpr": 0.7913279132791328,
+    "confusion_matrix": [
+      [
+        77,
+        292
+      ],
+      [
+        12,
+        192
+      ]
+    ],
+    "support": 573,
+    "label_counts": {
+      "0": 369,
+      "1": 204
+    },
+    "threshold_used": 0.500888466835022
+  },
+  "best_round_test_metrics_default_threshold": {
+    "loss": 0.709402859210968,
+    "accuracy": 0.2889324191968658,
+    "precision": 0.21649484536082475,
+    "recall": 0.9803439803439803,
+    "f1": 0.3546666666666667,
+    "auroc": 0.659978660896092,
+    "pr_auc": 0.34069375229316246,
+    "fpr": 0.8831804281345565,
+    "confusion_matrix": [
+      [
+        191,
+        1444
+      ],
+      [
+        8,
+        399
+      ]
+    ],
+    "support": 2042,
+    "label_counts": {
+      "0": 1635,
+      "1": 407
+    },
+    "threshold_used": 0.5
+  },
+  "best_round_test_metrics": {
+    "loss": 0.709402859210968,
+    "accuracy": 0.30411361410381976,
+    "precision": 0.21675977653631284,
+    "recall": 0.9533169533169533,
+    "f1": 0.3532089212562585,
+    "auroc": 0.659978660896092,
+    "pr_auc": 0.34069375229316246,
+    "fpr": 0.8574923547400611,
+    "confusion_matrix": [
+      [
+        233,
+        1402
+      ],
+      [
+        19,
+        388
+      ]
+    ],
+    "support": 2042,
+    "label_counts": {
+      "0": 1635,
+      "1": 407
+    },
+    "threshold_used": 0.500888466835022
+  },
+  "best_round_subcluster_train_sample_counts": {
+    "H1": 9169,
+    "H2": 3055
+  },
+  "best_round_subcluster_client_counts": {
+    "H1": 9,
+    "H2": 3
+  },
+  "prediction_outputs": {
+    "prediction_dir": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_batadal/predictions/P_C1_BATADAL",
+    "validation_predictions_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_batadal/predictions/P_C1_BATADAL/validation_predictions_seed_42.npz",
+    "test_predictions_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_batadal/predictions/P_C1_BATADAL/test_predictions_seed_42.npz",
+    "selected_threshold_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_batadal/predictions/P_C1_BATADAL/selected_threshold_seed_42.json"
+  },
+  "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_batadal/runs/P_C1_BATADAL/round_metrics.csv",
+  "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_batadal/metrics/P_C1_BATADAL_metrics.csv",
+  "summary_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_batadal/runs/P_C1_BATADAL/run_summary.json"
+}

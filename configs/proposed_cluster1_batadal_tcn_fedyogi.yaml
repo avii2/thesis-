@@ -1,0 +1,66 @@
+config_version: 1
+experiment_group: proposed_cluster1_alternative_ablation
+description: Cluster 1 BATADAL alternative ablation using TCN-GN, FedYogi, and hierarchical FedYogi delta aggregation.
+source_of_truth:
+  architecture_contract: docs/ARCHITECTURE_CONTRACT.md
+  data_contract: docs/DATA_CONTRACT.md
+  dataset_note: docs/CLUSTER1_BATADAL_DATASET_NOTE.md
+ledger:
+  metadata_only: true
+  unchanged_by_this_ablation: true
+training_defaults:
+  rounds: 50
+  local_epochs: 1
+  batch_size: 128
+  seed: 42
+clusters:
+  - experiment_id: P_C1_BATADAL_TCN_FEDYOGI
+    cluster_id: 1
+    cluster_config: configs/cluster1_batadal.yaml
+    dataset: BATADAL
+    hierarchy: hierarchical_fixed
+    num_leaf_clients: 12
+    n_subclusters: 2
+    clustering_method: existing_frozen_agglomerative_membership
+    membership_file: outputs_c1_batadal/clustering/cluster1_memberships.json
+    model_family: tcn_gn
+    fl_method: FedYogi
+    aggregation: hierarchical_fedyogi_delta
+    output_root: outputs_c1_batadal_alt
+    model_hyperparameters:
+      input_shape: [batch, features, window_length]
+      channels: 64
+      dilations: [1, 2, 4, 8, 16]
+      kernel_size: 3
+      groups: 8
+      hidden_dim: 32
+      dropout: 0.15
+      normalization: GroupNorm
+      activation: ReLU
+    fedyogi:
+      server_lr: 0.01
+      beta1: 0.9
+      beta2: 0.99
+      tau: 0.001
+    training_hyperparameters:
+      client_optimizer: Adam
+      client_lr: 0.001
+      positive_class_weight_scales: [0.25, 0.50, 1.00]
+    threshold_selection_modes:
+      - max_validation_f1
+      - max_validation_f1_with_validation_fpr_le_0.10
+      - max_validation_f1_with_validation_fpr_le_0.05
+    leakage_guardrails:
+      split: existing_cluster1_batadal_strict_split
+      scaler_fit: training_only
+      clustering: existing_frozen_membership
+      threshold_selected_on: validation
+      held_out_test_usage: final_evaluation_only
+runtime_validation:
+  require_cluster1_only: true
+  require_num_leaf_clients: 12
+  require_n_subclusters: 2
+  require_frozen_membership_file_before_training: true
+  do_not_replace_existing_p_c1_batadal: true
+  forbid_cross_cluster_averaging: true
+  forbid_global_server_above_main_clusters: true

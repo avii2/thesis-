@@ -1,0 +1,84 @@
+---
+config_version: 1
+cluster:
+  id: 1
+  key: C1
+  dataset_key: HAI_2103_SAME_SETUP_OPT_B9A9B5DBCE
+  dataset_name: HAI 21.03 same-setup optimized Cluster 1 (full_w64_s16_r8to1)
+  audit_report: outputs_c1_same_setup_optimization/reports/hai_file_audit.json
+data:
+  data_root_env_var: FCFL_DATA_ROOT
+  default_data_root: data
+  current_raw_input_dir: data/raw/hai_2103/hai-21.03
+  current_raw_files:
+  - train1.csv
+  - train2.csv
+  - train3.csv
+  - test1.csv
+  - test2.csv
+  - test3.csv
+  - test4.csv
+  - test5.csv
+  balanced_variant_dir: "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/data/variants/hai_2103_same_setup_optimization/full_w64_s16_r8to1_selection_no_test"
+  balanced_output_root: "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_same_setup_optimization/data_variants/full_w64_s16_r8to1_selection_no_test"
+  training_input_mode: raw_csv_glob
+  training_input_glob: data/raw/hai_2103/hai-21.03/*.csv
+  schema_consistent_across_files: true
+  label_column: attack
+  label_column_confirmed_from_audit: true
+  candidate_label_columns_present:
+  - attack
+  timestamp_or_order_columns:
+  - time
+  excluded_columns:
+  - attack
+  - time
+  - attack_P1
+  - attack_P2
+  - attack_P3
+  exclude_if_present:
+  - attack_P4
+  - Attack
+  - label
+  - Label
+  - target
+  - Target
+  - timestamp
+  - Timestamp
+  - Time
+  - date
+  - Date
+partitioning:
+  candidate_leaf_clients: 12
+  strategy: balanced_window_npz
+  train_source_files:
+  - train1.csv
+  - train2.csv
+  - train3.csv
+  - test1.csv
+  - test2.csv
+  validation_source_files:
+  - test3.csv
+  heldout_test_files:
+  - test4.csv
+  - test5.csv
+  negative_to_positive_ratio: 8
+clustering:
+  fixed_subclusters: 2
+  fixed_subcluster_ids:
+  - H1
+  - H2
+  membership_file: "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_same_setup_optimization/data_variants/full_w64_s16_r8to1_selection_no_test/clustering/cluster1_memberships.json"
+preprocessing:
+  input_type: multivariate_time_series
+  window_length: 64
+  stride: 16
+  window_label_rule: any_positive_row
+  preprocessed_npz: true
+runtime_validation:
+  require_training_input_to_exist: true
+  require_schema_consistency_across_files: true
+  require_label_column_to_exist: true
+  heldout_test_files_must_not_be_used_for_training: true
+  heldout_test_files_must_not_be_used_for_validation: true
+  fit_preprocessing_on_training_windows_only: true

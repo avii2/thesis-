@@ -1,0 +1,103 @@
+{
+  "cluster_id": 1,
+  "dataset": "HAI 21.03",
+  "variant": "cluster1_same_setup_optimization",
+  "variant_id": "no_constants_no_corr_w64_s16_r8to1_selection_no_test",
+  "feature_variant": "no_constants_no_corr",
+  "window_length": 64,
+  "stride": 16,
+  "negative_to_positive_ratio": 8,
+  "status": "ok",
+  "clustering_method": "AgglomerativeClustering",
+  "linkage": "ward",
+  "metric": "euclidean",
+  "descriptor": "feature_wise_mean_std",
+  "descriptor_dim": 92,
+  "descriptor_source_split": "train",
+  "n_subclusters": 2,
+  "fixed_subcluster_ids": [
+    "H1",
+    "H2"
+  ],
+  "frozen": true,
+  "membership_hash": "3c5af317b3bb4865374fb6fdb9f0402ce4e02d55c830f21a31103a9e4c4e2f3c",
+  "membership_file": "outputs_c1_same_setup_optimization/data_variants/no_constants_no_corr_w64_s16_r8to1_selection_no_test/clustering/cluster1_memberships.json",
+  "reuse_for_experiment_groups": [
+    "baseline_uniform_hierarchical",
+    "proposed_specialized_hierarchical"
+  ],
+  "subclusters": [
+    {
+      "subcluster_id": "H1",
+      "client_ids": [
+        "C1_L001",
+        "C1_L002",
+        "C1_L011",
+        "C1_L012"
+      ]
+    },
+    {
+      "subcluster_id": "H2",
+      "client_ids": [
+        "C1_L003",
+        "C1_L004",
+        "C1_L005",
+        "C1_L006",
+        "C1_L007",
+        "C1_L008",
+        "C1_L009",
+        "C1_L010"
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "client_id": "C1_L001",
+      "subcluster_id": "H1"
+    },
+    {
+      "client_id": "C1_L002",
+      "subcluster_id": "H1"
+    },
+    {
+      "client_id": "C1_L003",
+      "subcluster_id": "H2"
+    },
+    {
+      "client_id": "C1_L004",
+      "subcluster_id": "H2"
+    },
+    {
+      "client_id": "C1_L005",
+      "subcluster_id": "H2"
+    },
+    {
+      "client_id": "C1_L006",
+      "subcluster_id": "H2"
+    },
+    {
+      "client_id": "C1_L007",
+      "subcluster_id": "H2"
+    },
+    {
+      "client_id": "C1_L008",
+      "subcluster_id": "H2"
+    },
+    {
+      "client_id": "C1_L009",
+      "subcluster_id": "H2"
+    },
+    {
+      "client_id": "C1_L010",
+      "subcluster_id": "H2"
+    },
+    {
+      "client_id": "C1_L011",
+      "subcluster_id": "H1"
+    },
+    {
+      "client_id": "C1_L012",
+      "subcluster_id": "H1"
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "cluster_id": 1,
+  "dataset": "HAI 21.03",
+  "variant": "cluster1_same_setup_optimization",
+  "variant_id": "top_ap_40_w64_s16_r10to1_selection_no_test",
+  "feature_variant": "top_ap_40",
+  "negative_to_positive_ratio": 10,
+  "seed": 42,
+  "window_length": 64,
+  "stride": 16,
+  "label_rule": "any_positive_row",
+  "input_tensor_layout": "N,C,T",
+  "preprocessing_applied_to_npz_inputs": true,
+  "train_source_files": [
+    "train1.csv",
+    "train2.csv",
+    "train3.csv",
+    "test1.csv",
+    "test2.csv"
+  ],
+  "validation_source_files": [
+    "test3.csv"
+  ],
+  "heldout_test_source_files": [
+    "test4.csv",
+    "test5.csv"
+  ],
+  "heldout_test_windows_included_for_evaluation": false,
+  "class_counts": {
+    "train": {
+      "0": 3560,
+      "1": 356
+    },
+    "validation": {
+      "0": 6618,
+      "1": 129
+    },
+    "test": {}
+  },
+  "natural_window_counts_before_balancing": {
+    "train": {
+      "0": 67354,
+      "1": 356
+    },
+    "validation": {
+      "0": 6618,
+      "1": 129
+    },
+    "heldout_test": {
+      "0": 7969,
+      "1": 275
+    }
+  },
+  "positive_class_weight": 10.0,
+  "feature_count": 40,
+  "feature_columns": [
+    "P1_LCV01D",
+    "P1_LCV01Z",
+    "P1_FT01",
+    "P1_FT01Z",
+    "P1_LIT01",
+    "P1_PCV01D",
+    "P1_PCV01Z",
+    "P1_PIT01",
+    "P4_ST_PT01",
+    "P2_CO_rpm",
+    "P1_PCV02Z",
+    "P2_SIT02",
+    "P2_SIT01",
+    "P1_PCV02D",
+    "P1_FCV03D",
+    "P2_VT01",
+    "P1_FCV03Z",
+    "P2_VYT02",
+    "P2_VYT03",
+    "P1_FT03",
+    "P1_FT03Z",
+    "P2_Emerg",
+    "P2_OnOff",
+    "P2_VXT02",
+    "P2_VXT03",
+    "P3_LCP01D",
+    "P3_FIT01",
+    "P3_PIT01",
+    "P1_TIT02",
+    "P2_HILout",
+    "P1_TIT01",
+    "P3_LCV01D",
+    "P1_B4002",
+    "P1_B400B",
+    "P1_FT02Z",
+    "P1_FT02",
+    "P1_FCV02Z",
+    "P4_ST_TT01",
+    "P1_B3004",
+    "P1_B2004"
+  ],
+  "paths": {
+    "train_windows": "data/variants/hai_2103_same_setup_optimization/top_ap_40_w64_s16_r10to1_selection_no_test/train_windows.npz",
+    "val_windows": "data/variants/hai_2103_same_setup_optimization/top_ap_40_w64_s16_r10to1_selection_no_test/val_windows.npz",
+    "test_windows": "data/variants/hai_2103_same_setup_optimization/top_ap_40_w64_s16_r10to1_selection_no_test/test_windows.npz",
+    "membership": "outputs_c1_same_setup_optimization/data_variants/top_ap_40_w64_s16_r10to1_selection_no_test/clustering/cluster1_memberships.json",
+    "preprocessing_summary": "outputs_c1_same_setup_optimization/data_variants/top_ap_40_w64_s16_r10to1_selection_no_test/preprocessing/preprocessing_summary.json"
+  },
+  "leakage_prevention": {
+    "test3_used_for_training": false,
+    "test4_test5_used_for_training": false,
+    "test4_test5_used_for_validation": false,
+    "test4_test5_used_for_scaling_or_imputation": false,
+    "test4_test5_used_for_clustering": false,
+    "test4_test5_used_for_feature_pruning": false,
+    "test4_test5_used_for_ratio_selection": false,
+    "test4_test5_used_for_hyperparameter_selection": false,
+    "validation_balanced": false,
+    "heldout_test_balanced": false,
+    "heldout_test_attached_only_for_final_evaluation": false
+  },
+  "membership_hash": "3c5af317b3bb4865374fb6fdb9f0402ce4e02d55c830f21a31103a9e4c4e2f3c"
+}

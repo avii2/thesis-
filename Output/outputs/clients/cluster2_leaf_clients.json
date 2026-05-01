@@ -1,0 +1,200 @@
+{
+  "cluster_id": 2,
+  "dataset": "TON Smoke",
+  "num_leaf_clients": 3,
+  "total_ordered_samples": 90,
+  "split_ratios": {
+    "train": 0.7,
+    "validation": 0.15,
+    "test": 0.15
+  },
+  "ordering_mode": "sorted_by_configured_timestamp_or_order_columns",
+  "ordering_columns_used": [
+    "date",
+    "time"
+  ],
+  "source_paths": [
+    "/var/folders/rr/7z604zqd19j2x3_r13r4qplh0000gn/T/tmpjfvg2e4v/outputs/processed/cluster2_combined.csv"
+  ],
+  "cluster_label_counts": {
+    "0": 45,
+    "1": 45
+  },
+  "cluster_split_label_counts": {
+    "train": {
+      "0": 32,
+      "1": 31
+    },
+    "validation": {
+      "0": 6,
+      "1": 6
+    },
+    "test": {
+      "0": 7,
+      "1": 8
+    }
+  },
+  "single_class_local_partitions": [],
+  "descriptor_source_split": "train",
+  "clients": [
+    {
+      "client_id": "C2_L001",
+      "ordered_start_index": 0,
+      "ordered_end_index": 30,
+      "num_total_samples": 30,
+      "num_train_samples": 21,
+      "num_val_samples": 4,
+      "num_test_samples": 5,
+      "train_label_counts": {
+        "0": 11,
+        "1": 10
+      },
+      "val_label_counts": {
+        "0": 2,
+        "1": 2
+      },
+      "test_label_counts": {
+        "0": 2,
+        "1": 3
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 21,
+        "num_samples": 21,
+        "label_counts": {
+          "0": 11,
+          "1": 10
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 21,
+        "end_index": 25,
+        "num_samples": 4,
+        "label_counts": {
+          "0": 2,
+          "1": 2
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 25,
+        "end_index": 30,
+        "num_samples": 5,
+        "label_counts": {
+          "0": 2,
+          "1": 3
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": []
+    },
+    {
+      "client_id": "C2_L002",
+      "ordered_start_index": 30,
+      "ordered_end_index": 60,
+      "num_total_samples": 30,
+      "num_train_samples": 21,
+      "num_val_samples": 4,
+      "num_test_samples": 5,
+      "train_label_counts": {
+        "0": 10,
+        "1": 11
+      },
+      "val_label_counts": {
+        "0": 2,
+        "1": 2
+      },
+      "test_label_counts": {
+        "0": 3,
+        "1": 2
+      },
+      "train_range": {
+        "start_index": 30,
+        "end_index": 51,
+        "num_samples": 21,
+        "label_counts": {
+          "0": 10,
+          "1": 11
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 51,
+        "end_index": 55,
+        "num_samples": 4,
+        "label_counts": {
+          "0": 2,
+          "1": 2
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 55,
+        "end_index": 60,
+        "num_samples": 5,
+        "label_counts": {
+          "0": 3,
+          "1": 2
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": []
+    },
+    {
+      "client_id": "C2_L003",
+      "ordered_start_index": 60,
+      "ordered_end_index": 90,
+      "num_total_samples": 30,
+      "num_train_samples": 21,
+      "num_val_samples": 4,
+      "num_test_samples": 5,
+      "train_label_counts": {
+        "0": 11,
+        "1": 10
+      },
+      "val_label_counts": {
+        "0": 2,
+        "1": 2
+      },
+      "test_label_counts": {
+        "0": 2,
+        "1": 3
+      },
+      "train_range": {
+        "start_index": 60,
+        "end_index": 81,
+        "num_samples": 21,
+        "label_counts": {
+          "0": 11,
+          "1": 10
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 81,
+        "end_index": 85,
+        "num_samples": 4,
+        "label_counts": {
+          "0": 2,
+          "1": 2
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 85,
+        "end_index": 90,
+        "num_samples": 5,
+        "label_counts": {
+          "0": 2,
+          "1": 3
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": []
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "candidate_count": 3240,
+  "feature_variants": [
+    "full",
+    "no_constants",
+    "no_constants_no_corr",
+    "top_ap_40"
+  ],
+  "window_settings": [
+    {
+      "window_length": 32,
+      "stride": 8
+    },
+    {
+      "window_length": 64,
+      "stride": 8
+    },
+    {
+      "window_length": 64,
+      "stride": 16
+    }
+  ],
+  "ratios": [
+    5,
+    8,
+    10,
+    15,
+    20
+  ],
+  "positive_class_weight_scales": [
+    0.0,
+    0.05,
+    0.1,
+    0.25,
+    0.5,
+    1.0
+  ],
+  "learning_rates": [
+    0.001,
+    0.003,
+    0.005
+  ],
+  "dropouts": [
+    0.0,
+    0.05,
+    0.1
+  ],
+  "full_cartesian_not_run_blindly": true
+}

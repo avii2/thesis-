@@ -46,6 +46,15 @@ clusters:
     training_hyperparameters:
       learning_rate: 0.003
       positive_class_weight_scale: 1.0
+    calibration:
+      output_root: outputs_c1_batadal/calibration
+      threshold_selection_modes:
+        - max_validation_f1
+        - max_validation_f1_with_validation_fpr_le_0.10
+        - max_validation_f1_with_validation_fpr_le_0.05
+      positive_class_weight_scale_ablation: [0.25, 0.50, 1.00]
+      threshold_selected_on: validation
+      held_out_test_usage: final_evaluation_only
   - experiment_id: P_C2
     cluster_config: configs/cluster2_ton_iot.yaml
     hierarchy: hierarchical_fixed

@@ -190,6 +190,42 @@ def _resolve_positive_class_weight_scale(
     return scale
 
 
+def _resolve_training_resampling(
+    cluster_entry: Mapping[str, Any],
+    training_resampling: str | None,
+) -> str | None:
+    training_hyperparameters = _optional_mapping(cluster_entry, "training_hyperparameters")
+    configured = (
+        training_resampling
+        if training_resampling is not None
+        else training_hyperparameters.get("training_resampling")
+    )
+    if configured is None:
+        return None
+    normalized = str(configured).strip()
+    if normalized in {"", "none", "None"}:
+        return None
+    if normalized != "positive_window_oversampling":
+        raise ValueError(f"Unsupported Cluster 1 training_resampling strategy: {normalized}")
+    return normalized
+
+
+def _resolve_target_positive_fraction(
+    cluster_entry: Mapping[str, Any],
+    target_positive_fraction: float | None,
+) -> float:
+    training_hyperparameters = _optional_mapping(cluster_entry, "training_hyperparameters")
+    configured = (
+        target_positive_fraction
+        if target_positive_fraction is not None
+        else training_hyperparameters.get("target_positive_fraction", 0.5)
+    )
+    resolved = float(configured)
+    if not 0.0 < resolved < 1.0:
+        raise ValueError("target_positive_fraction must be in (0, 1).")
+    return resolved
+
+
 def _resolve_learning_rate(
     cluster_entry: Mapping[str, Any],
     learning_rate: float | None,
@@ -223,6 +259,8 @@ def run_cluster1_proposed(
     cnn_bn_hidden_dim: int | None = None,
     cnn_bn_dropout: float | None = None,
     positive_class_weight_scale: float | None = None,
+    training_resampling: str | None = None,
+    target_positive_fraction: float | None = None,
 ) -> Cluster1ProposedRunResult:
     resolved_proposed_config_path, proposed_config, cluster_entry = _load_cluster1_proposed_entry(proposed_config_path)
     experiment_id = str(cluster_entry["experiment_id"]).strip()
@@ -265,6 +303,11 @@ def run_cluster1_proposed(
     resolved_positive_class_weight_scale = _resolve_positive_class_weight_scale(
         cluster_entry,
         positive_class_weight_scale,
+    )
+    resolved_training_resampling = _resolve_training_resampling(cluster_entry, training_resampling)
+    resolved_target_positive_fraction = _resolve_target_positive_fraction(
+        cluster_entry,
+        target_positive_fraction,
     )
     positive_class_weight = (
         1.0
@@ -359,6 +402,8 @@ def run_cluster1_proposed(
                     learning_rate=configured_learning_rate,
                     seed=configured_seed + round_index * 1000 + subcluster_index * 100 + client_index,
                     positive_class_weight=positive_class_weight,
+                    training_resampling=resolved_training_resampling,
+                    target_positive_fraction=resolved_target_positive_fraction,
                 )
                 client_local_states[client.client_id] = {
                     key: np.asarray(value, dtype=np.float32).copy()
@@ -504,6 +549,8 @@ def run_cluster1_proposed(
         "computed_positive_class_weight": computed_positive_class_weight,
         "positive_class_weight_scale": resolved_positive_class_weight_scale,
         "positive_class_weight": positive_class_weight,
+        "training_resampling": resolved_training_resampling or "none",
+        "target_positive_fraction": resolved_target_positive_fraction,
         "communicated_non_bn_parameter_bytes": communicated_parameter_bytes,
         "communication_cost_per_round_bytes": round_rows[-1]["communication_cost_bytes"],
         "total_communication_cost_bytes": total_communication_cost_bytes,
@@ -548,6 +595,8 @@ def run_cluster1_proposed(
         "computed_positive_class_weight": computed_positive_class_weight,
         "positive_class_weight_scale": resolved_positive_class_weight_scale,
         "positive_class_weight": positive_class_weight,
+        "training_resampling": resolved_training_resampling or "none",
+        "target_positive_fraction": resolved_target_positive_fraction,
         "best_validation_round": best_round_index,
         "best_validation_f1": best_validation_metrics["f1"],
         "best_validation_f1_default_threshold": best_validation_metrics_default_threshold["f1"],
@@ -624,6 +673,16 @@ def parse_args() -> argparse.Namespace:
         type=float,
         help="Scale applied to the Cluster 1 training-label positive-class weight.",
     )
+    parser.add_argument(
+        "--training-resampling",
+        choices=("none", "positive_window_oversampling"),
+        help="Optional training-only resampling strategy for P_C1.",
+    )
+    parser.add_argument(
+        "--target-positive-fraction",
+        type=float,
+        help="Target positive fraction for positive_window_oversampling.",
+    )
     parser.add_argument("--seed", type=int, help="Optional override for the run seed.")
     parser.add_argument(
         "--max-train-examples-per-client",
@@ -661,6 +720,8 @@ def main() -> None:
         cnn_bn_hidden_dim=args.cnn_bn_hidden_dim,
         cnn_bn_dropout=args.cnn_bn_dropout,
         positive_class_weight_scale=args.positive_class_weight_scale,
+        training_resampling=args.training_resampling,
+        target_positive_fraction=args.target_positive_fraction,
     )
     print(f"{result.experiment_id}: wrote {result.metrics_csv_path}")
 

@@ -1,0 +1,146 @@
+{
+  "cluster_id": 1,
+  "dataset": "HAI Smoke",
+  "num_leaf_clients": 2,
+  "total_ordered_samples": 96,
+  "split_ratios": {
+    "train": 0.7,
+    "validation": 0.15,
+    "test": 0.15
+  },
+  "ordering_mode": "sorted_by_configured_timestamp_or_order_columns",
+  "ordering_columns_used": [
+    "time"
+  ],
+  "source_paths": [
+    "/var/folders/rr/7z604zqd19j2x3_r13r4qplh0000gn/T/tmpjfvg2e4v/raw/c1/hai.csv"
+  ],
+  "cluster_label_counts": {
+    "0": 88,
+    "1": 8
+  },
+  "cluster_split_label_counts": {
+    "train": {
+      "0": 62,
+      "1": 4
+    },
+    "validation": {
+      "0": 12,
+      "1": 2
+    },
+    "test": {
+      "0": 14,
+      "1": 2
+    }
+  },
+  "single_class_local_partitions": [],
+  "descriptor_source_split": "train",
+  "clients": [
+    {
+      "client_id": "C1_L001",
+      "ordered_start_index": 0,
+      "ordered_end_index": 48,
+      "num_total_samples": 48,
+      "num_train_samples": 33,
+      "num_val_samples": 7,
+      "num_test_samples": 8,
+      "train_label_counts": {
+        "0": 31,
+        "1": 2
+      },
+      "val_label_counts": {
+        "0": 6,
+        "1": 1
+      },
+      "test_label_counts": {
+        "0": 7,
+        "1": 1
+      },
+      "train_range": {
+        "start_index": 0,
+        "end_index": 33,
+        "num_samples": 33,
+        "label_counts": {
+          "0": 31,
+          "1": 2
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 33,
+        "end_index": 40,
+        "num_samples": 7,
+        "label_counts": {
+          "0": 6,
+          "1": 1
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 40,
+        "end_index": 48,
+        "num_samples": 8,
+        "label_counts": {
+          "0": 7,
+          "1": 1
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": []
+    },
+    {
+      "client_id": "C1_L002",
+      "ordered_start_index": 48,
+      "ordered_end_index": 96,
+      "num_total_samples": 48,
+      "num_train_samples": 33,
+      "num_val_samples": 7,
+      "num_test_samples": 8,
+      "train_label_counts": {
+        "0": 31,
+        "1": 2
+      },
+      "val_label_counts": {
+        "0": 6,
+        "1": 1
+      },
+      "test_label_counts": {
+        "0": 7,
+        "1": 1
+      },
+      "train_range": {
+        "start_index": 48,
+        "end_index": 81,
+        "num_samples": 33,
+        "label_counts": {
+          "0": 31,
+          "1": 2
+        },
+        "single_class": false
+      },
+      "val_range": {
+        "start_index": 81,
+        "end_index": 88,
+        "num_samples": 7,
+        "label_counts": {
+          "0": 6,
+          "1": 1
+        },
+        "single_class": false
+      },
+      "test_range": {
+        "start_index": 88,
+        "end_index": 96,
+        "num_samples": 8,
+        "label_counts": {
+          "0": 7,
+          "1": 1
+        },
+        "single_class": false
+      },
+      "single_class_splits": [],
+      "notes": []
+    }
+  ]
+}

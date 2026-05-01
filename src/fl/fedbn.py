@@ -12,6 +12,7 @@ from src.fl.aggregators import (
     is_batch_norm_key,
 )
 from src.fl.client import ClientSplit, FlatClientDataset, LocalTrainingResult
+from src.fl.sampling import positive_window_oversample_indices
 from src.models.cnn1d_bn import CNN1DBNClassifier, CNN1DBNConfig
 
 
@@ -93,6 +94,8 @@ def train_fedbn_client(
     learning_rate: float,
     seed: int,
     positive_class_weight: float = 1.0,
+    training_resampling: str | None = None,
+    target_positive_fraction: float = 0.5,
 ) -> LocalTrainingResult:
     if client.num_train_samples <= 0:
         raise ValueError(f"{client.client_id}: train split must contain at least one sample.")
@@ -102,10 +105,22 @@ def train_fedbn_client(
     rng = np.random.default_rng(seed)
     losses: list[float] = []
     for _ in range(local_epochs):
+        train_inputs = client.train.inputs
+        train_labels = client.train.labels
+        if training_resampling == "positive_window_oversampling":
+            sample_indices = positive_window_oversample_indices(
+                train_labels,
+                rng=rng,
+                target_positive_fraction=target_positive_fraction,
+            )
+            train_inputs = train_inputs[sample_indices]
+            train_labels = train_labels[sample_indices]
+        elif training_resampling not in {None, "none"}:
+            raise ValueError(f"Unsupported FedBN training_resampling strategy: {training_resampling}")
         losses.append(
             model.train_epoch(
-                client.train.inputs,
-                client.train.labels,
+                train_inputs,
+                train_labels,
                 batch_size=batch_size,
                 learning_rate=learning_rate,
                 rng=rng,

@@ -1,0 +1,14 @@
+{
+  "experiment_id": "P_C1_BATADAL",
+  "cluster_id": 1,
+  "dataset": "BATADAL",
+  "model_family": "cnn1d_bn",
+  "model_version": "C1_R001",
+  "model_hash": "sha256:e1fd47d2b9de6f223fb8f7389d087421a976d355a641a8c1255dc6ecc292c0f6",
+  "artifact_type": "metadata_manifest",
+  "weights_emitted_by_runner": false,
+  "seed": null,
+  "summary_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_batadal_smoke/runs/P_C1_BATADAL/run_summary.json",
+  "round_metrics_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_batadal_smoke/runs/P_C1_BATADAL/round_metrics.csv",
+  "metrics_csv_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_batadal_smoke/metrics/P_C1_BATADAL_metrics.csv"
+}

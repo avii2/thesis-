@@ -1,0 +1,333 @@
+{
+  "batch_size": 128,
+  "client_lr": 0.001,
+  "data_summary": {
+    "client_test_label_counts": {
+      "C1_L001": {
+        "0": 8
+      },
+      "C1_L002": {
+        "0": 8
+      },
+      "C1_L003": {
+        "0": 8
+      },
+      "C1_L004": {
+        "0": 8
+      },
+      "C1_L005": {
+        "0": 8
+      },
+      "C1_L006": {
+        "0": 8
+      },
+      "C1_L007": {
+        "0": 8
+      },
+      "C1_L008": {
+        "1": 8
+      },
+      "C1_L009": {
+        "0": 8
+      },
+      "C1_L010": {
+        "1": 8
+      },
+      "C1_L011": {
+        "0": 8
+      },
+      "C1_L012": {
+        "0": 8
+      }
+    },
+    "client_test_sample_counts": {
+      "C1_L001": 8,
+      "C1_L002": 8,
+      "C1_L003": 8,
+      "C1_L004": 8,
+      "C1_L005": 8,
+      "C1_L006": 8,
+      "C1_L007": 8,
+      "C1_L008": 8,
+      "C1_L009": 8,
+      "C1_L010": 8,
+      "C1_L011": 8,
+      "C1_L012": 8
+    },
+    "client_train_label_counts": {
+      "C1_L001": {
+        "0": 8
+      },
+      "C1_L002": {
+        "0": 8
+      },
+      "C1_L003": {
+        "0": 8
+      },
+      "C1_L004": {
+        "0": 8
+      },
+      "C1_L005": {
+        "0": 8
+      },
+      "C1_L006": {
+        "0": 8
+      },
+      "C1_L007": {
+        "0": 8
+      },
+      "C1_L008": {
+        "0": 8
+      },
+      "C1_L009": {
+        "0": 8
+      },
+      "C1_L010": {
+        "0": 8
+      },
+      "C1_L011": {
+        "0": 8
+      },
+      "C1_L012": {
+        "1": 8
+      }
+    },
+    "client_train_sample_counts": {
+      "C1_L001": 8,
+      "C1_L002": 8,
+      "C1_L003": 8,
+      "C1_L004": 8,
+      "C1_L005": 8,
+      "C1_L006": 8,
+      "C1_L007": 8,
+      "C1_L008": 8,
+      "C1_L009": 8,
+      "C1_L010": 8,
+      "C1_L011": 8,
+      "C1_L012": 8
+    },
+    "client_validation_label_counts": {
+      "C1_L001": {
+        "0": 8
+      },
+      "C1_L002": {
+        "0": 8
+      },
+      "C1_L003": {
+        "0": 8
+      },
+      "C1_L004": {
+        "1": 8
+      },
+      "C1_L005": {
+        "1": 8
+      },
+      "C1_L006": {
+        "0": 8
+      },
+      "C1_L007": {
+        "0": 8
+      },
+      "C1_L008": {
+        "1": 8
+      },
+      "C1_L009": {
+        "1": 8
+      },
+      "C1_L010": {
+        "0": 7,
+        "1": 1
+      },
+      "C1_L011": {
+        "0": 8
+      },
+      "C1_L012": {
+        "0": 8
+      }
+    },
+    "client_validation_sample_counts": {
+      "C1_L001": 8,
+      "C1_L002": 8,
+      "C1_L003": 8,
+      "C1_L004": 8,
+      "C1_L005": 8,
+      "C1_L006": 8,
+      "C1_L007": 8,
+      "C1_L008": 8,
+      "C1_L009": 8,
+      "C1_L010": 8,
+      "C1_L011": 8,
+      "C1_L012": 8
+    },
+    "cluster_id": 1,
+    "cluster_split_label_counts": {
+      "test": {
+        "0": 1635,
+        "1": 407
+      },
+      "train": {
+        "0": 11936,
+        "1": 288
+      },
+      "validation": {
+        "0": 369,
+        "1": 204
+      }
+    },
+    "dataset": "BATADAL",
+    "dataset_description": "BATADAL water-distribution SCADA telemetry",
+    "dropped_all_missing_feature_columns": [],
+    "dropped_constant_feature_columns": [
+      "S_PU1",
+      "F_PU3",
+      "S_PU3",
+      "F_PU5",
+      "S_PU5",
+      "F_PU9",
+      "S_PU9"
+    ],
+    "dropped_high_cardinality_categorical_columns": [],
+    "heldout_test_source_files": [
+      "test_dataset.csv"
+    ],
+    "input_adapter": "sliding_window_feature_channels",
+    "input_channels": 36,
+    "input_length": 48,
+    "max_eval_examples_per_client": 8,
+    "max_train_examples_per_client": 8,
+    "model_feature_columns": [
+      "L_T1",
+      "L_T2",
+      "L_T3",
+      "L_T4",
+      "L_T5",
+      "L_T6",
+      "L_T7",
+      "F_PU1",
+      "F_PU2",
+      "S_PU2",
+      "F_PU4",
+      "S_PU4",
+      "F_PU6",
+      "S_PU6",
+      "F_PU7",
+      "S_PU7",
+      "F_PU8",
+      "S_PU8",
+      "F_PU10",
+      "S_PU10",
+      "F_PU11",
+      "S_PU11",
+      "F_V2",
+      "S_V2",
+      "P_J280",
+      "P_J269",
+      "P_J300",
+      "P_J256",
+      "P_J289",
+      "P_J415",
+      "P_J302",
+      "P_J306",
+      "P_J307",
+      "P_J317",
+      "P_J14",
+      "P_J422"
+    ],
+    "num_clients": 12,
+    "preprocessing_fit_scope": "cluster1_training_rows_only",
+    "retained_input_feature_columns": [
+      "L_T1",
+      "L_T2",
+      "L_T3",
+      "L_T4",
+      "L_T5",
+      "L_T6",
+      "L_T7",
+      "F_PU1",
+      "S_PU1",
+      "F_PU2",
+      "S_PU2",
+      "F_PU3",
+      "S_PU3",
+      "F_PU4",
+      "S_PU4",
+      "F_PU5",
+      "S_PU5",
+      "F_PU6",
+      "S_PU6",
+      "F_PU7",
+      "S_PU7",
+      "F_PU8",
+      "S_PU8",
+      "F_PU9",
+      "S_PU9",
+      "F_PU10",
+      "S_PU10",
+      "F_PU11",
+      "S_PU11",
+      "F_V2",
+      "S_V2",
+      "P_J280",
+      "P_J269",
+      "P_J300",
+      "P_J256",
+      "P_J289",
+      "P_J415",
+      "P_J302",
+      "P_J306",
+      "P_J307",
+      "P_J317",
+      "P_J14",
+      "P_J422"
+    ],
+    "test_dataset_used_for_clustering": false,
+    "test_dataset_used_for_descriptor_computation": false,
+    "test_dataset_used_for_preprocessing_fit": false,
+    "test_dataset_used_for_threshold_tuning": false,
+    "test_dataset_used_for_training": false,
+    "test_dataset_used_for_validation": false,
+    "train_source_files": [
+      "training_dataset_1.csv",
+      "training_dataset_2.csv"
+    ],
+    "validation_source_files": [
+      "training_dataset_2.csv"
+    ],
+    "variant": "cluster1_batadal",
+    "window_label_rule": "last_row"
+  },
+  "experiment_id": "P_C1_BATADAL_TCN_FEDYOGI",
+  "fedyogi": {
+    "beta1": 0.9,
+    "beta2": 0.99,
+    "server_lr": 0.01,
+    "tau": 0.001
+  },
+  "local_epochs": 1,
+  "model_config": {
+    "channels": 64,
+    "dilations": [
+      1,
+      2,
+      4,
+      8,
+      16
+    ],
+    "dropout": 0.15,
+    "groups": 8,
+    "hidden_dim": 32,
+    "input_channels": 36,
+    "input_length": 48,
+    "kernel_size": 3
+  },
+  "positive_class_weight_scale": 0.25,
+  "round_rows": [
+    {
+      "communication_cost_bytes": 7490672,
+      "positive_class_weight_scale": 0.25,
+      "round": 1,
+      "train_loss_local_mean": 0.8245553970336914
+    }
+  ],
+  "rounds": 1
+}
