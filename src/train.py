@@ -1018,6 +1018,7 @@ def _write_convergence_plot(
         output_root=output_root,
         seed=seed,
     )["convergence_plot_path"]
+    plot_path.parent.mkdir(parents=True, exist_ok=True)
     if not round_rows:
         return _write_note_svg(
             plot_path,

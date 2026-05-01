@@ -1,0 +1,45 @@
+---
+config_version: 1
+experiment_group: baseline_uniform_hierarchical
+description: 'Cluster 1 balanced-training variant 2to1: hierarchical CNN1D + FedAvg
+  baseline.'
+source_of_truth:
+  architecture_contract: docs/ARCHITECTURE_CONTRACT.md
+  data_contract: docs/DATA_CONTRACT.md
+  balanced_training_variant: docs/CLUSTER1_BALANCED_TRAINING_VARIANT.md
+ledger:
+  metadata_only: true
+training_defaults:
+  rounds: 50
+  local_epochs: 1
+  batch_size: 128
+  seeds:
+  - 42
+smoke_test_defaults:
+  rounds: 2
+  local_epochs: 1
+  batch_size: 64
+  seed: 42
+clustering_defaults:
+  method: AgglomerativeClustering
+  linkage: ward
+  metric: euclidean
+  descriptor: feature_wise_mean_std
+  reuse_frozen_memberships: true
+clusters:
+- experiment_id: B_C1_BAL_2TO1
+  cluster_config: configs/cluster1_hai_balanced_2to1.yaml
+  hierarchy: hierarchical_fixed
+  clustering_method: agglomerative
+  n_subclusters: 2
+  descriptor: feature_wise_mean_std
+  membership_file: outputs_c1_balanced_train/ratio_2to1/clustering/cluster1_memberships.json
+  model_family: cnn1d
+  fl_method: FedAvg
+  aggregation: weighted_arithmetic_mean
+  output_root: outputs_c1_balanced_train/ratio_2to1
+runtime_validation:
+  require_cluster_configs_to_exist: true
+  require_frozen_membership_files_before_training: true
+  require_ledger_metadata_only: true
+  require_balanced_cluster1_outputs: true

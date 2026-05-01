@@ -1,0 +1,29 @@
+{
+  "status": "ok",
+  "raw_audit_path": "outputs_c1_balanced_train/reports/hai_file_audit.json",
+  "window_audit_path": "outputs_c1_balanced_train/reports/window_audit.json",
+  "variant_root": "data/variants/hai_2103_balanced_train",
+  "output_root": "outputs_c1_balanced_train",
+  "ratios_generated": [
+    "ratio_10to1",
+    "ratio_1to1",
+    "ratio_2to1",
+    "ratio_3to1",
+    "ratio_5to1",
+    "ratio_8to1"
+  ],
+  "ratios_skipped": [],
+  "train_pool_counts_before_balancing": {
+    "0": 134830,
+    "1": 605
+  },
+  "validation_counts": {
+    "0": 13273,
+    "1": 224
+  },
+  "heldout_test_counts": {
+    "0": 16013,
+    "1": 481
+  },
+  "feature_count": 79
+}

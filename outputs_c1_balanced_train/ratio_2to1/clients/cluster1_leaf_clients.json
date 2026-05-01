@@ -1,0 +1,485 @@
+{
+  "cluster_id": 1,
+  "dataset": "HAI 21.03 balanced-training variant",
+  "variant": "cluster1_balanced_training",
+  "ratio": "ratio_2to1",
+  "num_leaf_clients": 12,
+  "train_source_files": [
+    "train1.csv",
+    "train2.csv",
+    "train3.csv",
+    "test1.csv",
+    "test2.csv"
+  ],
+  "validation_source_files": [
+    "test3.csv"
+  ],
+  "heldout_test_source_files": [
+    "test4.csv",
+    "test5.csv"
+  ],
+  "partitioning_strategy": "balanced_window_round_robin_positive_then_negative",
+  "validation_partitioning_strategy": "natural_validation_windows_round_robin_by_label",
+  "heldout_test_partitioning_strategy": "natural_heldout_windows_round_robin_by_label",
+  "cluster_split_label_counts": {
+    "train": {
+      "0": 1210,
+      "1": 605
+    },
+    "validation": {
+      "0": 13273,
+      "1": 224
+    },
+    "test": {
+      "0": 16013,
+      "1": 481
+    }
+  },
+  "single_class_local_partitions": [],
+  "clients": [
+    {
+      "client_id": "C1_L001",
+      "train_window_count": 152,
+      "train_positive_count": 51,
+      "train_negative_count": 101,
+      "val_window_count": 1126,
+      "val_positive_count": 19,
+      "val_negative_count": 1107,
+      "test_window_count": 1376,
+      "test_positive_count": 41,
+      "test_negative_count": 1335,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "test4.csv",
+        "test5.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "train_source_files": [
+        "test1.csv",
+        "test2.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "val_source_files": [
+        "test3.csv"
+      ],
+      "test_source_files": [
+        "test4.csv",
+        "test5.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L002",
+      "train_window_count": 152,
+      "train_positive_count": 51,
+      "train_negative_count": 101,
+      "val_window_count": 1125,
+      "val_positive_count": 19,
+      "val_negative_count": 1106,
+      "test_window_count": 1375,
+      "test_positive_count": 40,
+      "test_negative_count": 1335,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "test4.csv",
+        "test5.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "train_source_files": [
+        "test1.csv",
+        "test2.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "val_source_files": [
+        "test3.csv"
+      ],
+      "test_source_files": [
+        "test4.csv",
+        "test5.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L003",
+      "train_window_count": 152,
+      "train_positive_count": 51,
+      "train_negative_count": 101,
+      "val_window_count": 1125,
+      "val_positive_count": 19,
+      "val_negative_count": 1106,
+      "test_window_count": 1375,
+      "test_positive_count": 40,
+      "test_negative_count": 1335,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "test4.csv",
+        "test5.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "train_source_files": [
+        "test1.csv",
+        "test2.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "val_source_files": [
+        "test3.csv"
+      ],
+      "test_source_files": [
+        "test4.csv",
+        "test5.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L004",
+      "train_window_count": 152,
+      "train_positive_count": 51,
+      "train_negative_count": 101,
+      "val_window_count": 1125,
+      "val_positive_count": 19,
+      "val_negative_count": 1106,
+      "test_window_count": 1375,
+      "test_positive_count": 40,
+      "test_negative_count": 1335,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "test4.csv",
+        "test5.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "train_source_files": [
+        "test1.csv",
+        "test2.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "val_source_files": [
+        "test3.csv"
+      ],
+      "test_source_files": [
+        "test4.csv",
+        "test5.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L005",
+      "train_window_count": 152,
+      "train_positive_count": 51,
+      "train_negative_count": 101,
+      "val_window_count": 1125,
+      "val_positive_count": 19,
+      "val_negative_count": 1106,
+      "test_window_count": 1375,
+      "test_positive_count": 40,
+      "test_negative_count": 1335,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "test4.csv",
+        "test5.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "train_source_files": [
+        "test1.csv",
+        "test2.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "val_source_files": [
+        "test3.csv"
+      ],
+      "test_source_files": [
+        "test4.csv",
+        "test5.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L006",
+      "train_window_count": 151,
+      "train_positive_count": 50,
+      "train_negative_count": 101,
+      "val_window_count": 1125,
+      "val_positive_count": 19,
+      "val_negative_count": 1106,
+      "test_window_count": 1374,
+      "test_positive_count": 40,
+      "test_negative_count": 1334,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "test4.csv",
+        "test5.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "train_source_files": [
+        "test1.csv",
+        "test2.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "val_source_files": [
+        "test3.csv"
+      ],
+      "test_source_files": [
+        "test4.csv",
+        "test5.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L007",
+      "train_window_count": 151,
+      "train_positive_count": 50,
+      "train_negative_count": 101,
+      "val_window_count": 1125,
+      "val_positive_count": 19,
+      "val_negative_count": 1106,
+      "test_window_count": 1374,
+      "test_positive_count": 40,
+      "test_negative_count": 1334,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "test4.csv",
+        "test5.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "train_source_files": [
+        "test1.csv",
+        "test2.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "val_source_files": [
+        "test3.csv"
+      ],
+      "test_source_files": [
+        "test4.csv",
+        "test5.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L008",
+      "train_window_count": 151,
+      "train_positive_count": 50,
+      "train_negative_count": 101,
+      "val_window_count": 1125,
+      "val_positive_count": 19,
+      "val_negative_count": 1106,
+      "test_window_count": 1374,
+      "test_positive_count": 40,
+      "test_negative_count": 1334,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "test4.csv",
+        "test5.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "train_source_files": [
+        "test1.csv",
+        "test2.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "val_source_files": [
+        "test3.csv"
+      ],
+      "test_source_files": [
+        "test4.csv",
+        "test5.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L009",
+      "train_window_count": 151,
+      "train_positive_count": 50,
+      "train_negative_count": 101,
+      "val_window_count": 1124,
+      "val_positive_count": 18,
+      "val_negative_count": 1106,
+      "test_window_count": 1374,
+      "test_positive_count": 40,
+      "test_negative_count": 1334,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "test4.csv",
+        "test5.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "train_source_files": [
+        "test1.csv",
+        "test2.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "val_source_files": [
+        "test3.csv"
+      ],
+      "test_source_files": [
+        "test4.csv",
+        "test5.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L010",
+      "train_window_count": 151,
+      "train_positive_count": 50,
+      "train_negative_count": 101,
+      "val_window_count": 1124,
+      "val_positive_count": 18,
+      "val_negative_count": 1106,
+      "test_window_count": 1374,
+      "test_positive_count": 40,
+      "test_negative_count": 1334,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "test4.csv",
+        "test5.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "train_source_files": [
+        "test1.csv",
+        "test2.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "val_source_files": [
+        "test3.csv"
+      ],
+      "test_source_files": [
+        "test4.csv",
+        "test5.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L011",
+      "train_window_count": 150,
+      "train_positive_count": 50,
+      "train_negative_count": 100,
+      "val_window_count": 1124,
+      "val_positive_count": 18,
+      "val_negative_count": 1106,
+      "test_window_count": 1374,
+      "test_positive_count": 40,
+      "test_negative_count": 1334,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "test4.csv",
+        "test5.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "train_source_files": [
+        "test1.csv",
+        "test2.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "val_source_files": [
+        "test3.csv"
+      ],
+      "test_source_files": [
+        "test4.csv",
+        "test5.csv"
+      ],
+      "warning": ""
+    },
+    {
+      "client_id": "C1_L012",
+      "train_window_count": 150,
+      "train_positive_count": 50,
+      "train_negative_count": 100,
+      "val_window_count": 1124,
+      "val_positive_count": 18,
+      "val_negative_count": 1106,
+      "test_window_count": 1374,
+      "test_positive_count": 40,
+      "test_negative_count": 1334,
+      "source_files_represented": [
+        "test1.csv",
+        "test2.csv",
+        "test3.csv",
+        "test4.csv",
+        "test5.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "train_source_files": [
+        "test1.csv",
+        "test2.csv",
+        "train1.csv",
+        "train2.csv",
+        "train3.csv"
+      ],
+      "val_source_files": [
+        "test3.csv"
+      ],
+      "test_source_files": [
+        "test4.csv",
+        "test5.csv"
+      ],
+      "warning": ""
+    }
+  ]
+}

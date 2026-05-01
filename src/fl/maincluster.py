@@ -18,6 +18,7 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
+from src.data import cluster1_balanced as c1_balanced
 from src.data import cluster1_repaired as c1_repaired
 from src.data.partitions import PartitionBuildResult, build_candidate_leaf_clients
 from src.data.preprocess import RawPreparedDataset, prepare_training_dataset
@@ -466,6 +467,186 @@ def _build_repaired_cluster1_federated_clients(
     return clients, model_config, data_summary
 
 
+def _load_balanced_split(path: Path, *, limit: int | None = None) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    if not path.exists():
+        raise FileNotFoundError(f"Missing Cluster 1 balanced window file: {path}")
+    with np.load(path, allow_pickle=False) as payload:
+        inputs = payload["inputs"].astype(np.float32, copy=False)
+        labels = payload["labels"].astype(np.int8, copy=False)
+        client_ids = payload["client_id"].astype(str, copy=False)
+    if inputs.ndim != 3:
+        raise ValueError(f"{path}: expected inputs with shape (N, C, T), observed {inputs.shape}.")
+    if labels.shape[0] != inputs.shape[0] or client_ids.shape[0] != inputs.shape[0]:
+        raise ValueError(f"{path}: inputs, labels, and client_id arrays have inconsistent lengths.")
+    if limit is not None and inputs.shape[0] > limit:
+        inputs = inputs[:limit].copy()
+        labels = labels[:limit].copy()
+        client_ids = client_ids[:limit].copy()
+    return inputs, labels, client_ids
+
+
+def _split_for_client(
+    inputs: np.ndarray,
+    labels: np.ndarray,
+    client_ids: np.ndarray,
+    *,
+    client_id: str,
+    limit: int | None,
+) -> ClientSplit:
+    indices = np.flatnonzero(client_ids == client_id)
+    if limit is not None:
+        indices = indices[:limit]
+    return ClientSplit(
+        inputs=inputs[indices].astype(np.float32, copy=True),
+        labels=labels[indices].astype(np.int8, copy=True),
+    )
+
+
+def _build_balanced_cluster1_federated_clients(
+    cluster_config_path: str | Path,
+    cluster_yaml: Mapping[str, Any],
+    *,
+    max_train_examples_per_client: int | None = None,
+    max_eval_examples_per_client: int | None = None,
+) -> tuple[list[FlatClientDataset], CNN1DConfig, Mapping[str, Any]]:
+    dataset_config = load_cluster_config(cluster_config_path)
+    if dataset_config.cluster_id != 1:
+        raise ValueError("balanced_window_npz partitioning is restricted to Cluster 1.")
+
+    data_config = cluster_yaml.get("data")
+    partitioning = cluster_yaml.get("partitioning")
+    if not isinstance(data_config, Mapping) or not isinstance(partitioning, Mapping):
+        raise ValueError("Cluster 1 balanced config must define data and partitioning sections.")
+
+    variant_dir_value = data_config.get("balanced_variant_dir")
+    if not isinstance(variant_dir_value, str) or not variant_dir_value.strip():
+        raise ValueError("Cluster 1 balanced config requires data.balanced_variant_dir.")
+    variant_dir = Path(variant_dir_value)
+    if not variant_dir.is_absolute():
+        variant_dir = Path(cluster_config_path).resolve().parents[1] / variant_dir
+    variant_dir = variant_dir.resolve()
+
+    metadata_path = variant_dir / "metadata.json"
+    if not metadata_path.exists():
+        raise FileNotFoundError(f"Missing Cluster 1 balanced metadata file: {metadata_path}")
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    if metadata.get("variant") != "cluster1_balanced_training":
+        raise ValueError(f"{metadata_path}: expected variant=cluster1_balanced_training.")
+    leakage = metadata.get("leakage_prevention")
+    if not isinstance(leakage, Mapping):
+        raise ValueError(f"{metadata_path}: missing leakage_prevention metadata.")
+    blocked_flags = (
+        "test4_test5_used_for_training",
+        "test4_test5_used_for_validation",
+        "test4_test5_used_for_scaling_or_imputation",
+        "test4_test5_used_for_clustering",
+    )
+    leaking = [flag for flag in blocked_flags if bool(leakage.get(flag))]
+    if leaking:
+        raise ValueError(f"{metadata_path}: held-out test leakage flags are set: {leaking}.")
+
+    train_inputs, train_labels, train_client_ids = _load_balanced_split(variant_dir / "train_windows.npz")
+    val_inputs, val_labels, val_client_ids = _load_balanced_split(variant_dir / "val_windows.npz")
+    test_inputs, test_labels, test_client_ids = _load_balanced_split(variant_dir / "test_windows.npz")
+    input_shape = train_inputs.shape[1:]
+    for split_name, split_inputs in (
+        ("validation", val_inputs),
+        ("test", test_inputs),
+    ):
+        if split_inputs.shape[1:] != input_shape:
+            raise ValueError(
+                f"Cluster 1 balanced {split_name} shape {split_inputs.shape[1:]} does not match train shape {input_shape}."
+            )
+
+    num_clients = int(partitioning.get("candidate_leaf_clients", 0))
+    if num_clients <= 0:
+        raise ValueError("Cluster 1 balanced partitioning.candidate_leaf_clients must be positive.")
+    client_ids = [f"C1_L{index + 1:03d}" for index in range(num_clients)]
+    model_config = CNN1DConfig(input_channels=int(input_shape[0]), input_length=int(input_shape[1]))
+
+    clients: list[FlatClientDataset] = []
+    for client_id in client_ids:
+        train_split = _split_for_client(
+            train_inputs,
+            train_labels,
+            train_client_ids,
+            client_id=client_id,
+            limit=max_train_examples_per_client,
+        )
+        validation_split = _split_for_client(
+            val_inputs,
+            val_labels,
+            val_client_ids,
+            client_id=client_id,
+            limit=max_eval_examples_per_client,
+        )
+        test_split = _split_for_client(
+            test_inputs,
+            test_labels,
+            test_client_ids,
+            client_id=client_id,
+            limit=max_eval_examples_per_client,
+        )
+        if train_split.num_samples <= 0:
+            raise ValueError(f"{client_id}: balanced Cluster 1 requires at least one train window.")
+        clients.append(
+            FlatClientDataset(
+                cluster_id=1,
+                client_id=client_id,
+                train=train_split,
+                validation=validation_split,
+                test=test_split,
+                input_adapter="sliding_window_feature_channels",
+            )
+        )
+
+    def counts_for(split_name: str) -> dict[str, dict[str, int]]:
+        return {
+            client.client_id: c1_balanced._label_counts(getattr(client, split_name).labels)
+            for client in clients
+        }
+
+    data_summary = {
+        "cluster_id": 1,
+        "dataset": str(dataset_config.dataset_name),
+        "variant": "cluster1_balanced_training",
+        "ratio": str(metadata.get("ratio")),
+        "num_clients": len(clients),
+        "input_adapter": "sliding_window_feature_channels",
+        "input_channels": model_config.input_channels,
+        "input_length": model_config.input_length,
+        "retained_input_feature_columns": list(metadata.get("feature_columns", [])),
+        "model_feature_columns": list(metadata.get("feature_columns", [])),
+        "positive_class_weight_from_metadata": metadata.get("positive_class_weight"),
+        "max_train_examples_per_client": max_train_examples_per_client,
+        "max_eval_examples_per_client": max_eval_examples_per_client,
+        "train_source_files": list(metadata.get("train_source_files", [])),
+        "validation_source_files": list(metadata.get("validation_source_files", [])),
+        "heldout_test_source_files": list(metadata.get("heldout_test_source_files", [])),
+        "heldout_test_files_used_for_training": False,
+        "heldout_test_files_used_for_validation": False,
+        "heldout_test_files_used_for_preprocessing_fit": False,
+        "heldout_test_files_used_for_clustering": False,
+        "validation_balanced": bool(leakage.get("validation_balanced", False)),
+        "heldout_test_balanced": bool(leakage.get("heldout_test_balanced", False)),
+        "client_train_sample_counts": {
+            client.client_id: client.train.num_samples for client in clients
+        },
+        "client_validation_sample_counts": {
+            client.client_id: client.validation.num_samples for client in clients
+        },
+        "client_test_sample_counts": {
+            client.client_id: client.test.num_samples for client in clients
+        },
+        "client_train_label_counts": counts_for("train"),
+        "client_validation_label_counts": counts_for("validation"),
+        "client_test_label_counts": counts_for("test"),
+        "cluster_split_label_counts": metadata.get("class_counts", {}),
+        "variant_metadata_path": str(metadata_path),
+    }
+    return clients, model_config, data_summary
+
+
 def build_flat_federated_clients(
     cluster_config_path: str | Path,
     *,
@@ -474,6 +655,13 @@ def build_flat_federated_clients(
 ) -> tuple[list[FlatClientDataset], CNN1DConfig, Mapping[str, Any]]:
     cluster_yaml = _load_yaml(cluster_config_path)
     partitioning = cluster_yaml.get("partitioning")
+    if isinstance(partitioning, Mapping) and str(partitioning.get("strategy")) == "balanced_window_npz":
+        return _build_balanced_cluster1_federated_clients(
+            cluster_config_path,
+            cluster_yaml,
+            max_train_examples_per_client=max_train_examples_per_client,
+            max_eval_examples_per_client=max_eval_examples_per_client,
+        )
     if isinstance(partitioning, Mapping) and str(partitioning.get("strategy")) == "window_first_attack_aware":
         return _build_repaired_cluster1_federated_clients(
             cluster_config_path,
@@ -705,33 +893,109 @@ def select_threshold_maximizing_validation_f1(
     if positives <= 0 or negatives <= 0:
         return float(default_threshold)
 
-    order = np.argsort(-probabilities, kind="mergesort")
+    sweep = validation_threshold_sweep(labels, probabilities)
+    selected_rows = [row for row in sweep if row["selected"]]
+    if not selected_rows:
+        return float(default_threshold)
+    return float(selected_rows[0]["threshold"])
+
+
+def _threshold_candidates(probabilities: np.ndarray) -> np.ndarray:
+    grid = np.round(np.arange(0.01, 1.00, 0.01, dtype=np.float64), 2)
+    unique_scores = np.unique(np.asarray(probabilities, dtype=np.float64))
+    candidates = np.unique(np.concatenate([grid, unique_scores]))
+    return candidates[(candidates >= 0.0) & (candidates <= 1.0)]
+
+
+def validation_threshold_sweep(
+    labels: np.ndarray,
+    probabilities: np.ndarray,
+) -> list[dict[str, Any]]:
+    labels = np.asarray(labels, dtype=np.int8).reshape(-1)
+    probabilities = np.asarray(probabilities, dtype=np.float32).reshape(-1)
+    if labels.size == 0 or probabilities.size == 0:
+        return []
+
+    candidates = _threshold_candidates(probabilities)
+    positives = int(np.sum(labels == 1))
+    negatives = int(np.sum(labels == 0))
+    if positives <= 0 or negatives <= 0:
+        return [
+            {
+                "threshold": float(threshold),
+                "validation_precision": 0.0,
+                "validation_recall": 0.0,
+                "validation_f1": 0.0,
+                "validation_pr_auc": UNAVAILABLE_METRIC,
+                "validation_fpr": 0.0,
+                "selected": bool(np.isclose(float(threshold), DEFAULT_CLASSIFICATION_THRESHOLD)),
+            }
+            for threshold in candidates
+        ]
+
+    order = np.argsort(probabilities, kind="mergesort")
     sorted_probabilities = probabilities[order]
-    sorted_labels = labels[order]
-    cumulative_true_positives = np.cumsum(sorted_labels == 1)
-    cumulative_false_positives = np.cumsum(sorted_labels == 0)
-    unique_last_indices = np.flatnonzero(
-        np.r_[sorted_probabilities[1:] != sorted_probabilities[:-1], True]
-    )
+    sorted_positive = (labels[order] == 1).astype(np.int64, copy=False)
+    cumulative_positive = np.concatenate([[0], np.cumsum(sorted_positive)])
+    lower_indices = np.searchsorted(sorted_probabilities, candidates, side="left")
+    predicted_positive = labels.size - lower_indices
+    positives_below_threshold = cumulative_positive[lower_indices]
+    tp = positives - positives_below_threshold
+    fp = predicted_positive - tp
+    fn = positives - tp
+    tn = negatives - fp
 
-    tp = cumulative_true_positives[unique_last_indices].astype(np.float64, copy=False)
-    fp = cumulative_false_positives[unique_last_indices].astype(np.float64, copy=False)
-    fn = float(positives) - tp
-    denominator = 2.0 * tp + fp + fn
-    f1_scores = np.divide(
-        2.0 * tp,
-        denominator,
+    precision = np.divide(
+        tp,
+        tp + fp,
         out=np.zeros_like(tp, dtype=np.float64),
-        where=denominator > 0.0,
+        where=(tp + fp) > 0,
     )
-    thresholds = sorted_probabilities[unique_last_indices].astype(np.float64, copy=False)
+    recall = np.divide(
+        tp,
+        tp + fn,
+        out=np.zeros_like(tp, dtype=np.float64),
+        where=(tp + fn) > 0,
+    )
+    f1 = np.divide(
+        2.0 * precision * recall,
+        precision + recall,
+        out=np.zeros_like(precision, dtype=np.float64),
+        where=(precision + recall) > 0.0,
+    )
+    fpr = np.divide(
+        fp,
+        fp + tn,
+        out=np.zeros_like(fp, dtype=np.float64),
+        where=(fp + tn) > 0,
+    )
+    pr_auc = float(average_precision_score(labels, probabilities))
 
-    best_f1 = float(np.max(f1_scores))
-    candidate_indices = np.flatnonzero(np.isclose(f1_scores, best_f1))
-    candidate_thresholds = thresholds[candidate_indices]
-    default_distance = np.abs(candidate_thresholds - float(default_threshold))
-    best_index = candidate_indices[int(np.argmin(default_distance))]
-    return float(thresholds[best_index])
+    best_f1 = float(np.max(f1))
+    tied = np.flatnonzero(np.isclose(f1, best_f1))
+    # PR-AUC is threshold-independent for a fixed validation score vector, but keep the
+    # tie-break step explicit for the experiment contract.
+    tied_pr_auc = np.full(tied.shape, pr_auc, dtype=np.float64)
+    best_pr_auc = float(np.max(tied_pr_auc))
+    tied = tied[np.isclose(tied_pr_auc, best_pr_auc)]
+    min_fpr = float(np.min(fpr[tied]))
+    tied = tied[np.isclose(fpr[tied], min_fpr)]
+    selected_index = int(tied[np.argmax(candidates[tied])])
+
+    rows: list[dict[str, Any]] = []
+    for index, threshold in enumerate(candidates):
+        rows.append(
+            {
+                "threshold": float(threshold),
+                "validation_precision": float(precision[index]),
+                "validation_recall": float(recall[index]),
+                "validation_f1": float(f1[index]),
+                "validation_pr_auc": pr_auc,
+                "validation_fpr": float(fpr[index]),
+                "selected": index == selected_index,
+            }
+        )
+    return rows
 
 
 def evaluate_round_with_validation_threshold(

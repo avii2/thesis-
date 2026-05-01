@@ -1,0 +1,99 @@
+{
+  "source": "experiment-runner metrics rows",
+  "confusion_matrix_layout": "[[TN, FP], [FN, TP]]",
+  "selection_rule": "selected_threshold maximizes validation F1 and is then applied to test data",
+  "experiments": {
+    "B_C1_BAL_10TO1": {
+      "experiment_id": "B_C1_BAL_10TO1",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03 balanced-training variant 10to1",
+      "run_category": null,
+      "model_family": "cnn1d",
+      "fl_method": "FedAvg",
+      "aggregation": "weighted_arithmetic_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.6585636138916016,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 15939,
+        "fp": 74,
+        "fn": 227,
+        "tp": 254,
+        "matrix": [
+          [
+            15939,
+            74
+          ],
+          [
+            227,
+            254
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 13674,
+        "fp": 2339,
+        "fn": 166,
+        "tp": 315,
+        "matrix": [
+          [
+            13674,
+            2339
+          ],
+          [
+            166,
+            315
+          ]
+        ]
+      }
+    },
+    "P_C1_BAL_10TO1": {
+      "experiment_id": "P_C1_BAL_10TO1",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03 balanced-training variant 10to1",
+      "run_category": null,
+      "model_family": "cnn1d_bn",
+      "fl_method": "FedBN",
+      "aggregation": "weighted_non_bn_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.5897976160049438,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 15955,
+        "fp": 58,
+        "fn": 337,
+        "tp": 144,
+        "matrix": [
+          [
+            15955,
+            58
+          ],
+          [
+            337,
+            144
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 3368,
+        "fp": 12645,
+        "fn": 40,
+        "tp": 441,
+        "matrix": [
+          [
+            3368,
+            12645
+          ],
+          [
+            40,
+            441
+          ]
+        ]
+      }
+    }
+  }
+}

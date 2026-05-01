@@ -1,0 +1,588 @@
+{
+  "experiment_id": "B_C1_BAL_10TO1",
+  "cluster_id": 1,
+  "dataset": "HAI 21.03 balanced-training variant 10to1",
+  "cluster_config_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/configs/cluster1_hai_balanced_10to1.yaml",
+  "hierarchy": "hierarchical_fixed",
+  "subcluster_layer_used": true,
+  "membership_file_used": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/outputs_c1_balanced_train/ratio_10to1/clustering/cluster1_memberships.json",
+  "membership_hash": "2861676255553ccc4afd53e1c89b7dbc69579899225d2cb598f861c75b753531",
+  "membership_file_changed": false,
+  "model_family": "cnn1d",
+  "fl_method": "FedAvg",
+  "aggregation": "weighted_arithmetic_mean",
+  "clustering_method": "agglomerative",
+  "input_adapter": "sliding_window_feature_channels",
+  "input_channels": 79,
+  "input_length": 32,
+  "num_leaf_clients": 12,
+  "n_subclusters": 2,
+  "subcluster_client_counts": {
+    "H1": 8,
+    "H2": 4
+  },
+  "rounds": 50,
+  "local_epochs": 1,
+  "batch_size": 128,
+  "learning_rate": 0.05,
+  "seed": 42,
+  "positive_class_weight": 10.0,
+  "model_parameter_bytes": 7652,
+  "communication_cost_per_round_bytes": 214256,
+  "total_communication_cost_bytes": 10712800,
+  "best_validation_round": 14,
+  "best_validation_f1": 0.7524752475247525,
+  "best_validation_f1_default_threshold": 0.2432962720732505,
+  "threshold_used": 0.6585636138916016,
+  "test_f1_at_best_validation_round": 0.6279357231149567,
+  "wall_clock_training_seconds": 17.067045165997115,
+  "data_summary": {
+    "cluster_id": 1,
+    "dataset": "HAI 21.03 balanced-training variant 10to1",
+    "variant": "cluster1_balanced_training",
+    "ratio": "ratio_10to1",
+    "num_clients": 12,
+    "input_adapter": "sliding_window_feature_channels",
+    "input_channels": 79,
+    "input_length": 32,
+    "retained_input_feature_columns": [
+      "P1_B2004",
+      "P1_B2016",
+      "P1_B3004",
+      "P1_B3005",
+      "P1_B4002",
+      "P1_B4005",
+      "P1_B400B",
+      "P1_B4022",
+      "P1_FCV01D",
+      "P1_FCV01Z",
+      "P1_FCV02D",
+      "P1_FCV02Z",
+      "P1_FCV03D",
+      "P1_FCV03Z",
+      "P1_FT01",
+      "P1_FT01Z",
+      "P1_FT02",
+      "P1_FT02Z",
+      "P1_FT03",
+      "P1_FT03Z",
+      "P1_LCV01D",
+      "P1_LCV01Z",
+      "P1_LIT01",
+      "P1_PCV01D",
+      "P1_PCV01Z",
+      "P1_PCV02D",
+      "P1_PCV02Z",
+      "P1_PIT01",
+      "P1_PIT02",
+      "P1_PP01AD",
+      "P1_PP01AR",
+      "P1_PP01BD",
+      "P1_PP01BR",
+      "P1_PP02D",
+      "P1_PP02R",
+      "P1_STSP",
+      "P1_TIT01",
+      "P1_TIT02",
+      "P2_24Vdc",
+      "P2_ASD",
+      "P2_AutoGO",
+      "P2_CO_rpm",
+      "P2_Emerg",
+      "P2_HILout",
+      "P2_MSD",
+      "P2_ManualGO",
+      "P2_OnOff",
+      "P2_RTR",
+      "P2_SIT01",
+      "P2_SIT02",
+      "P2_TripEx",
+      "P2_VT01",
+      "P2_VTR01",
+      "P2_VTR02",
+      "P2_VTR03",
+      "P2_VTR04",
+      "P2_VXT02",
+      "P2_VXT03",
+      "P2_VYT02",
+      "P2_VYT03",
+      "P3_FIT01",
+      "P3_LCP01D",
+      "P3_LCV01D",
+      "P3_LH",
+      "P3_LIT01",
+      "P3_LL",
+      "P3_PIT01",
+      "P4_HT_FD",
+      "P4_HT_LD",
+      "P4_HT_PO",
+      "P4_HT_PS",
+      "P4_LD",
+      "P4_ST_FD",
+      "P4_ST_GOV",
+      "P4_ST_LD",
+      "P4_ST_PO",
+      "P4_ST_PS",
+      "P4_ST_PT01",
+      "P4_ST_TT01"
+    ],
+    "model_feature_columns": [
+      "P1_B2004",
+      "P1_B2016",
+      "P1_B3004",
+      "P1_B3005",
+      "P1_B4002",
+      "P1_B4005",
+      "P1_B400B",
+      "P1_B4022",
+      "P1_FCV01D",
+      "P1_FCV01Z",
+      "P1_FCV02D",
+      "P1_FCV02Z",
+      "P1_FCV03D",
+      "P1_FCV03Z",
+      "P1_FT01",
+      "P1_FT01Z",
+      "P1_FT02",
+      "P1_FT02Z",
+      "P1_FT03",
+      "P1_FT03Z",
+      "P1_LCV01D",
+      "P1_LCV01Z",
+      "P1_LIT01",
+      "P1_PCV01D",
+      "P1_PCV01Z",
+      "P1_PCV02D",
+      "P1_PCV02Z",
+      "P1_PIT01",
+      "P1_PIT02",
+      "P1_PP01AD",
+      "P1_PP01AR",
+      "P1_PP01BD",
+      "P1_PP01BR",
+      "P1_PP02D",
+      "P1_PP02R",
+      "P1_STSP",
+      "P1_TIT01",
+      "P1_TIT02",
+      "P2_24Vdc",
+      "P2_ASD",
+      "P2_AutoGO",
+      "P2_CO_rpm",
+      "P2_Emerg",
+      "P2_HILout",
+      "P2_MSD",
+      "P2_ManualGO",
+      "P2_OnOff",
+      "P2_RTR",
+      "P2_SIT01",
+      "P2_SIT02",
+      "P2_TripEx",
+      "P2_VT01",
+      "P2_VTR01",
+      "P2_VTR02",
+      "P2_VTR03",
+      "P2_VTR04",
+      "P2_VXT02",
+      "P2_VXT03",
+      "P2_VYT02",
+      "P2_VYT03",
+      "P3_FIT01",
+      "P3_LCP01D",
+      "P3_LCV01D",
+      "P3_LH",
+      "P3_LIT01",
+      "P3_LL",
+      "P3_PIT01",
+      "P4_HT_FD",
+      "P4_HT_LD",
+      "P4_HT_PO",
+      "P4_HT_PS",
+      "P4_LD",
+      "P4_ST_FD",
+      "P4_ST_GOV",
+      "P4_ST_LD",
+      "P4_ST_PO",
+      "P4_ST_PS",
+      "P4_ST_PT01",
+      "P4_ST_TT01"
+    ],
+    "positive_class_weight_from_metadata": 10.0,
+    "max_train_examples_per_client": null,
+    "max_eval_examples_per_client": null,
+    "train_source_files": [
+      "train1.csv",
+      "train2.csv",
+      "train3.csv",
+      "test1.csv",
+      "test2.csv"
+    ],
+    "validation_source_files": [
+      "test3.csv"
+    ],
+    "heldout_test_source_files": [
+      "test4.csv",
+      "test5.csv"
+    ],
+    "heldout_test_files_used_for_training": false,
+    "heldout_test_files_used_for_validation": false,
+    "heldout_test_files_used_for_preprocessing_fit": false,
+    "heldout_test_files_used_for_clustering": false,
+    "validation_balanced": false,
+    "heldout_test_balanced": false,
+    "client_train_sample_counts": {
+      "C1_L001": 556,
+      "C1_L002": 556,
+      "C1_L003": 555,
+      "C1_L004": 555,
+      "C1_L005": 555,
+      "C1_L006": 554,
+      "C1_L007": 554,
+      "C1_L008": 554,
+      "C1_L009": 554,
+      "C1_L010": 554,
+      "C1_L011": 554,
+      "C1_L012": 554
+    },
+    "client_validation_sample_counts": {
+      "C1_L001": 1126,
+      "C1_L002": 1125,
+      "C1_L003": 1125,
+      "C1_L004": 1125,
+      "C1_L005": 1125,
+      "C1_L006": 1125,
+      "C1_L007": 1125,
+      "C1_L008": 1125,
+      "C1_L009": 1124,
+      "C1_L010": 1124,
+      "C1_L011": 1124,
+      "C1_L012": 1124
+    },
+    "client_test_sample_counts": {
+      "C1_L001": 1376,
+      "C1_L002": 1375,
+      "C1_L003": 1375,
+      "C1_L004": 1375,
+      "C1_L005": 1375,
+      "C1_L006": 1374,
+      "C1_L007": 1374,
+      "C1_L008": 1374,
+      "C1_L009": 1374,
+      "C1_L010": 1374,
+      "C1_L011": 1374,
+      "C1_L012": 1374
+    },
+    "client_train_label_counts": {
+      "C1_L001": {
+        "0": 505,
+        "1": 51
+      },
+      "C1_L002": {
+        "0": 505,
+        "1": 51
+      },
+      "C1_L003": {
+        "0": 504,
+        "1": 51
+      },
+      "C1_L004": {
+        "0": 504,
+        "1": 51
+      },
+      "C1_L005": {
+        "0": 504,
+        "1": 51
+      },
+      "C1_L006": {
+        "0": 504,
+        "1": 50
+      },
+      "C1_L007": {
+        "0": 504,
+        "1": 50
+      },
+      "C1_L008": {
+        "0": 504,
+        "1": 50
+      },
+      "C1_L009": {
+        "0": 504,
+        "1": 50
+      },
+      "C1_L010": {
+        "0": 504,
+        "1": 50
+      },
+      "C1_L011": {
+        "0": 504,
+        "1": 50
+      },
+      "C1_L012": {
+        "0": 504,
+        "1": 50
+      }
+    },
+    "client_validation_label_counts": {
+      "C1_L001": {
+        "0": 1107,
+        "1": 19
+      },
+      "C1_L002": {
+        "0": 1106,
+        "1": 19
+      },
+      "C1_L003": {
+        "0": 1106,
+        "1": 19
+      },
+      "C1_L004": {
+        "0": 1106,
+        "1": 19
+      },
+      "C1_L005": {
+        "0": 1106,
+        "1": 19
+      },
+      "C1_L006": {
+        "0": 1106,
+        "1": 19
+      },
+      "C1_L007": {
+        "0": 1106,
+        "1": 19
+      },
+      "C1_L008": {
+        "0": 1106,
+        "1": 19
+      },
+      "C1_L009": {
+        "0": 1106,
+        "1": 18
+      },
+      "C1_L010": {
+        "0": 1106,
+        "1": 18
+      },
+      "C1_L011": {
+        "0": 1106,
+        "1": 18
+      },
+      "C1_L012": {
+        "0": 1106,
+        "1": 18
+      }
+    },
+    "client_test_label_counts": {
+      "C1_L001": {
+        "0": 1335,
+        "1": 41
+      },
+      "C1_L002": {
+        "0": 1335,
+        "1": 40
+      },
+      "C1_L003": {
+        "0": 1335,
+        "1": 40
+      },
+      "C1_L004": {
+        "0": 1335,
+        "1": 40
+      },
+      "C1_L005": {
+        "0": 1335,
+        "1": 40
+      },
+      "C1_L006": {
+        "0": 1334,
+        "1": 40
+      },
+      "C1_L007": {
+        "0": 1334,
+        "1": 40
+      },
+      "C1_L008": {
+        "0": 1334,
+        "1": 40
+      },
+      "C1_L009": {
+        "0": 1334,
+        "1": 40
+      },
+      "C1_L010": {
+        "0": 1334,
+        "1": 40
+      },
+      "C1_L011": {
+        "0": 1334,
+        "1": 40
+      },
+      "C1_L012": {
+        "0": 1334,
+        "1": 40
+      }
+    },
+    "cluster_split_label_counts": {
+      "train": {
+        "0": 6050,
+        "1": 605
+      },
+      "validation": {
+        "0": 13273,
+        "1": 224
+      },
+      "test": {
+        "0": 16013,
+        "1": 481
+      }
+    },
+    "variant_metadata_path": "/Users/anilkumar/Desktop/Thesis/fcfl-cps-ids/data/variants/hai_2103_balanced_train/ratio_10to1/metadata.json"
+  },
+  "best_round_train_metrics": {
+    "loss": 0.5737123489379883,
+    "accuracy": 0.8222389181066867,
+    "precision": 0.31450577663671375,
+    "recall": 0.8099173553719008,
+    "f1": 0.45307443365695793,
+    "auroc": 0.8767611501946588,
+    "pr_auc": 0.6805699625843343,
+    "fpr": 0.17652892561983471,
+    "confusion_matrix": [
+      [
+        4982,
+        1068
+      ],
+      [
+        115,
+        490
+      ]
+    ],
+    "support": 6655,
+    "label_counts": {
+      "0": 6050,
+      "1": 605
+    },
+    "threshold_used": 0.5
+  },
+  "best_round_validation_metrics_default_threshold": {
+    "loss": 0.5577937960624695,
+    "accuracy": 0.9142772467955842,
+    "precision": 0.1425287356321839,
+    "recall": 0.8303571428571429,
+    "f1": 0.2432962720732505,
+    "auroc": 0.916183565455113,
+    "pr_auc": 0.700841024175144,
+    "fpr": 0.08430648685300987,
+    "confusion_matrix": [
+      [
+        12154,
+        1119
+      ],
+      [
+        38,
+        186
+      ]
+    ],
+    "support": 13497,
+    "label_counts": {
+      "0": 13273,
+      "1": 224
+    },
+    "threshold_used": 0.5
+  },
+  "best_round_validation_metrics": {
+    "loss": 0.5577937960624695,
+    "accuracy": 0.9925909461361784,
+    "precision": 0.8444444444444444,
+    "recall": 0.6785714285714286,
+    "f1": 0.7524752475247525,
+    "auroc": 0.916183565455113,
+    "pr_auc": 0.700841024175144,
+    "fpr": 0.002109545694266556,
+    "confusion_matrix": [
+      [
+        13245,
+        28
+      ],
+      [
+        72,
+        152
+      ]
+    ],
+    "support": 13497,
+    "label_counts": {
+      "0": 13273,
+      "1": 224
+    },
+    "threshold_used": 0.6585636138916016
+  },
+  "best_round_test_metrics_default_threshold": {
+    "loss": 0.5644983649253845,
+    "accuracy": 0.8481265914878138,
+    "precision": 0.1186887716654107,
+    "recall": 0.6548856548856549,
+    "f1": 0.20095693779904306,
+    "auroc": 0.7994904867445928,
+    "pr_auc": 0.5485989238503349,
+    "fpr": 0.14606881908449384,
+    "confusion_matrix": [
+      [
+        13674,
+        2339
+      ],
+      [
+        166,
+        315
+      ]
+    ],
+    "support": 16494,
+    "label_counts": {
+      "0": 16013,
+      "1": 481
+    },
+    "threshold_used": 0.5
+  },
+  "best_round_test_metrics": {
+    "loss": 0.5644983649253845,
+    "accuracy": 0.9817509397356614,
+    "precision": 0.774390243902439,
+    "recall": 0.5280665280665281,
+    "f1": 0.6279357231149567,
+    "auroc": 0.7994904867445928,
+    "pr_auc": 0.5485989238503349,
+    "fpr": 0.004621245238243927,
+    "confusion_matrix": [
+      [
+        15939,
+        74
+      ],
+      [
+        227,
+        254
+      ]
+    ],
+    "support": 16494,
+    "label_counts": {
+      "0": 16013,
+      "1": 481
+    },
+    "threshold_used": 0.6585636138916016
+  },
+  "best_round_subcluster_train_sample_counts": {
+    "H1": 4439,
+    "H2": 2216
+  },
+  "best_round_subcluster_client_counts": {
+    "H1": 8,
+    "H2": 4
+  },
+  "prediction_outputs": {
+    "prediction_dir": "outputs_c1_balanced_train/ratio_10to1/predictions/B_C1_BAL_10TO1",
+    "validation_predictions_path": "outputs_c1_balanced_train/ratio_10to1/predictions/B_C1_BAL_10TO1/validation_predictions_seed_42.npz",
+    "test_predictions_path": "outputs_c1_balanced_train/ratio_10to1/predictions/B_C1_BAL_10TO1/test_predictions_seed_42.npz",
+    "selected_threshold_path": "outputs_c1_balanced_train/ratio_10to1/predictions/B_C1_BAL_10TO1/selected_threshold_seed_42.json"
+  },
+  "round_metrics_path": "outputs_c1_balanced_train/ratio_10to1/runs/B_C1_BAL_10TO1/round_metrics.csv",
+  "metrics_csv_path": "outputs_c1_balanced_train/ratio_10to1/metrics/B_C1_BAL_10TO1_metrics.csv",
+  "summary_path": "outputs_c1_balanced_train/ratio_10to1/runs/B_C1_BAL_10TO1/run_summary.json"
+}

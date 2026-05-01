@@ -1,0 +1,99 @@
+{
+  "source": "experiment-runner metrics rows",
+  "confusion_matrix_layout": "[[TN, FP], [FN, TP]]",
+  "selection_rule": "selected_threshold maximizes validation F1 and is then applied to test data",
+  "experiments": {
+    "B_C1_BAL_8TO1": {
+      "experiment_id": "B_C1_BAL_8TO1",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03 balanced-training variant 8to1",
+      "run_category": null,
+      "model_family": "cnn1d",
+      "fl_method": "FedAvg",
+      "aggregation": "weighted_arithmetic_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.6633669137954712,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 15954,
+        "fp": 59,
+        "fn": 247,
+        "tp": 234,
+        "matrix": [
+          [
+            15954,
+            59
+          ],
+          [
+            247,
+            234
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 13605,
+        "fp": 2408,
+        "fn": 164,
+        "tp": 317,
+        "matrix": [
+          [
+            13605,
+            2408
+          ],
+          [
+            164,
+            317
+          ]
+        ]
+      }
+    },
+    "P_C1_BAL_8TO1": {
+      "experiment_id": "P_C1_BAL_8TO1",
+      "seed": null,
+      "cluster_id": 1,
+      "dataset": "HAI 21.03 balanced-training variant 8to1",
+      "run_category": null,
+      "model_family": "cnn1d_bn",
+      "fl_method": "FedBN",
+      "aggregation": "weighted_non_bn_mean",
+      "threshold_selected_on": "validation",
+      "selected_threshold": 0.5651556253433228,
+      "default_threshold": 0.5,
+      "status": "complete",
+      "tuned_threshold": {
+        "tn": 15967,
+        "fp": 46,
+        "fn": 356,
+        "tp": 125,
+        "matrix": [
+          [
+            15967,
+            46
+          ],
+          [
+            356,
+            125
+          ]
+        ]
+      },
+      "default_threshold_metrics": {
+        "tn": 2063,
+        "fp": 13950,
+        "fn": 18,
+        "tp": 463,
+        "matrix": [
+          [
+            2063,
+            13950
+          ],
+          [
+            18,
+            463
+          ]
+        ]
+      }
+    }
+  }
+}

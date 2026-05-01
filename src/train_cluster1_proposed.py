@@ -100,7 +100,7 @@ def _load_cluster1_proposed_entry(config_path: str | Path) -> tuple[Path, Mappin
         if not isinstance(cluster_entry, Mapping):
             continue
         experiment_id = str(cluster_entry.get("experiment_id", "")).strip()
-        if experiment_id not in {"P_C1", "P_C1_REPAIRED"}:
+        if not (experiment_id in {"P_C1", "P_C1_REPAIRED"} or experiment_id.startswith("P_C1_BAL_")):
             continue
         if str(cluster_entry.get("model_family")) != "cnn1d_bn":
             raise ValueError(f"{experiment_id} must use model_family=cnn1d_bn.")
